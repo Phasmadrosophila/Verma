@@ -81,6 +81,8 @@ jobs:
           persist-credentials: false
       - shell: pwsh
         run: ./scripts/ci/check-model-manifest.ps1
+      - shell: pwsh
+        run: ./tests/ci/model-manifest.tests.ps1
 
   workflow-safety:
     name: Workflow safety
