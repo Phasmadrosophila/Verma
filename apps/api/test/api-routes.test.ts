@@ -183,5 +183,13 @@ describe('Hono API Routes Integration', () => {
     const result = await response.json();
     assert.match(result.answer, /fallback|unavailable|disabled/i);
     assert.deepEqual(result.relevantEntryIds, []);
+
+    // AC-B-M1-04: Natural-language metadata query matches tokens offline with zero secrets
+    const searchRes = await app.request('/api/metadata/search?q=work%20account%20example.test');
+    assert.equal(searchRes.status, 200);
+    const searchJson = await searchRes.json();
+    assert.ok(searchJson.metadata.length > 0);
+    assert.equal(searchJson.metadata[0].title, 'Synthetic Work Account');
+    assert.equal(searchJson.metadata[0].password, undefined);
   });
 });

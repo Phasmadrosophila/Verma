@@ -6,12 +6,12 @@ redistribute a model.
 
 | Field | Release evidence |
 | --- | --- |
-| Candidate family | Qwen3 0.6B is a proposed local-assistant candidate. |
+| Application model | Qwen3 0.6B (`qwen3:0.6b` through Ollama in development). |
 | Production runtime | `llama.cpp` (planned); Ollama is development-only. |
 | Exact GGUF artifact | No exact artifact has been selected or made available for review. |
 | Artifact availability | **NOT VERIFIED** |
 | SHA-256 | Not recorded; an unavailable artifact has no hash claim. |
-| Selection status | Not selected |
+| Selection status | Application model selected; exact production artifact not selected |
 | Manifest state | `models/manifest.json` remains `tbd`. |
 
 The candidate name and reported upstream characteristics are not a substitute

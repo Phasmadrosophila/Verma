@@ -2,7 +2,7 @@
 name: docker-best-practices
 description: >-
   Project checklist and review guide for writing and reviewing Verma Dockerfile
-  and docker-compose.yaml. Use when creating, editing, or reviewing container
+  and compose.yaml. Use when creating, editing, or reviewing container
   build/deploy files for Verma's self-hosted relay and API service. Covers
   multi-stage builds, pinned bases, pnpm via Corepack, non-root runtime,
   healthchecks, no secrets in layers, and compose specifics.
@@ -11,7 +11,11 @@ description: >-
 # Docker Best Practices (Verma)
 
 Use this when authoring or reviewing the `Dockerfile`, `.dockerignore`, or
-`docker-compose.yaml` for Verma's self-hosted deployment and relay node.
+`compose.yaml` for Verma's self-hosted deployment and relay node. Note: the
+repository currently also contains a near-duplicate `docker-compose.yaml` (added
+by the Cloudflare/Komodo deploy tooling); `compose.yaml` is the canonical
+Compose file and the two should be reconciled. TODO(verify): confirm which
+Compose file the deploy pipeline actually consumes.
 
 ## Dockerfile checklist
 
@@ -39,7 +43,7 @@ Use this when authoring or reviewing the `Dockerfile`, `.dockerignore`, or
   `dist`, local DB files (`*.db`, `*.sqlite`), `docs`, `.agents`, `.kiro`, and build logs.
   A minimal build context speeds up builds and avoids leaking local data.
 
-## docker-compose.yaml checklist
+## compose.yaml checklist
 
 - **No `version:` key** (obsolete in modern Compose v2).
 - **Environment configuration.** Use `environment:` and `env_file:` with sensible defaults (`${VAR:-default}`) so containers can start safely in local development.

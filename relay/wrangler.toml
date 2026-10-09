@@ -1,0 +1,14 @@
+# Standalone Cloudflare Worker Configuration for Verma Opaque Envelope Relay
+name = "verma-relay"
+main = "worker.mjs"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# KV namespace binding for serverless opaque envelope relay
+[[kv_namespaces]]
+binding = "VERMA_RELAY_KV"
+id = "verma_relay_kv_production_id"
+preview_id = "verma_relay_kv_preview_id"
+
+[vars]
+RELAY_MAX_ENVELOPE_BYTES = "1048576"

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm --recursive run build",
-    "check": "pnpm --recursive run check",
+    "check": "pnpm --filter @app/shared run build && pnpm --recursive run check",
     "test": "node --test --experimental-strip-types tests/verification/**/*.test.ts && pnpm --recursive run test",
     "test:offline": "node --test --experimental-strip-types tests/verification/offline-ai.test.ts",
     "test:redaction": "node --test --experimental-strip-types tests/verification/redaction-boundary.test.ts",

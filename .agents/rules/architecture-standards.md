@@ -5,16 +5,16 @@ This rule governs the technology stack, cryptographic standards, and architectur
 ## 1. System Architecture
 
 - **Frontend:** Single-page application (SPA), desktop-first layout.
-- **Backend / API Service:** Hono running on Node/Bun and inside Docker containers.
-- **Local Vault Storage:** Encrypted SQLite (SQLCipher / encrypted local store).
-- **AI Runtime:** `llama.cpp` for local quantized models (1B–4B params). Ollama for local development only.
+- **Backend / API Service:** Hono running locally on Node; Docker hosts the relay node.
+- **Local Vault Storage:** SQLite via better-sqlite3 with application-layer AES-256-GCM payload encryption (not SQLCipher).
+- **AI Runtime:** Ollama HTTP adapter on `127.0.0.1:11434` for the app (default llama3.2); the `llama.cpp` harness in `scripts/bench` is used only for benchmarks.
 
 ## 2. Cryptography & Direct Sync Standards
 
-- **Never Roll Custom Cryptography:** Always use vetted cryptographic primitives from audited libraries (e.g. `libsodium`).
-- **Device Identity:** Ed25519 keypair per device. The Device ID is the cryptographic hash of the public key.
-- **Pairing Protocol:** SPAKE2 (or equivalent PAKE) using a 24-word phrase or QR code plus confirmation code.
-- **Direct Transport:** QUIC-based, Syncthing-style authenticated transport for direct device-to-device synchronization over local network without central servers.
+- **Never Roll Custom Cryptography:** Always use vetted cryptographic primitives; currently Node's `node:crypto` (aes-256-gcm, ed25519, scrypt).
+- **Device Identity:** Ed25519 keypair per device. The Device ID is the SHA-256 hash of the public key.
+- **Pairing Protocol:** Authenticated pairing using Ed25519 signatures + HMAC and a 6-digit confirmation code (SPAKE2 was the intended/target PAKE).
+- **Direct Transport:** Authenticated peer transport engine for direct device-to-device synchronization without central servers. QUIC is the target; the current implementation is in-memory.
 - **Encrypted at Rest:** Vault database and search index must be encrypted using the user's derived vault key.
 
 ## 3. Deterministic Code vs. AI Responsibilities

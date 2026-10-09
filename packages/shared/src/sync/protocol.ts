@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import type { EncryptedPayload } from '../types/crypto.js';
 import type { VaultEntry } from '../types/entry.js';
 import { encryptJson, decryptJson } from '../crypto/cipher.js';
@@ -67,7 +68,7 @@ export function createSyncEnvelope(
   const payload = encryptJson(deltas, syncKey);
 
   const timestamp = Date.now();
-  const nonce = Math.random().toString(36).substring(2, 15);
+  const nonce = randomBytes(16).toString('hex');
 
   const signableData = `${senderDeviceId}:${recipientDeviceId}:${timestamp}:${nonce}:${payload.ciphertext}:${payload.authTag}`;
   const signature = signData(signableData, senderPrivateKeyPem);

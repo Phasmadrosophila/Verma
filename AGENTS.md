@@ -40,10 +40,10 @@ If any instruction, skill, or convention contradicts `docs/`, `docs/` wins.
 - No AI action may silently mutate records, resolve conflicts, delete entries, or apply access controls without explicit human review and confirmation.
 
 ### 3.4 Cryptography & Sync Invariants
-- **Never roll custom cryptography.** Use vetted libraries (e.g., `libsodium`, `SPAKE2` for pairing, `Ed25519` for device identity).
+- **Never roll custom cryptography.** Use vetted primitives from Node's `node:crypto` (currently AES-256-GCM for payloads, scrypt for key derivation, Ed25519 for device identity) with authenticated pairing. (`libsodium`/`SPAKE2` were the intended/target primitives; not currently a dependency.)
 - Device ID is the hash of the device's Ed25519 public key.
-- Direct sync uses a QUIC-based, Syncthing-style authenticated transport between paired desktop devices without requiring a central server.
-- Vault data and search index must be encrypted at rest (e.g., encrypted SQLite / SQLCipher).
+- Direct sync uses an authenticated peer transport (currently an in-memory engine; native QUIC not yet implemented) between paired desktop devices without requiring a central server.
+- Vault data and search index must be encrypted at rest, currently SQLite via better-sqlite3 with application-layer AES-256-GCM payload encryption (SQLCipher was the intended/target store).
 
 ### 3.5 Lock State Invariants
 - Locking the vault immediately revokes AI access to metadata.
@@ -94,11 +94,11 @@ displace the P0 desktop, offline, AI, or sync acceptance criteria.
 | Layer | Technology |
 | --- | --- |
 | **Frontend** | Single-page app (SPA), desktop view first |
-| **Backend / API** | Hono (runs locally and in Docker container) |
-| **Local Storage** | Encrypted SQLite (e.g., SQLCipher / libsodium-backed store) |
-| **Direct Sync** | QUIC-based Syncthing-style protocol |
-| **Cryptography** | `libsodium`, `Ed25519`, `SPAKE2` |
-| **AI Runtime** | `llama.cpp` (proposed Qwen3 0.6B reviewed GGUF default; exact artifact TBD), Ollama (dev only) |
+| **Backend / API** | Hono (runs locally; the relay node runs in Docker) |
+| **Local Storage** | SQLite (better-sqlite3) + AES-256-GCM payload encryption |
+| **Direct Sync** | Authenticated peer transport engine (in-memory today) |
+| **Cryptography** | Node `node:crypto` (AES-256-GCM, Ed25519, scrypt, HMAC) |
+| **AI Runtime** | Ollama HTTP adapter (127.0.0.1:11434; code default `llama3.2`, `qwen3:0.6b` is the intended dev model but not the current default); llama.cpp harness used only for benchmark scripts; model artifact TBD |
 | **Containerization** | Docker multi-stage builds, non-root, pinned digests |
 | **Repository** | `Phasmadrosophila/Verma` (base branch: `main`) |
 
@@ -108,7 +108,7 @@ displace the P0 desktop, offline, AI, or sync acceptance criteria.
 
 1. **YAGNI & Senior Dev Discipline:** Smallest working change. No unrequested layers, extra boilerplate, or premature generalizations.
 2. **Deterministic Checks:** Password strength and reuse detection are deterministic algorithms; AI is used only for plain-language explanation and prioritization.
-3. **GitHub Workflow:** Follow `.agents/skills/git-github-workflow/SKILL.md`. Every feature has a GitHub Issue, dedicated branch (`lyraphasma/issue-NN-slug`), and PR against `main`. Agents NEVER merge PRs; instruct the dev to request teammate review.
+3. **GitHub Workflow:** Follow `.agents/skills/git-github-workflow/SKILL.md`. Every feature has a GitHub Issue, dedicated branch (`<username>/issue-NN-slug`, e.g. `lyraphasma/issue-NN-slug`), and PR against `main`. Agents NEVER merge PRs; instruct the dev to request teammate review.
 4. **Docker Best Practices:** Follow `.agents/skills/docker-best-practices/SKILL.md`. Multi-stage builds, non-root user, healthchecks, zero secrets in layers.
 5. **No Hallucinated Data:** Never use real user secrets or fake benchmark numbers. Demo fixtures must use sanitized, realistic mock data.
 

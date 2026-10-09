@@ -8,7 +8,7 @@ const [landing, cloud, download] = await Promise.all([
 ]);
 
 const expectedCopyright = '© 2026 Verma. All rights reserved.';
-const expectedAuthor = 'Made by Phasmadrosophilia';
+const expectedAuthor = 'Made by Phasmadrosophilia for APPBuildersPH Hackathon 2026';
 
 for (const [name, html] of [['Landing', landing], ['Cloud', cloud], ['Download', download]]) {
   assert(html.includes(expectedCopyright), `${name} page includes copyright: "${expectedCopyright}"`);

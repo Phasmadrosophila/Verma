@@ -155,6 +155,11 @@ export function assertSafeMetadata(
 ): { isSafe: boolean; violations: string[] } {
   const violations: string[] = [];
 
+  // Excluded types (such as crypto wallets) must never be projected to metadata
+  if (isExcludedFromAi(originalEntry)) {
+    violations.push(`Excluded entry type "${originalEntry.type}" must never be projected to metadata`);
+  }
+
   // Check that no secret properties exist on metadata
   for (const denied of DENIED_SECRET_FIELD_KEYS) {
     if (denied in metadata) {
@@ -177,6 +182,13 @@ export function assertSafeMetadata(
       for (const code of login.recoveryCodes) {
         if (code && code.length > 3 && stringified.includes(code)) {
           violations.push(`Metadata contains raw recovery code value`);
+        }
+      }
+    }
+    if (login.customFields) {
+      for (const cf of login.customFields) {
+        if (cf.isSecret && cf.value && cf.value.length > 3 && stringified.includes(cf.value)) {
+          violations.push(`Metadata contains raw secret custom field value for "${cf.label}"`);
         }
       }
     }
