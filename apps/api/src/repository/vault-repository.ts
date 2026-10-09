@@ -10,6 +10,7 @@ import type {
   LockStateInfo,
   VaultMetaRecord,
 } from '@app/shared';
+import { askYourVaultOllama } from '../ai/ollama.js';
 import {
   deriveMasterKey,
   generateSalt,
@@ -417,13 +418,27 @@ export class VaultRepository {
       return list;
     }
 
+    const aiMatchingIds = await askYourVaultOllama(query, list);
+
+    if (aiMatchingIds && aiMatchingIds.length > 0) {
+      // Return the entries in the order specified by the AI
+      const matchedEntries = aiMatchingIds
+        .map(id => list.find(item => item.id === id))
+        .filter((item): item is RedactedEntryMetadata => item !== undefined);
+      
+      if (matchedEntries.length > 0) {
+        return matchedEntries.slice(0, 3);
+      }
+    }
+
+    // Graceful fallback to text search if AI fails or returns empty
     const q = query.toLowerCase().trim();
     return list.filter((item) => {
       const matchesTitle = item.title.toLowerCase().includes(q);
       const matchesDomain = item.domain?.toLowerCase().includes(q) ?? false;
       const matchesTag = item.tags.some((t) => t.toLowerCase().includes(q));
       return matchesTitle || matchesDomain || matchesTag;
-    });
+    }).slice(0, 3);
   }
 
   public async seedSyntheticFixtures(): Promise<number> {
