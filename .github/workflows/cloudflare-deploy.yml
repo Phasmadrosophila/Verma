@@ -100,14 +100,16 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         run: |
           npx wrangler pages deploy apps/web/dist \
             --project-name="${{ secrets.CLOUDFLARE_PROJECT_NAME || 'verma-web' }}" \
-            --branch="${{ github.head_ref || github.ref_name }}"
+            --branch="${BRANCH_NAME}"
 
       - name: Skip preview deploy when secrets unavailable
         if: env.CLOUDFLARE_API_TOKEN == ''
-        run: echo "Preview deployment skipped: Cloudflare credentials are isolated and omitted on untrusted forks."
+        run: |
+          echo "Preview deployment skipped: Cloudflare credentials are isolated and omitted on untrusted forks."
 
   production-deploy:
     name: Deploy Production (Cloudflare Pages)
