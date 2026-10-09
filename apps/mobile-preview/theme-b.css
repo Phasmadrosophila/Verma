@@ -1,7 +1,7 @@
 /* Version B is a visual layer. The interaction and data modules match version A. */
-body.variant-b{background:var(--canvas)}
-.studio{column-gap:98px;position:relative}
-.studio::before{content:'';position:fixed;right:-230px;top:-330px;width:750px;height:750px;border:1px solid #607ff31c;border-radius:50%;pointer-events:none;z-index:-1;box-shadow:0 0 0 100px #607ff307,0 0 0 101px #607ff30d}
+body.variant-b{background:var(--canvas);margin:0;padding:0;display:flex;justify-content:center;align-items:center;min-height:100dvh}
+.studio{display:flex;justify-content:center;align-items:center;min-height:100dvh;width:100%;max-width:none;padding:24px 16px;margin:0 auto;position:relative;box-sizing:border-box}
+.intro-panel,.preview-caption{display:none!important}
 .studio-brand{margin-bottom:38px}
 .studio-brand .wordmark{font-size:39px;font-weight:600}
 .intro-copy .eyebrow{color:#4f66bd;letter-spacing:1.45px;font-size:8px}

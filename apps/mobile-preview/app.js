@@ -90,8 +90,8 @@ function renderChrome() {
   $('#app-header').innerHTML = `<button class="app-brand" aria-label="Verma profile and settings" data-action="profile">${brandMark}<span class="wordmark">Verma<span class="brand-period">.</span></span></button><button class="device-status" data-action="privacy" aria-label="Privacy and assistant settings">${icon(state.locked ? 'lock' : 'shield')}${state.locked ? 'Vault locked' : 'On your device'}</button><button class="icon-button" data-action="lock" aria-label="${state.locked ? 'Unlock demo vault' : 'Lock vault'}">${icon('lock')}</button>`;
   const nav = tabs.map(([tab, label, name]) => `<button class="nav-button" data-tab="${tab}" ${tab === state.tab ? 'aria-current="page"' : ''}><span class="nav-icon">${icon(name)}</span><span>${label}</span></button>`);
   nav.splice(2, 0, `<button class="nav-button add" data-action="add" aria-label="Add new item"><span class="nav-icon">${icon('plus')}</span><span>New item</span></button>`);
-  $('#bottom-nav').innerHTML = nav.join('');
-  $('.preview-nav').innerHTML = tabs.map(([tab, label], i) => `<button data-tab="${tab}" ${tab === state.tab && state.screen === 'main' ? 'aria-current="page"' : ''}><span>0${i + 1}</span>${label}${icon('arrow')}</button>`).join('');
+  const pNav = $('.preview-nav');
+  if (pNav) pNav.innerHTML = tabs.map(([tab, label], i) => `<button data-tab="${tab}" ${tab === state.tab && state.screen === 'main' ? 'aria-current="page"' : ''}><span>0${i + 1}</span>${label}${icon('arrow')}</button>`).join('');
 }
 function row(e, subtitle = e.subtitle) {
   return `<button class="entry-row" data-open="${e.id}" aria-label="Open ${esc(e.title)}, ${esc(e.subtitle)}">${brand(e)}<span class="grow"><strong>${esc(e.title)}</strong><small>${esc(subtitle)}</small></span>${e.tags[0] ? `<span class="tag">${esc(e.tags[0])}</span>` : ''}${icon('chevron')}</button>`;
@@ -123,7 +123,7 @@ function openSheet(title, body, bind, description = '') {
   if ($('#sheet').hidden) sheetTrigger = document.activeElement;
   $('#sheet').innerHTML = `<div class="sheet-handle" aria-hidden="true"></div><div class="sheet-head"><div class="grow"><h2 id="sheet-title" tabindex="-1">${esc(title)}</h2>${description ? `<p>${esc(description)}</p>` : ''}</div><button class="icon-button" data-action="close" aria-label="Close dialog">${icon('close')}</button></div>${body}`;
   $('#sheet-overlay').hidden = false; $('#sheet').hidden = false;
-  [content, $('#app-header'), $('#bottom-nav'), $('.intro-panel')].forEach(el => el.inert = true);
+  [content, $('#app-header'), $('#bottom-nav'), $('.intro-panel')].filter(Boolean).forEach(el => el.inert = true);
   $('#sheet-title').focus({ preventScroll: true });
   $('#sheet').scrollTop = 0;
   bind?.();
@@ -137,7 +137,7 @@ function closeSheet(restore = true) {
   if ($('#sheet').hidden) return;
   $('#sheet').hidden = true; $('#sheet-overlay').hidden = true;
   $('#sheet').innerHTML = '';
-  [content, $('#app-header'), $('#bottom-nav'), $('.intro-panel')].forEach(el => el.inert = false);
+  [content, $('#app-header'), $('#bottom-nav'), $('.intro-panel')].filter(Boolean).forEach(el => el.inert = false);
   if (restore) (sheetTrigger?.isConnected ? sheetTrigger : content).focus({ preventScroll: true });
 }
 $('#sheet-overlay').onclick = () => closeSheet();
