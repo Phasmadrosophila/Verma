@@ -27,7 +27,9 @@ Work is tracked via **GitHub Issues**, the repository-scoped **Verma Delivery** 
 - **Instruct dev to request teammate review.** Always notify the developer to ask their teammates to review the PR before merging.
 - **Never push directly to `main`.** All changes reach `main` exclusively through a reviewed pull request.
 - **Never force-push shared branches.** Do not force-push `main` or branches used by teammates.
-- **Always abide by Conventional Commits.**
+- **Always abide by Conventional Commits.** Every commit must use a valid Conventional Commits message such as `feat:`, `fix:`, `test:`, `docs:`, `chore:`, or `refactor:` with an optional scope.
+- **Commit each major solution checkpoint.** Every major implementation step that advances an acceptance criterion or definition-of-done item must be committed separately. Keep commits focused, reviewable, and independently understandable; do not hide an entire feature in one undifferentiated commit.
+- **Do not submit one-commit PRs for substantive work.** A PR covering a non-trivial task must contain multiple meaningful commits representing the major solution checkpoints. A single commit is acceptable only for a genuinely trivial change such as a typo, isolated documentation correction, or equivalent small maintenance fix.
 
 ## Workflow
 
@@ -81,6 +83,8 @@ Examples:
 - Follow repository architecture and security standards (see `AGENTS.md` and `.agents/rules/`).
 - Verify offline behavior, zero secret-field leakage, and run tests.
 - Keep commits focused and well-described.
+- Commit each major solution checkpoint as it reaches green. Examples include the core implementation, boundary/error handling, tests, documentation, and integration or verification work when those are separate changes.
+- Use a Conventional Commits type and keep the commit body useful when the checkpoint needs context. Do not use vague messages such as `updates`, `work`, or `final changes`.
 - Move the issue to `status:in-progress` when implementation actually begins.
 - Keep blocker references in the issue body. Open blockers must remain `status:blocked`; when all blockers close, automation promotes the issue to `status:ready`.
 - Do not log issue content, vault data, secrets, or real user data.
@@ -95,6 +99,9 @@ gh pr create --draft --base main --title "<type>: <Short description> (#<NUMBER>
 
 ## Summary
 <Summary of changes>
+
+## Commit structure
+<List the major solution checkpoints and their commit hashes/messages. Confirm this is not a one-commit PR unless the change is genuinely trivial.>
 
 ## Verification
 <Tests and checks performed>

@@ -63,6 +63,13 @@ Do not use a generic “Scope” section in place of Goal, do not use vague acce
 8. Address review feedback and attach test evidence.
 9. Close the issue only after the definition of done is satisfied.
 
+## Commit rules
+
+- Use Conventional Commits for every commit: `feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`, or another valid type, with an optional scope.
+- Commit each major solution checkpoint separately when it advances an acceptance criterion or definition-of-done item.
+- A substantive PR must contain multiple meaningful commits. Do not submit a one-commit PR for non-trivial work.
+- A single commit is reserved for genuinely trivial changes such as a typo, isolated documentation correction, or equivalent maintenance fix.
+
 ## Board automation
 
 The `Project Automation` workflow synchronizes workflow labels and the repository-scoped Verma Delivery board at `https://github.com/orgs/Phasmadrosophila/projects/4`:
