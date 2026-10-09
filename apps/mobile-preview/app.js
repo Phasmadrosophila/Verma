@@ -413,7 +413,11 @@ document.addEventListener('click', event => {
   if (button.dataset.open) { entrySheet(Number(button.dataset.open)); return; }
   const action = button.dataset.action;
   if (action === 'close') closeSheet();
-  if (action === 'add') editSheet();
+  if (action === 'add') {
+    button.classList.add('is-popped');
+    setTimeout(() => button.classList.remove('is-popped'), 520);
+    editSheet();
+  }
   if (action === 'privacy') privacySheet();
   if (action === 'profile') profileSheet();
   if (action === 'lock') lockVault();

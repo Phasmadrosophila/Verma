@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 export type NavTab = 'vault' | 'ask' | 'import' | 'devices';
@@ -10,121 +10,150 @@ interface BottomNavProps {
   onAddNew: () => void;
 }
 
+interface NavItemProps {
+  tab: NavTab;
+  currentTab: NavTab;
+  icon: string;
+  label: string;
+  onPress: () => void;
+}
+
+const NavItem: React.FC<NavItemProps> = ({
+  tab,
+  currentTab,
+  icon,
+  label,
+  onPress,
+}) => {
+  const isActive = currentTab === tab;
+  const popAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (isActive) {
+      popAnim.setValue(0);
+      Animated.spring(popAnim, {
+        toValue: 1,
+        friction: 4,
+        tension: 80,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      popAnim.setValue(0);
+    }
+  }, [isActive]);
+
+  const scale = popAnim.interpolate({
+    inputRange: [0, 0.55, 1],
+    outputRange: [0.75, 1.18, 1],
+  });
+
+  const translateY = popAnim.interpolate({
+    inputRange: [0, 0.55, 1],
+    outputRange: [4, -2, 0],
+  });
+
+  return (
+    <TouchableOpacity
+      style={styles.tabButton}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <Animated.View
+        style={[
+          styles.iconWrapper,
+          isActive && styles.iconWrapperActive,
+          isActive && { transform: [{ scale }, { translateY }] },
+        ]}
+      >
+        <Text style={styles.tabIcon}>{icon}</Text>
+      </Animated.View>
+      <Text
+        style={[
+          styles.tabLabel,
+          isActive && styles.tabLabelActive,
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
 export const BottomNav: React.FC<BottomNavProps> = ({
   currentTab,
   onSelectTab,
   onAddNew,
 }) => {
+  const addScale = useRef(new Animated.Value(1)).current;
+
+  const handleAddNew = () => {
+    Animated.sequence([
+      Animated.timing(addScale, {
+        toValue: 0.85,
+        duration: 80,
+        useNativeDriver: true,
+      }),
+      Animated.spring(addScale, {
+        toValue: 1,
+        friction: 4,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    onAddNew();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.navBar}>
-        {/* Vault Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="vault"
+          currentTab={currentTab}
+          icon="📁"
+          label="Vault"
           onPress={() => onSelectTab('vault')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'vault' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>📁</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'vault' && styles.tabLabelActive,
-            ]}
-          >
-            Vault
-          </Text>
-        </TouchableOpacity>
+        />
 
-        {/* Ask Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="ask"
+          currentTab={currentTab}
+          icon="✨"
+          label="Ask"
           onPress={() => onSelectTab('ask')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'ask' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>✨</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'ask' && styles.tabLabelActive,
-            ]}
-          >
-            Ask
-          </Text>
-        </TouchableOpacity>
+        />
 
         {/* Add Floating Pill/Circle */}
         <TouchableOpacity
           style={styles.addButtonWrapper}
-          onPress={onAddNew}
+          onPress={handleAddNew}
           activeOpacity={0.8}
         >
-          <View style={styles.addButton}>
+          <Animated.View
+            style={[
+              styles.addButton,
+              { transform: [{ scale: addScale }] },
+            ]}
+          >
             <Text style={styles.addIcon}>＋</Text>
-          </View>
+          </Animated.View>
           <Text style={styles.addLabel}>New item</Text>
         </TouchableOpacity>
 
-        {/* Import Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="import"
+          currentTab={currentTab}
+          icon="📥"
+          label="Import"
           onPress={() => onSelectTab('import')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'import' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>📥</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'import' && styles.tabLabelActive,
-            ]}
-          >
-            Import
-          </Text>
-        </TouchableOpacity>
+        />
 
-        {/* Devices Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="devices"
+          currentTab={currentTab}
+          icon="💻"
+          label="Devices"
           onPress={() => onSelectTab('devices')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'devices' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>💻</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'devices' && styles.tabLabelActive,
-            ]}
-          >
-            Devices
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );

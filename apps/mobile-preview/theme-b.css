@@ -27,8 +27,8 @@ body.variant-b{background:#0e1013;margin:0;padding:0;display:flex;justify-conten
 .app-brand .brand-period{color:var(--paper)}
 .device-status{background:#ffffff36;border-radius:30px;min-height:33px;padding:6px 11px;font-size:9px}
 .app-header>.icon-button{background:var(--paper);border:0;width:40px;height:40px}
-.app-content{background:var(--surface);border-radius:32px 32px 0 0;padding:21px 24px 28px}
-.app-content>section{position:relative}
+.app-content{background:var(--surface);border-radius:32px 32px 0 0;padding:21px 24px 28px;overflow-x:hidden}
+.app-content>section{position:relative;transform-origin:center top;animation:chat-bubble-pop 540ms cubic-bezier(.34,1.58,.64,1) both;will-change:transform,opacity}
 .page-head{padding:5px 0 24px}
 .page-head .eyebrow{color:#596cb5;font-size:8px;letter-spacing:1.5px}
 .page-head h1{font-size:27px;letter-spacing:-1px;line-height:1.23}
@@ -73,11 +73,38 @@ body.variant-b{background:#0e1013;margin:0;padding:0;display:flex;justify-conten
 .entry-row small{font-size:10px}
 .entry-row .tag{border-radius:30px;background:#f6f0e8;font-size:8px;padding:4px 8px}
 .bottom-nav{background:var(--peri);border:0;border-radius:24px 24px 0 0;padding:10px 12px 5px;flex:none;z-index:2}
-.nav-button{color:var(--text);min-height:52px;font-size:9px;gap:5px}
-.nav-button .nav-icon{width:39px;height:28px;border-radius:25px}
+.nav-button{color:var(--text);min-height:52px;font-size:9px;gap:5px;transition:transform 120ms ease}
+.nav-button:active .nav-icon{transform:scale(.86);transition:transform 100ms cubic-bezier(.23,1,.32,1)}
+.nav-button .nav-icon{width:39px;height:28px;border-radius:25px;transition:background 180ms ease,transform 200ms ease}
 .nav-button[aria-current=page]{color:var(--text)}
-.nav-button[aria-current=page] .nav-icon{background:var(--surface)}
-.nav-button.add .nav-icon{background:var(--orange);color:var(--text);width:46px;height:46px;border-radius:50%;box-shadow:0 0 0 5px var(--surface);margin-top:-17px}
+.nav-button[aria-current=page] .nav-icon{background:var(--surface);animation:nav-chat-bubble-pop 520ms cubic-bezier(.34,1.58,.64,1) both;will-change:transform,opacity}
+.nav-button[aria-current=page] .icon{animation:nav-chat-icon-wiggle 520ms cubic-bezier(.34,1.58,.64,1) both}
+.nav-button[aria-current=page]>span:last-child{animation:nav-chat-label-pop 480ms cubic-bezier(.34,1.58,.64,1) both}
+.nav-button.add .nav-icon{background:var(--orange);color:var(--text);width:46px;height:46px;border-radius:50%;box-shadow:0 0 0 5px var(--surface);margin-top:-17px;transition:transform 240ms cubic-bezier(.34,1.58,.64,1),box-shadow 180ms ease}
+.nav-button.add:active .nav-icon,.nav-button.add.is-popped .nav-icon{transform:scale(.85) rotate(15deg)}
+@keyframes chat-bubble-pop{
+  0%{opacity:0;transform:translateY(24px) scale(.91)}
+  55%{opacity:1}
+  75%{transform:translateY(-3px) scale(1.018)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes nav-chat-bubble-pop{
+  0%{opacity:.6;transform:translateY(4px) scale(.74)}
+  55%{opacity:1;transform:translateY(-2px) scale(1.2)}
+  80%{transform:translateY(1px) scale(.96)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes nav-chat-icon-wiggle{
+  0%{transform:scale(.72) rotate(-8deg)}
+  55%{transform:scale(1.18) rotate(4deg)}
+  80%{transform:scale(.96) rotate(-1deg)}
+  100%{transform:scale(1) rotate(0deg)}
+}
+@keyframes nav-chat-label-pop{
+  0%{opacity:.5;transform:translateY(3px) scale(.9)}
+  60%{opacity:1;transform:translateY(-1px) scale(1.05)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
 .home-indicator{background:var(--peri);height:18px;flex:none}
 .home-indicator::after{width:95px;height:3px;background:var(--text);opacity:.8}
 .button{border-radius:30px;font-size:12px;min-height:49px;border-color:#e6dace;padding:12px 19px}
@@ -335,4 +362,7 @@ textarea.input{border-radius:20px}
   .favorite-card small{font-size:9px}
   .ask-banner strong{font-size:12px}
   .ask-banner p{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-content>section,.nav-button[aria-current=page] .nav-icon,.nav-button[aria-current=page] .icon,.nav-button[aria-current=page]>span:last-child{animation:none!important;transform:none!important}
 }

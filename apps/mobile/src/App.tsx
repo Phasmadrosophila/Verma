@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -38,6 +39,31 @@ export function App() {
   // Toast state
   const [toast, setToast] = useState<string | null>(null);
 
+  const tabAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    tabAnim.setValue(0);
+    Animated.spring(tabAnim, {
+      toValue: 1,
+      friction: 5,
+      tension: 65,
+      useNativeDriver: true,
+    }).start();
+  }, [currentTab]);
+
+  const contentTranslateY = tabAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [24, 0],
+  });
+  const contentScale = tabAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.92, 1],
+  });
+  const contentOpacity = tabAnim.interpolate({
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, 1, 1],
+  });
+
   const showToast = (message: string) => {
     setToast(message);
     setTimeout(() => {
@@ -53,22 +79,15 @@ export function App() {
     data: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: number }
   ) => {
     if (data.id) {
-      // Edit
       setEntries((prev) =>
         prev.map((e) =>
           e.id === data.id
-            ? {
-                ...e,
-                ...data,
-                id: e.id,
-                updated: 'Just now',
-              }
+            ? { ...e, ...data, id: e.id, updated: 'Just now' }
             : e
         )
       );
       showToast(`Updated "${data.title}"`);
     } else {
-      // Create
       const newEntry: MobileVaultEntry = {
         ...data,
         id: Date.now(),
@@ -130,7 +149,18 @@ export function App() {
       <Header onLock={() => setIsLocked(true)} syncActive={true} />
 
       {/* Main Content Area */}
-      <View style={styles.mainContent}>
+      <Animated.View
+        style={[
+          styles.mainContent,
+          {
+            opacity: contentOpacity,
+            transform: [
+              { translateY: contentTranslateY },
+              { scale: contentScale },
+            ],
+          },
+        ]}
+      >
         {currentTab === 'vault' && (
           <VaultScreen
             entries={entries}
@@ -153,7 +183,7 @@ export function App() {
         {currentTab === 'devices' && (
           <DevicesScreen onShowToast={showToast} />
         )}
-      </View>
+      </Animated.View>
 
       {/* Bottom Navigation */}
       <BottomNav
