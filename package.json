@@ -7,7 +7,11 @@
     "build": "pnpm --recursive run build",
     "check": "pnpm --recursive run check",
     "test": "pnpm --recursive run test",
-    "dev": "pnpm --filter @app/api dev"
+    "dev": "pnpm --filter @app/api dev",
+    "mobile:start": "pnpm --filter @app/mobile start",
+    "preview:web": "pnpm --filter @app/mobile-preview dev",
+    "test:mobile": "pnpm --filter @app/mobile test",
+    "test:preview": "pnpm --filter @app/mobile-preview test"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
