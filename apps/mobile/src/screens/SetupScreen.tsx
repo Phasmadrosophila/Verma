@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -46,9 +47,10 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.brandBadge}>
-          <Text style={styles.brandBadgeText}>V</Text>
-        </View>
+        <Image
+          source={require('../../assets/verma-logo.png')}
+          style={styles.brandLogo}
+        />
         <Text style={styles.eyebrow}>SECURE VAULT CREATION</Text>
         <Text style={styles.title}>
           {step === 'passphrase' ? 'Create Master Passphrase' : '24-Word Recovery Phrase'}
@@ -167,19 +169,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xl,
   },
-  brandBadge: {
+  brandLogo: {
     width: 44,
     height: 44,
-    borderRadius: radii.md,
-    backgroundColor: colors.brandOrange,
-    alignItems: 'center',
-    justifyContent: 'center',
+    resizeMode: 'contain',
     marginBottom: spacing.md,
-  },
-  brandBadgeText: {
-    fontSize: typography.sizeLg,
-    fontWeight: '800',
-    color: colors.paper,
   },
   eyebrow: {
     fontSize: 10,

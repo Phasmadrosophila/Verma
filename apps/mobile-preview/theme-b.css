@@ -21,8 +21,8 @@ body.variant-b{background:#0e1013;margin:0;padding:0;display:flex;justify-conten
 .status-bar{background:var(--orange);height:37px;padding-left:29px;padding-right:29px}
 .island{display:none}
 .app-header{background:var(--orange);padding:15px 24px 22px;min-height:81px}
-.app-brand .brand-mark{width:29px;height:34px;border-radius:9px}
-.app-brand .brand-mark img{width:34px;left:-2px;top:-2px}
+.app-brand .brand-mark{width:32px;height:32px;border-radius:0;background:transparent;display:inline-flex;align-items:center;justify-content:center}
+.app-brand .brand-mark img{position:static;width:100%;height:100%;object-fit:contain}
 .app-brand .wordmark{font-size:31px;font-weight:600}
 .app-brand .brand-period{color:var(--paper)}
 .device-status{background:#ffffff36;border-radius:30px;min-height:33px;padding:6px 11px;font-size:9px}
@@ -441,8 +441,8 @@ textarea.input{border-radius:20px}
 .welcome-page::after{content:'';position:absolute;width:113px;height:113px;right:-45px;top:74px;border-radius:0 0 0 100%;background:var(--warm);z-index:-1;pointer-events:none}
 .welcome-top{padding:16px 25px 4px;min-height:70px;flex:none;gap:12px}
 .welcome-brand{display:flex;align-items:center;gap:8px}
-.welcome-brand .brand-mark{width:27px;height:32px;border-radius:8px}
-.welcome-brand .brand-mark img{width:31px;left:-1px;top:-2px}
+.welcome-brand .brand-mark{width:30px;height:30px;border-radius:0;background:transparent;display:inline-flex;align-items:center;justify-content:center}
+.welcome-brand .brand-mark img{position:static;width:100%;height:100%;object-fit:contain}
 .welcome-brand .wordmark{font:500 30px/1 var(--brand);letter-spacing:-.5px}
 .welcome-top button{display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;min-height:44px;color:var(--text);padding:0 5px}
 .welcome-top button .icon{width:14px;height:14px}

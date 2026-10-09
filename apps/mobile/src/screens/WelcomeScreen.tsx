@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -92,9 +93,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
       {/* Top Header */}
       <View style={styles.topRow}>
         <View style={styles.brandRow}>
-          <View style={styles.brandBadge}>
-            <Text style={styles.brandBadgeText}>V</Text>
-          </View>
+          <Image
+            source={require('../../assets/verma-logo.png')}
+            style={styles.brandLogo}
+          />
           <Text style={styles.brandWordmark}>
             Verma<Text style={{ color: slide.accentColor }}>.</Text>
           </Text>
@@ -178,18 +180,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  brandBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: radii.md,
-    backgroundColor: colors.text,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandBadgeText: {
-    fontSize: typography.sizeMd,
-    fontWeight: '800',
-    color: colors.paper,
+  brandLogo: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain',
   },
   brandWordmark: {
     fontSize: typography.sizeXxl,
