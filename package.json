@@ -7,7 +7,10 @@
     "build": "pnpm --recursive run build",
     "check": "pnpm --recursive run check",
     "test": "pnpm --recursive run test",
-    "dev": "pnpm --filter @app/api dev"
+    "dev": "pnpm --filter @app/api dev",
+    "start": "node server.mjs",
+    "preview:landing": "node server.mjs",
+    "check:landing": "node --check landing.js && node --check server.mjs"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
