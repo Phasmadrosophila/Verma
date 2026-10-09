@@ -162,5 +162,3 @@ jobs:
                 }
               }
             }
-
-            core.info(`Issue #${current.number} synchronized to ${desired}.`);
