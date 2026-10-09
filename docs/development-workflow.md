@@ -2,7 +2,55 @@
 
 ## Source of truth
 
-The issue is the unit of work. The issue body defines the goal, acceptance criteria, test plan, dependencies, and definition of done. The pull request proves that the issue is complete.
+The issue is the unit of work. The issue body defines the goal, acceptance criteria, test plan, dependencies, and definition of done. The pull request proves that the issue is complete. Every issue and card uses the same plain-label format so an agent can work from GitHub without guessing which document is authoritative.
+
+## Canonical issue shape
+
+Use this exact order:
+
+```text
+Task ID
+<LANE>-<MILESTONE>-<NN>
+
+Lane
+<lane> (lane:<label>)
+
+Milestone
+<code and name> (GitHub milestone: <exact milestone>)
+
+Size
+XS | S | M | L | XL
+
+Features
+<feature IDs, or None>
+
+Goal
+<one concrete outcome>
+
+Spec references
+<source-of-truth references>
+
+Acceptance criteria (AC IDs)
+- <AC-ID>: <testable behavior>
+
+Done when
+<observable completion>
+
+Test plan (write these first — red → green → commit)
+- <named test or recorded verification>
+
+Dependencies
+Blocked by [<TASK-ID>] <issue title> #<number>
+None
+
+Definition of done (AGENTS.md §8)
+- <required completion checks>
+
+Workflow
+docs/development-workflow.md · Backlog: docs/workplan.md
+```
+
+Do not use a generic “Scope” section in place of Goal, do not use vague acceptance criteria, and do not list dependencies without task IDs and issue numbers.
 
 ## Issue lifecycle
 

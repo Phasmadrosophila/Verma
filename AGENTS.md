@@ -132,7 +132,7 @@ Every implementation task must have one accountable GitHub assignee, one milesto
 
 ### 7.1 Canonical task format
 
-Every implementation issue and project card must use the canonical task format below. Do not create free-form implementation issues.
+Every implementation issue and project card must use the canonical task format below. Do not create free-form implementation issues. Use plain field labels exactly as shown; do not replace them with arbitrary heading names or reorder them.
 
 ```text
 Task ID
@@ -142,7 +142,7 @@ Lane
 <lane name> (lane:<label>)
 
 Milestone
-<milestone name>
+<milestone code and name> (GitHub milestone: <exact GitHub milestone>)
 
 Size
 XS | S | M | L | XL
@@ -169,7 +169,7 @@ Dependencies
 Blocked by [<Task ID>] <issue title> #<number>
 None
 
-Definition of done (AGENTS.md §9)
+Definition of done (AGENTS.md §8)
 - Referenced acceptance criteria pass end to end.
 - Every test-plan line exists as a test or recorded verification.
 - Typecheck, lint, and tests pass.
@@ -190,6 +190,16 @@ Task IDs use these lanes:
 - `E` Release: QA, documentation, DevOps, and submission
 
 Milestone codes are `M0` Foundation, `M1` AI Demo, `M2` Direct Sync, `M3` Continuity, and `MR` Release. Size is an implementation estimate, not a promise.
+
+GitHub milestone mapping is exact:
+
+- `M0 — Foundation` -> `P0 Foundation`
+- `M1 — AI Demo` -> `P0 AI Demo`
+- `M2 — Direct Sync` -> `P0 Direct Sync`
+- `M3 — Continuity` -> `P1 Continuity`
+- `MR — Release` -> `Release`
+
+Use the task ID as the stable identifier. The issue title should be a concise outcome, not a second task ID.
 
 ### 7.2 Project board synchronization
 

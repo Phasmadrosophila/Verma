@@ -6,54 +6,56 @@ labels: "status:backlog"
 assignees: ""
 ---
 
-## Task ID
+Task ID
 
 `<LANE>-<MILESTONE>-<NN>`
 
-## Lane
+Lane
 
 `A — Platform` / `B — AI` / `C — Experience` / `D — Sync` / `E — Release`
 
-## Milestone
+Milestone
 
 `M0 — Foundation` / `M1 — AI Demo` / `M2 — Direct Sync` / `M3 — Continuity` / `MR — Release`
 
-## Size
+GitHub milestone: `<P0 Foundation | P0 AI Demo | P0 Direct Sync | P1 Continuity | Release>`
+
+Size
 
 `XS` / `S` / `M` / `L` / `XL`
 
-## Features
+Features
 
 `F-##` or `None`
 
-## Goal
+Goal
 
 <!-- State one concrete outcome. -->
 
-## Spec references
+Spec references
 
 - `docs/prd.md §...`
 - `docs/COMPETITION-HANDBOOK.md §...`
 
-## Acceptance criteria (AC IDs)
+Acceptance criteria (AC IDs)
 
 - `AC-<TASK-ID>-01`: <!-- Testable behavior -->
 
-## Done when
+Done when
 
 <!-- Observable completion statement. -->
 
-## Test plan (write these first — red → green → commit)
+Test plan (write these first — red → green → commit)
 
 - <!-- Name the test or reproducible verification. -->
 
-## Dependencies
+Dependencies
 
 <!-- Use exact syntax: blocked by #N. Use None when there are no blockers. -->
 
 None
 
-## Definition of done (AGENTS.md §8)
+Definition of done (AGENTS.md §8)
 
 - [ ] Referenced acceptance criteria pass end to end.
 - [ ] Every test-plan line exists as a test or recorded verification.
@@ -62,6 +64,6 @@ None
 - [ ] The change is exercised locally or in CI.
 - [ ] Privacy rules are respected: no logged content, no secrets, synthetic fixtures only.
 
-## Workflow
+Workflow
 
 `docs/development-workflow.md` · Backlog: `docs/workplan.md`
