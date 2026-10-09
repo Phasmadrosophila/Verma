@@ -622,3 +622,34 @@ Keep the pitch focused on the daily password-manager problem, Local AI Assistant
 - [ ] Write setup, architecture, local/cloud boundary, and disclosure documentation.
 - [ ] Record the one-minute demo.
 - [ ] Verify the public repository and every submission link.
+
+## 22. Team Ownership and Project Operations
+
+Work is managed in the Verma GitHub Project. Each issue has one accountable owner, one milestone, and explicit dependencies. The project workflow is designed so agents can work independently while blockers and release risks remain visible.
+
+| GitHub username | Primary ownership | Expected outputs |
+| --- | --- | --- |
+| `whinee` | Backend, infrastructure, QA, E2E testing | Storage APIs, sync services, test harnesses, CI checks, release verification |
+| `Faiithal` | Frontend and backend | Vault flows, API integration, import/search UI wiring, application behavior |
+| `helenaherrero515` | Frontend and UI/UX | Desktop-first screens, interaction states, review/confirmation flows, responsive polish |
+| `HitsukiMok` | DevOps, project management, business research | CI/CD, Docker/release operations, issue/milestone coordination, competition and market evidence |
+
+### Project workflow
+
+The board uses these states:
+
+- **Backlog:** accepted idea or task not yet prepared for implementation
+- **Ready:** dependencies are resolved and the issue has enough detail to start
+- **In Progress:** the assigned owner is actively implementing it
+- **Blocked:** a dependency, decision, environment, or review prevents progress
+- **Done:** implementation and acceptance checks are complete
+
+Every issue uses a matching workflow label. Issues that include `blocked by #N` remain blocked until the referenced issue is closed. Repository automation checks dependent issues after a blocker closes and promotes fully unblocked work to Ready. Project status is kept aligned with the issue label by the project automation workflow.
+
+### Agent execution rules
+
+- Agents must select work from the Ready column and claim the assigned issue before editing code.
+- Agents must not start P1 Continuity work while P0 AI and Direct Sync acceptance checks are failing.
+- Agents must add tests or verification evidence to the issue before requesting review.
+- Agents must stop and report a blocker when a task requires an unapproved scope change, missing secret, unavailable model, or security exception.
+- `HitsukiMok` owns final scope decisions, milestone movement, release coordination, and submission readiness.

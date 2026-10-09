@@ -106,3 +106,36 @@ Work strictly within the defined scope tiers from `docs/prd.md`:
 3. **GitHub Workflow:** Follow `.agents/skills/git-github-workflow/SKILL.md`. Every feature has a GitHub Issue, dedicated branch (`lyraphasma/issue-NN-slug`), and PR against `main`. Agents NEVER merge PRs; instruct the dev to request teammate review.
 4. **Docker Best Practices:** Follow `.agents/skills/docker-best-practices/SKILL.md`. Multi-stage builds, non-root user, healthchecks, zero secrets in layers.
 5. **No Hallucinated Data:** Never use real user secrets or fake benchmark numbers. Demo fixtures must use sanitized, realistic mock data.
+
+---
+
+## 7. Team Ownership & Delivery Operations
+
+Every implementation task must have one accountable GitHub assignee, one milestone, and one issue. Work is tracked in the Verma GitHub Project. Do not begin untracked feature work.
+
+| GitHub username | Ownership |
+| --- | --- |
+| `whinee` | Backend, infrastructure, QA, and end-to-end testing |
+| `Faiithal` | Frontend and backend implementation |
+| `helenaherrero515` | Frontend and UI/UX |
+| `HitsukiMok` | DevOps, project management, business research, and release coordination |
+
+### Operating rules
+
+1. Every issue must be assigned to exactly one directly accountable owner. Collaborators may be named in the issue body.
+2. Every issue must belong to a milestone and use one workflow label: `status:backlog`, `status:ready`, `status:in-progress`, `status:blocked`, or `status:done`.
+3. Issues with unresolved dependencies stay in `status:blocked` and must list their blocker using `blocked by #N`.
+4. When a blocking issue closes, the repository automation removes `status:blocked` and applies `status:ready` when all listed blockers are closed.
+5. Work moves to `status:in-progress` only when the assignee starts it. Pull requests reference the issue and must pass CI before review.
+6. Only `HitsukiMok` coordinates milestone changes, scope cuts, release readiness, and project-board administration.
+7. Agents must work from the assigned issue, follow the relevant `.agents/skills/` guidance, and report blockers in the issue rather than silently changing scope.
+
+### Delivery cadence
+
+- `P0 Foundation`: encrypted vault, account lifecycle, and application shell
+- `P0 AI Demo`: redaction, sandboxed inference, import, and Ask Your Vault
+- `P0 Direct Sync`: pairing, authenticated QUIC transport, and sync verification
+- `P1 Continuity`: self-hosted Docker relay, heartbeat, and Dead Man's Switch test mode
+- `Release`: integration, E2E testing, demo rehearsal, documentation, and submission
+
+The P1 continuity milestone starts only after the P0 demo loop passes repeated offline and sync tests.

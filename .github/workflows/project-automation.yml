@@ -1,0 +1,142 @@
+name: Project Automation
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  repository-projects: write
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Synchronize issue workflow state
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const workflowLabels = [
+              'status:backlog',
+              'status:ready',
+              'status:in-progress',
+              'status:blocked',
+              'status:done',
+            ];
+
+            const projectId = 'PVT_kwDOFC88vM4BmVfw';
+            const workflowFieldId = 'PVTSSF_lADOFC88vM4BmVfwzhk-88I';
+            const workflowOptions = {
+              'status:backlog': 'e4b00ffa',
+              'status:ready': 'e1973b89',
+              'status:in-progress': 'a41f0de0',
+              'status:blocked': 'afc506f5',
+              'status:done': 'ab8355a4',
+            };
+
+            const issue = context.payload.issue;
+            if (!issue) {
+              core.info('No issue event payload; nothing to synchronize.');
+              return;
+            }
+
+            const getIssue = async () => {
+              const response = await github.rest.issues.get({ owner, repo, issue_number: issue.number });
+              return response.data;
+            };
+
+            const current = await getIssue();
+            const labels = current.labels.map((label) => typeof label === 'string' ? label : label.name);
+            const body = current.body || '';
+            const blockers = [...body.matchAll(/blocked by #(\d+)/gi)].map((match) => Number(match[1]));
+
+            let desired;
+            if (current.state === 'closed') {
+              desired = 'status:done';
+            } else if (blockers.length > 0) {
+              const blockerStates = await Promise.all(blockers.map(async (number) => {
+                const response = await github.rest.issues.get({ owner, repo, issue_number: number });
+                return response.data.state;
+              }));
+              desired = blockerStates.every((state) => state === 'closed') ? 'status:ready' : 'status:blocked';
+            } else if (labels.includes('status:in-progress')) {
+              desired = 'status:in-progress';
+            } else if (labels.includes('status:ready')) {
+              desired = 'status:ready';
+            } else {
+              desired = 'status:backlog';
+            }
+
+            for (const label of workflowLabels.filter((name) => name !== desired && labels.includes(name))) {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number: current.number, name: label });
+            }
+            if (!labels.includes(desired)) {
+              await github.rest.issues.addLabels({ owner, repo, issue_number: current.number, labels: [desired] });
+            }
+
+            const projectItems = await github.graphql(`
+              query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  issue(number: $number) {
+                    projectItems(first: 20) {
+                      nodes { id project { id } }
+                    }
+                  }
+                }
+              }
+            `, { owner, repo, number: current.number });
+            const projectItem = projectItems.repository.issue.projectItems.nodes.find((item) => item.project.id === projectId);
+            if (projectItem) {
+              await github.graphql(`
+                mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $project,
+                    itemId: $item,
+                    fieldId: $field,
+                    value: { singleSelectOptionId: $option }
+                  }) { projectV2Item { id } }
+                }
+              `, {
+                project: projectId,
+                item: projectItem.id,
+                field: workflowFieldId,
+                option: workflowOptions[desired],
+              });
+            }
+
+            if (context.payload.action === 'closed') {
+              const dependentIssues = await github.paginate(github.rest.issues.list, {
+                owner,
+                repo,
+                state: 'open',
+                per_page: 100,
+              });
+              for (const dependent of dependentIssues) {
+                if (dependent.body && new RegExp(`blocked by #${current.number}(\\D|$)`, 'i').test(dependent.body)) {
+                  await github.rest.issues.addLabels({
+                    owner,
+                    repo,
+                    issue_number: dependent.number,
+                    labels: ['status:blocked'],
+                  });
+                  core.info(`Re-evaluating dependent issue #${dependent.number}.`);
+                  const response = await github.rest.issues.get({ owner, repo, issue_number: dependent.number });
+                  const dependentBlockers = [...(response.data.body || '').matchAll(/blocked by #(\d+)/gi)].map((match) => Number(match[1]));
+                  const states = await Promise.all(dependentBlockers.map(async (number) => {
+                    const blocker = await github.rest.issues.get({ owner, repo, issue_number: number });
+                    return blocker.data.state;
+                  }));
+                  if (states.length > 0 && states.every((state) => state === 'closed')) {
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number: dependent.number, name: 'status:blocked' }).catch(() => {});
+                    await github.rest.issues.addLabels({ owner, repo, issue_number: dependent.number, labels: ['status:ready'] });
+                  }
+                }
+              }
+            }
+
+            core.info(`Issue #${current.number} synchronized to ${desired}.`);

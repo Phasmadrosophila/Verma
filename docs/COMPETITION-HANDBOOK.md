@@ -230,3 +230,14 @@ Prepare short answers for:
 - [Official Telegram group chat](https://t.me/+uxlZLV5_jEZjMDNl)
 
 Build Day is fully remote, teams may continue building overnight, and competition questions should be posted in the official Telegram group chat.
+
+## 13. Team Execution Ownership
+
+| GitHub username | Role |
+| --- | --- |
+| `whinee` | Backend, infrastructure, QA, and E2E testing |
+| `Faiithal` | Frontend and backend |
+| `helenaherrero515` | Frontend and UI/UX |
+| `HitsukiMok` | DevOps, project management, business research, and release coordination |
+
+All work is tracked through the Verma GitHub Project. Issues are assigned to one owner, grouped into milestones, and dependency-labeled. Do not begin work from an untracked request. The board automatically promotes blocked work to Ready when its blocking issue is resolved, provided all listed blockers are closed.
