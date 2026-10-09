@@ -129,7 +129,16 @@ jobs:
             }
 
             if (!issue) {
-              core.info('No issue or pull request event payload; nothing to synchronize.');
+              const allIssues = await github.paginate(github.rest.issues.listForRepo, {
+                owner,
+                repo,
+                state: 'open',
+                per_page: 100,
+              });
+              for (const openIssue of allIssues) {
+                await syncIssue(openIssue.number);
+              }
+              core.info(`Reconciled ${allIssues.length} open issues.`);
               return;
             }
 
