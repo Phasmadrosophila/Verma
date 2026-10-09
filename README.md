@@ -1,6 +1,6 @@
-# Verma — Marketing & Product Landing Page
+# Verma — Mobile UI Concept
 
-The official marketing and showcase website for **Verma** ("A password manager you do not have to learn"), built with pure semantic HTML, vanilla CSS, and vanilla JavaScript without external dependencies.
+A responsive, interactive mobile UI prototype for **Verma** ("A password manager you do not have to learn"), featuring Design B's geometric UI kit, illustrated onboarding carousel, and offline-first interaction flows.
 
 ## Quick Start
 
@@ -15,36 +15,43 @@ node server.mjs
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The audience-based deployment chooser is available at [http://localhost:3000/download](http://localhost:3000/download). It distinguishes the ready Local demo from the Self-hosted technical path and future Enterprise direction.
+- On mobile devices, the app fills the viewport with safe-area support.
+- On desktop devices, the app renders inside a studio mockup frame with preview navigation.
+- Deep links:
+  - `/#welcome` — 3-step illustrated introduction & onboarding
+  - `/#vault` — Main vault search, favorites, and entries
+  - `/#ask` — Ask Your Vault natural language metadata search
+  - `/#import` — Smart CSV import preview and duplicate resolution
+  - `/#devices` — Authenticated device pairing simulation
 
-## Page Structure
+## Included Flows
 
-The landing website consists of 6 thoughtful, responsive sections:
+1. **Vault Management**: Search, entry type filtering (`login`, `note`, `api`), favorites, and creation/editing with multiline support.
+2. **Explicit Secret Masking**: Passwords and note bodies remain masked (`••••`) until explicit user tap to reveal. Reopening items automatically re-masks.
+3. **Deterministic Password Generator**: Cryptographically secure non-AI password generation using `crypto.getRandomValues()` with rejection sampling.
+4. **Zero-Secret Assistant Search ("Ask Your Vault")**: Searches only redacted metadata (`title`, `domain`, `tags`, `type`). Secret fields never touch the search index.
+5. **Smart Import Simulation**: Messy CSV data ingestion with duplicate detection (`keep` vs `skip`), editable tags, and session undo.
+6. **Device Sync Simulation**: Authenticated device pairing states, pause/resume controls.
+7. **Vault Lifecycle**: 24-word recovery phrase setup, demo lock/unlock state (`verma-demo`).
 
-1. **Hero**: Product headline (*"Your digital life. A little lighter."*), phone mockup with real UI captures, floating reassurance badge, and value strip.
-2. **Features Grid (`#features`)**: Three core pillars:
-   - **01 / KEEP**: Everything has a little home.
-   - **02 / ORGANIZE**: Bring the mess. Find a little order.
-   - **03 / FIND**: On the tip of your tongue?
-3. **App Showcase (`#inside`)**: Horizontal snap-scroll gallery previewing the 4 core app surfaces (*Your Vault*, *Ask Verma*, *Smart Import*, *Device Sync*) with keyboard-accessible previous/next controls.
-4. **How It Works (`#how`)**: 3-step setup walkthrough (*Say hello*, *Bring things along*, *Make room for you*).
-5. **Trust & Privacy Boundary (`#privacy`)**: Direct visual representation of Verma's core security model:
-   - Metadata visible to assistant: titles, domains, tags.
-   - Vault boundary: secrets and note contents remain strictly masked on-device.
-6. **FAQ Accordion (`#questions`) & Call to Action**: Semantic disclosures answering scope, file formats, privacy, and account setup.
-
-## Responsive Design
-
-- Fully responsive across desktop (1440px), tablet (768px), and mobile (390px, 320px).
-- Mobile navigation drawer with escape-key dismissal and focus restoration.
-- Supports `prefers-reduced-motion: reduce`.
-- Guaranteed zero horizontal overflow across all device widths.
-
-## Checks & QA
+## Verification & QA
 
 ```bash
-# Verify JavaScript syntax
-npm run check:landing
+# Run syntax checks
+npm run check:ui
+
+# Run vault unit tests
+npm run test:ui
 ```
 
-In-browser responsive checks can be run using `qa/landing-smoke.js`.
+Interactive browser checks can be executed in the browser console using `qa/browser-smoke.js`.
+
+## Marketing Landing Page
+
+The standalone marketing page and deployment chooser run without external dependencies:
+
+```bash
+npm run preview:landing
+```
+
+Open [http://localhost:3000](http://localhost:3000) for the landing page and [http://localhost:3000/download](http://localhost:3000/download) for the Local, Self-hosted, and Enterprise chooser. Run `npm run check:landing` for syntax and static acceptance checks.

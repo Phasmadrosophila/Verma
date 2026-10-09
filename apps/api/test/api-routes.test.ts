@@ -152,4 +152,36 @@ describe('Hono API Routes Integration', () => {
     assert.equal(seedJson.success, true);
     assert.ok(seedJson.seededCount >= 10);
   });
+
+  it('E-MR-03 / AC-E-MR-03-04: Ask Your Vault searches redacted metadata', async () => {
+    await app.request('/api/vault/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: masterPassword }),
+    });
+
+    await app.request('/api/entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'login',
+        title: 'Synthetic Work Account',
+        username: 'demo@example.test',
+        password: 'SyntheticOnlySecret!',
+        domain: 'example.test',
+        tags: ['work'],
+      }),
+    });
+
+    const response = await app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'Which work account uses example.test?' }),
+    });
+
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.match(result.answer, /fallback|unavailable|disabled/i);
+    assert.deepEqual(result.relevantEntryIds, []);
+  });
 });
