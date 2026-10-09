@@ -186,7 +186,7 @@ QUIC is valuable here because it is the transport behind a direct, resumable, au
 ### P2: Roadmap, not hackathon scope
 
 - Managed cloud relay, Cloudflare deployment, billing, and operations.
-- Android WebView wrapper.
+- Android mobile app via Expo (`https://expo.dev/`).
 - Enterprise roles, ACLs, audit logs, and organization recovery.
 - Full estate workflows, Legacy Readiness, multiple recipients, legal workflows, and policy controls.
 - Crypto wallet entry workflows.
@@ -423,7 +423,7 @@ These are P1 capabilities and must not delay the offline AI and direct-sync demo
 
 | Layer | Direction | Notes |
 | --- | --- | --- |
-| Frontend | Single-page app, desktop view first | Android through a WebView-wrapped SPA later |
+| Frontend | Single-page app, desktop view first | Android via Expo (`https://expo.dev/`) later |
 | Backend | Hono | Runs on Cloudflare Workers and in Docker |
 | Local storage | Encrypted SQLite | Local-first default |
 | Device sync | QUIC, Syncthing-style | Desktop/native bridge required for raw UDP |
