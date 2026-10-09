@@ -1,0 +1,22 @@
+{
+  "name": "@app/api",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "check": "tsc --noEmit",
+    "test": "tsx --test test/**/*.test.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@app/shared": "workspace:*",
+    "@hono/node-server": "^1.13.8",
+    "hono": "^4.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

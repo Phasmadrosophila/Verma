@@ -1,0 +1,18 @@
+{
+  "name": "verma-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r --filter=!verma-monorepo run build",
+    "check": "pnpm -r run check",
+    "test": "pnpm -r --filter=!verma-monorepo run test",
+    "lint": "just lint",
+    "format": "just format"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "typescript": "^5.8.2",
+    "tsx": "^4.19.3"
+  }
+}
