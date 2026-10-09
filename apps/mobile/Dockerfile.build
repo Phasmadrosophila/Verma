@@ -1,0 +1,61 @@
+# syntax=docker/dockerfile:1
+#
+# Verma mobile — local Android APK build image (P2 scope deviation, user-approved).
+# Runs `eas build --local -p android` to produce an APK without Expo cloud.
+# Register this as a Komodo Build or Procedure (see docs/mobile-android-build.md).
+#
+# SECURITY:
+#   - Runs as non-root `builder`.
+#   - NO secrets baked. EXPO_TOKEN is passed at runtime (env/secret mount).
+#   - A signing keystore, if used, is MOUNTED at runtime, never COPYed into a layer.
+#
+# Pinned by digest. Resolve the current eclipse-temurin:21-jdk-jammy digest with
+#   docker buildx imagetools inspect eclipse-temurin:21-jdk-jammy
+# and replace the placeholder below before building (do NOT invent a digest).
+FROM eclipse-temurin:21-jdk-jammy@sha256:REPLACE_WITH_PINNED_DIGEST AS android-sdk
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    ANDROID_SDK_ROOT=/opt/android-sdk \
+    ANDROID_HOME=/opt/android-sdk
+
+# Base tooling + Node 22 + pnpm. unzip/curl needed for Android cmdline-tools.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      curl unzip git ca-certificates \
+ && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+ && apt-get install -y --no-install-recommends nodejs \
+ && corepack enable \
+ && corepack prepare pnpm@12.8.1 --activate \
+ && rm -rf /var/lib/apt/lists/*
+
+# Android command-line tools + SDK packages required by Gradle/RN.
+# Pin ANDROID_CMDLINE_TOOLS_VERSION and the build-tools/platform versions to
+# match the Expo SDK 57 / RN 0.86 toolchain before building.
+ARG ANDROID_CMDLINE_TOOLS_VERSION=11076708
+ARG ANDROID_PLATFORM=android-35
+ARG ANDROID_BUILD_TOOLS=35.0.0
+RUN mkdir -p "${ANDROID_SDK_ROOT}/cmdline-tools" \
+ && curl -fsSL -o /tmp/cmdline-tools.zip \
+      "https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS_VERSION}_latest.zip" \
+ && unzip -q /tmp/cmdline-tools.zip -d "${ANDROID_SDK_ROOT}/cmdline-tools" \
+ && mv "${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools" "${ANDROID_SDK_ROOT}/cmdline-tools/latest" \
+ && rm /tmp/cmdline-tools.zip
+ENV PATH="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${PATH}"
+RUN yes | sdkmanager --licenses >/dev/null \
+ && sdkmanager --install \
+      "platform-tools" \
+      "platforms;${ANDROID_PLATFORM}" \
+      "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
+
+# Non-root build user owning workspace + SDK.
+RUN useradd --create-home --shell /bin/bash builder \
+ && chown -R builder:builder "${ANDROID_SDK_ROOT}"
+USER builder
+WORKDIR /home/builder/app
+
+# Workspace source is bind-mounted or COPYed by the Komodo build at run time.
+# Default command produces an APK locally (no Expo cloud).
+# EXPO_TOKEN must be provided at runtime: `docker run -e EXPO_TOKEN=... ...`.
+# A release keystore, if signing locally, is mounted (e.g. -v /secrets/ks:/keys:ro)
+# and referenced via credentials.json / gradle props — never copied into the image.
+CMD ["sh", "-c", "pnpm install --frozen-lockfile && pnpm dlx eas-cli build --local -p android --profile preview --non-interactive --output /home/builder/app/build-output/verma.apk"]
