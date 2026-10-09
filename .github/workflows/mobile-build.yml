@@ -1,0 +1,60 @@
+name: Mobile Android Build (EAS)
+
+# P2 scope deviation (AGENTS.md §4): mobile is out of hackathon P0 scope.
+# User-approved post-MVP path. Manual trigger ONLY — never runs on push/PR.
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        type: choice
+        default: preview
+        options:
+          - preview
+          - production
+
+jobs:
+  build:
+    name: eas build android (${{ inputs.profile }})
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - name: Guard - require EXPO_TOKEN
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::EXPO_TOKEN secret is not set. Add it in repo Settings > Secrets and variables > Actions before dispatching this workflow."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile
+
+      - name: EAS build (Android, ${{ inputs.profile }})
+        run: eas build -p android --profile ${{ inputs.profile }} --non-interactive --no-wait
