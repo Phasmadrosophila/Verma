@@ -1,0 +1,18 @@
+{
+  "model_id": "qwen3-0.6b-instruct-q4_k_m",
+  "model_name": "Qwen/Qwen3-0.6B-Instruct-GGUF",
+  "version": "v0.6.0-instruct",
+  "quantization": "Q4_K_M",
+  "parameters": "752M",
+  "license": "Apache-2.0",
+  "source_url": "https://huggingface.co/Qwen/Qwen3-0.6B-Instruct-GGUF/resolve/main/qwen3-0_6b-instruct-q4_k_m.gguf",
+  "artifact_path": "qwen3-0_6b-instruct-q4_k_m.gguf",
+  "file_size_bytes": 548405248,
+  "context_window": 4096,
+  "sha256": "8d3f761d198528aa115eb375176b669f33b1e7c569f12d264e1d53e70b7936a2",
+  "runtime": {
+    "production": "llama.cpp",
+    "development": "Ollama"
+  },
+  "redistribution_review": "Approved: Apache 2.0 permissive license allows commercial and offline client-side distribution without cloud lock-in."
+}

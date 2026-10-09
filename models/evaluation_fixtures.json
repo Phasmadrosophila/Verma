@@ -1,0 +1,77 @@
+{
+  "ask_vault": [
+    {
+      "id": "ask-01-work-github",
+      "query": "Show me my developer tools and work code repository logins",
+      "metadata": [
+        {
+          "id": "entry-eval-01",
+          "type": "login",
+          "title": "GitHub Enterprise",
+          "domain": "github.enterprise.corp",
+          "tags": ["work", "dev", "vcs"],
+          "fieldLabels": ["username", "password"],
+          "isWeak": false,
+          "isReused": false,
+          "createdAt": 1710000000000,
+          "updatedAt": 1710000000000
+        },
+        {
+          "id": "entry-eval-02",
+          "type": "login",
+          "title": "Netflix Personal",
+          "domain": "netflix.com",
+          "tags": ["entertainment", "streaming"],
+          "fieldLabels": ["username", "password"],
+          "isWeak": false,
+          "isReused": false,
+          "createdAt": 1710000100000,
+          "updatedAt": 1710000100000
+        }
+      ],
+      "expected_relevant_ids": ["entry-eval-01"],
+      "expected_answer_substring": "GitHub Enterprise"
+    }
+  ],
+  "import_mapping": [
+    {
+      "id": "import-chrome-messy",
+      "raw_headers": ["name", "url", "login_id", "pass", "extra_notes"],
+      "sample_row": {
+        "name": "GitLab Corp",
+        "url": "https://gitlab.example.com",
+        "login_id": "alice_dev",
+        "pass": "REDACTED_CSV_VALUE",
+        "extra_notes": "Server access token notes"
+      },
+      "expected_mappings": {
+        "name": "title",
+        "url": "url",
+        "login_id": "username",
+        "pass": "password",
+        "extra_notes": "notes"
+      }
+    }
+  ],
+  "tag_suggestions": [
+    {
+      "id": "tag-01-gitlab",
+      "service_domain": "gitlab.com",
+      "entry_title": "GitLab SaaS",
+      "existing_tags": ["work"],
+      "suggested_tags": ["dev", "vcs", "git"]
+    }
+  ],
+  "health_explanations": [
+    {
+      "id": "health-01-reused-weak",
+      "title": "Old Forum Login",
+      "domain": "forum.vintage-hardware.org",
+      "is_weak": true,
+      "is_reused": true,
+      "reused_with_count": 3,
+      "expected_urgency": "high",
+      "expected_keyword": "reused"
+    }
+  ]
+}

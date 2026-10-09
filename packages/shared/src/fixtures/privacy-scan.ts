@@ -1,4 +1,10 @@
-import { ALL_SYNTHETIC_ENTRIES, SYNTHETIC_PASSWORD_FOR_VAULT, SYNTHETIC_RECOVERY_PHRASE } from './synthetic-data.js';
+import {
+  ALL_SYNTHETIC_ENTRIES,
+  SYNTHETIC_PASSWORD_FOR_VAULT,
+  SYNTHETIC_RECOVERY_PHRASE,
+  SYNTHETIC_MESSY_BROWSER_CSV,
+  SYNTHETIC_CLEAN_BROWSER_CSV,
+} from './synthetic-data.js';
 
 export const LIVE_CREDENTIAL_PATTERNS = [
   /AKIA[0-9A-Z]{16}/,                     // Real AWS Access Key ID
@@ -26,6 +32,8 @@ export function scanFixturesForPrivacy(): PrivacyScanReport {
   const allStringsToScan: string[] = [
     SYNTHETIC_PASSWORD_FOR_VAULT,
     SYNTHETIC_RECOVERY_PHRASE,
+    SYNTHETIC_MESSY_BROWSER_CSV,
+    SYNTHETIC_CLEAN_BROWSER_CSV,
   ];
 
   for (const entry of ALL_SYNTHETIC_ENTRIES) {

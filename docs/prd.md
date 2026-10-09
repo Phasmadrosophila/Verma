@@ -610,7 +610,7 @@ Keep the pitch focused on the daily password-manager problem, Local AI Assistant
 - [ ] Implement encrypted local vault and lock state.
 - [ ] Implement the redaction layer as an explicit trusted module.
 - [ ] Run the model in a no-network sandbox.
-- [ ] Build Smart Import preview and confirmation.
+- [x] Build Smart Import preview and confirmation.
 - [ ] Build Ask Your Vault over metadata.
 - [ ] Add direct sync between two paired desktop devices.
 - [ ] Add Auto-Tagging or Health Coach only if the P0 demo is already stable.
