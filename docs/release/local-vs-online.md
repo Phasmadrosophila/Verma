@@ -22,7 +22,7 @@ Sources: [`apps/api/src/ai/adapter.ts`](../../apps/api/src/ai/adapter.ts), [`app
 | Read-only model filesystem | No sandbox profile, read-only mount, or process invocation is present. | Do not claim a read-only filesystem sandbox. |
 | Toolless runtime | The prompts instruct the model that it has no tools, but no runtime capability policy is implemented. | Do not claim enforced tool denial. |
 | Production `llama.cpp` | Docs propose `llama.cpp`, but the concrete adapter defaults to HTTP on Ollama’s port (`127.0.0.1:11434`) with model `llama3.2`. | “Current development adapter targets a loopback HTTP model service.” |
-| Redaction for imported samples | Only exact normalized header names `password`, `pass`, `pwd`, and `secret` have their values replaced before the import prompt. | Do not claim all CSV secret fields or note bodies are redacted. |
+| Redaction for imported samples | Import-sample redaction is a substring allowlist over the normalized header name: 12 secret substrings (`password`, `pass`, `pwd`, `secret`, `totp`, `token`, `key`, `seed`, `phrase`, `pin`, `code`, `private`) map the value to `[REDACTED_SECRET]`, and 6 note substrings (`note`, `desc`, `comment`, `memo`, `content`, `body`) map it to `[REDACTED_NOTE]`. A secret-bearing header matching none of these is passed through. | Do not claim all CSV secret fields or note bodies are redacted. |
 | Trusted redaction before Ask Your Vault | The route obtains `getMetadataList()` output, which excludes secret values and note bodies. The separately tested `TrustedRedactionBoundary` is not invoked by this route. | Do not claim the standalone trusted-redaction boundary is proven end to end for Ask Your Vault. |
 
 ## Why local AI — verified facts and bounded rationale

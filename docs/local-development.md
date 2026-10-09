@@ -51,6 +51,7 @@ pnpm test:integration
 
 The desktop web application is now wired for the real local Hono API through the
 loopback Vite `/api` proxy. Use `pnpm dev:integration` for the browser path and
-the synthetic fixture database described above. The separate Expo mobile client
-has a tracked integration task in issue #55 and must use a configurable LAN API
-base URL rather than assuming `localhost` on a physical device.
+the synthetic fixture database described above. Issue #55 (Expo mobile backend integration) was merged via PR #65. The Expo
+client uses `EXPO_PUBLIC_API_URL` as its configurable API base URL (default
+`http://localhost:3000`) and must point at a reachable LAN address when running
+on a physical device.
