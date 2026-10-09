@@ -7,11 +7,21 @@ import { EntryDetail } from './pages/EntryDetail';
 import { EntryForm } from './pages/EntryForm';
 import { AskVault } from './pages/AskVault';
 import { SmartImport } from './pages/SmartImport';
+import { Settings } from './pages/Settings';
+import { LoadingState } from './components/primitives/LoadingState';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLocked, isInitialized, status } = useVault();
   
-  if (status === 'loading') return <div>Loading...</div>;
+  if (status === 'loading') {
+    return (
+      <LoadingState
+        fullPage
+        title="Loading encrypted vault..."
+        description="Decrypting keys and initializing on-device state."
+      />
+    );
+  }
   if (!isInitialized || isLocked) return <Navigate to="/lock" replace />;
   return <>{children}</>;
 };
@@ -29,6 +39,7 @@ function App() {
             <Route path="/entry/:id/edit" element={<EntryForm />} />
             <Route path="/ask" element={<AskVault />} />
             <Route path="/import" element={<SmartImport />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
       </BrowserRouter>

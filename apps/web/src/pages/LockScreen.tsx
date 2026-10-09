@@ -4,6 +4,10 @@ import { useVault } from '../VaultContext';
 import { api } from '../api';
 import { Shield } from 'lucide-react';
 
+import { Button } from '../components/primitives/Button';
+import { InputField } from '../components/primitives/InputField';
+import { LoadingState } from '../components/primitives/LoadingState';
+
 export const LockScreen = () => {
   const { isInitialized, checkStatus, status } = useVault();
   const navigate = useNavigate();
@@ -32,12 +36,18 @@ export const LockScreen = () => {
   };
 
   if (status === 'loading') {
-    return <div className="flex h-screen items-center justify-center bg-[var(--color-canvas)] text-body">Loading...</div>;
+    return (
+      <LoadingState
+        fullPage
+        title="Checking vault lock state..."
+        description="Reading local encrypted store on this device."
+      />
+    );
   }
 
   return (
     <div className="flex flex-col h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
-      <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-8 shadow-sm">
+      <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-8 shadow-xs">
         <div className="flex flex-col items-center mb-8">
           <Shield className="w-12 h-12 text-[var(--color-brand-orange)] mb-4" />
           <h1 className="text-section-title text-center">Verma</h1>
@@ -47,33 +57,30 @@ export const LockScreen = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-label text-[var(--color-text)]">
-              {!isInitialized ? 'Set Master Password' : 'Enter Master Password'}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="px-4 py-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-body focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-orange)]"
-              required
-              autoFocus
-            />
-          </div>
+          <InputField
+            label={!isInitialized ? 'Set Master Password' : 'Enter Master Password'}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoFocus
+            description="Your master password encrypts the vault key locally."
+          />
 
           {error && (
-            <div className="text-label text-red-600 bg-red-50 p-2 rounded-[var(--radius-sm)]">
+            <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-[var(--radius-sm)]">
               {error}
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={isLoading || !password}
-            className="mt-4 px-4 py-2 rounded-full bg-[var(--color-brand-orange)] text-[var(--color-text)] font-semibold text-body hover:opacity-90 disabled:opacity-50 transition-opacity"
+            isLoading={isLoading}
+            className="w-full mt-2"
           >
             {!isInitialized ? 'Initialize Vault' : 'Unlock Vault'}
-          </button>
+          </Button>
         </form>
         
         {isInitialized && (
