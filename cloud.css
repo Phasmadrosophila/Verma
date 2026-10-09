@@ -1,0 +1,435 @@
+/* Verma Cloud Stylesheet — Harmonized with Verma Warm Design System */
+
+/* Cloud Hero Section */
+.cloud-hero {
+  position: relative;
+  padding-top: 24px;
+  padding-bottom: 72px;
+  overflow: hidden;
+}
+
+.cloud-hero .hero-copy {
+  max-width: 620px;
+}
+
+.cloud-hero .hero-visual {
+  height: 520px;
+}
+
+.cloud-sync-card {
+  position: absolute;
+  top: 40px;
+  right: 20px;
+  width: 320px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 8px 16px 36px rgba(41, 38, 33, 0.08);
+  padding: 24px;
+  z-index: 2;
+  transform: rotate(3deg);
+  transition: transform 0.25s ease;
+}
+
+.cloud-sync-card:hover {
+  transform: rotate(1deg) translateY(-4px);
+}
+
+.sync-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--canvas);
+}
+
+.sync-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--warm);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.sync-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+.sync-peers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sync-peer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--canvas);
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.sync-peer-info {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.sync-peer-info .icon {
+  width: 17px;
+  height: 17px;
+  color: var(--muted);
+}
+
+.sync-peer-tag {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sync-encryption-bar {
+  margin-top: 18px;
+  padding: 10px 14px;
+  background: var(--assist);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sync-encryption-bar .icon {
+  width: 15px;
+  height: 15px;
+  color: var(--peri);
+}
+
+/* Cloud Architecture / Features Section */
+.cloud-features-section {
+  padding-block: 80px 95px;
+}
+
+.cloud-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.cloud-feature-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 34px 30px 28px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cloud-feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 35px rgba(41, 38, 33, 0.06);
+}
+
+.cloud-card-emblem {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--warm);
+  display: grid;
+  place-items: center;
+  margin-bottom: 24px;
+}
+
+.cloud-feature-card:nth-child(2) .cloud-card-emblem {
+  background: var(--assist);
+}
+
+.cloud-feature-card:nth-child(3) .cloud-card-emblem {
+  background: var(--canvas);
+}
+
+.cloud-card-emblem .icon {
+  width: 24px;
+  height: 24px;
+  color: var(--ink);
+}
+
+.cloud-feature-card h3 {
+  font-size: 22px;
+  margin-top: 10px;
+  margin-bottom: 14px;
+}
+
+.cloud-feature-card p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+
+.cloud-feature-card a {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  justify-content: space-between;
+}
+
+/* Pricing Grid */
+.pricing-section-cloud {
+  padding-block: 85px 105px;
+}
+
+.pricing-grid-cloud {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.price-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.price-card:hover {
+  transform: translateY(-3px);
+}
+
+.price-card.featured {
+  background: var(--paper);
+  border: 2px solid var(--orange);
+  box-shadow: 0 12px 40px rgba(254, 130, 14, 0.12);
+}
+
+.price-badge {
+  position: absolute;
+  top: 26px;
+  right: 28px;
+  background: var(--warm);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+.price-card.featured .price-badge {
+  background: var(--orange);
+  color: var(--paper);
+}
+
+.price-tier-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+  letter-spacing: -0.03em;
+}
+
+.price-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--orange);
+  margin-bottom: 14px;
+}
+
+.price-desc {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.price-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.price-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.check-pill {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--warm);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.check-pill .icon {
+  width: 13px;
+  height: 13px;
+  color: var(--ink);
+}
+
+.price-card.featured .check-pill {
+  background: var(--assist);
+}
+
+.price-card .button {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* Comparison Table */
+.comparison-section-cloud {
+  padding-block: 80px 100px;
+}
+
+.comparison-table-wrapper {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  overflow: hidden;
+  max-width: 980px;
+  margin: 44px auto 0;
+  box-shadow: 0 6px 28px rgba(41, 38, 33, 0.04);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.comparison-table th {
+  padding: 22px 28px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.comparison-table th.col-feature {
+  width: 48%;
+}
+
+.comparison-table th.col-local {
+  width: 26%;
+}
+
+.comparison-table th.col-cloud {
+  width: 26%;
+  background: var(--warm);
+  color: var(--ink);
+}
+
+.comparison-table td {
+  padding: 17px 28px;
+  font-size: 13px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  line-height: 1.5;
+}
+
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-table td.col-cloud {
+  background: #fff4ea;
+  font-weight: 600;
+}
+
+.table-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--warm);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.table-cross {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 960px) {
+  .cloud-features-grid {
+    grid-template-columns: 1fr;
+  }
+  .pricing-grid-cloud {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+  }
+  .cloud-hero .hero-visual {
+    height: 480px;
+  }
+  .cloud-sync-card {
+    width: 280px;
+    right: 10px;
+    top: 20px;
+  }
+}
+
+@media (max-width: 680px) {
+  .comparison-table-wrapper {
+    overflow-x: auto;
+  }
+  .comparison-table {
+    min-width: 560px;
+  }
+  .price-card {
+    padding: 32px 24px;
+  }
+  .cloud-hero .hero-visual {
+    display: none;
+  }
+  .cloud-hero {
+    padding-bottom: 30px;
+  }
+}
