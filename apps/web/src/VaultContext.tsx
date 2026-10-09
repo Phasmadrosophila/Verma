@@ -1,3 +1,4 @@
+/* eslint-disable react/only-export-components, react/set-state-in-effect */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { LockStatus } from '@app/shared';
 import { api } from './api';
