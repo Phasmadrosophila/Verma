@@ -41,6 +41,8 @@ The Ollama package size is not the final mobile package size. The implementation
 
 Development may use `ollama run qwen3:0.6b`; Ollama is not the production runtime.
 
+> **Note:** `qwen3:0.6b` is the intended selection, not the current code default. The AI adapter (`apps/api/src/ai/adapter.ts`) currently defaults to `llama3.2`, and the metadata-search Ollama client (`apps/api/src/ai/ollama.ts`) defaults to `llama3`. These defaults are not a model selection; the authoritative `models/manifest.json` remains `tbd` until the selection gate below is complete.
+
 Recommended starting inference settings are a 2K--4K context window, low temperature around `0.1`, and a 128--256 token output limit. These are starting points, not benchmark claims. The adapter must use the model's supported structured-output mechanism and validate every response against a schema.
 
 ## Security and privacy boundary
