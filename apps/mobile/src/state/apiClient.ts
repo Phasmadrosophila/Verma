@@ -11,12 +11,30 @@
  * fetched lazily and only on explicit user reveal, via `getEntrySecret`.
  */
 
-import { localVault } from './localVault.js';
+import { localVault } from './localVault';
+import {
+  ApiError,
+  toMetadataEntry,
+  type MobileEntryType,
+  type MobileEntryMetadata,
+  type VaultStatus,
+  type AskResult,
+  type EntryDraft,
+} from './vaultTypes';
 
-export type MobileEntryType = 'login' | 'note' | 'api';
-
-/** The backend entry type. Mobile uses 'api'; the wire uses 'api_key'. */
-type WireEntryType = 'login' | 'note' | 'api_key';
+// Re-export the shared vault primitives so existing importers of apiClient
+// (App.tsx, screens, tests) keep working unchanged.
+export {
+  ApiError,
+  toMetadataEntry,
+  toWireType,
+  fromWireType,
+  type MobileEntryType,
+  type MobileEntryMetadata,
+  type VaultStatus,
+  type AskResult,
+  type EntryDraft,
+} from './vaultTypes';
 
 const API_URL = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_API_URL : undefined;
 
@@ -28,66 +46,6 @@ const API_URL = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_API_UR
 const OFFLINE = !API_URL;
 
 const BASE_URL = (API_URL || 'http://localhost:3000').replace(/\/$/, '');
-
-/** Typed error so callers can render an error state instead of crashing. */
-export class ApiError extends Error {
-  readonly status: number;
-  /** True when the request never reached the server (offline / DNS / refused). */
-  readonly isNetworkError: boolean;
-
-  constructor(message: string, status: number, isNetworkError = false) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.isNetworkError = isNetworkError;
-  }
-}
-
-/** Metadata-only entry for the list view. Contains NO secret fields. */
-export interface MobileEntryMetadata {
-  id: string;
-  type: MobileEntryType;
-  title: string;
-  subtitle: string;
-  domain?: string;
-  tags: string[];
-  updated: string;
-  brand: string;
-}
-
-export interface VaultStatus {
-  status: string;
-  isLocked: boolean;
-  isInitialized: boolean;
-}
-
-export interface AskResult {
-  answer: string;
-  relevantEntryIds: string[];
-}
-
-/** Fields the Add/Edit form collects for a new or updated entry. */
-export interface EntryDraft {
-  type: MobileEntryType;
-  title: string;
-  subtitle?: string;
-  user?: string;
-  domain?: string;
-  tags: string[];
-  secret: string;
-}
-
-// ---------------------------------------------------------------------------
-// type mapping: mobile 'api' <-> wire 'api_key'
-// ---------------------------------------------------------------------------
-
-export function toWireType(type: MobileEntryType): WireEntryType {
-  return type === 'api' ? 'api_key' : type;
-}
-
-export function fromWireType(type: string): MobileEntryType {
-  return type === 'api_key' ? 'api' : type === 'note' ? 'note' : 'login';
-}
 
 // ---------------------------------------------------------------------------
 // low-level fetch wrapper
@@ -121,75 +79,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   return data as T;
 }
-
-// ---------------------------------------------------------------------------
-// metadata (list) <-> MobileEntryMetadata
-// ---------------------------------------------------------------------------
-
-function brandFromTitle(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-function formatUpdated(updatedAt: number): string {
-  if (!updatedAt) return '';
-  try {
-    return new Date(updatedAt).toLocaleDateString();
-  } catch {
-    return '';
-  }
-}
-
-/**
- * Secret field names that MUST NEVER enter list/App state (AGENTS.md §3.1).
- * Kept in sync with the backend entry types (login / note / api_key).
- */
-const SECRET_FIELDS = [
-  'password',
-  'content',
-  'apiKey',
-  'apiSecret',
-  'totpSecret',
-  'recoveryCodes',
-  'secret',
-] as const;
-
-/**
- * Trusted redaction projection. Takes ANY backend entry or metadata object and
- * returns a secret-free list item. This is the single code-level enforcement of
- * the zero-secret boundary: even if a caller hands it a `/api/entries` row
- * (which the backend leaks secrets through), every secret field is dropped
- * here before the value can reach App state or the UI.
- */
-export function toMetadataEntry(raw: any): MobileEntryMetadata {
-  // `service` is the api_key display domain; `domain` is the login domain.
-  const domain =
-    raw?.type === 'api_key'
-      ? (raw.domain ?? String(raw.service ?? '').toLowerCase().replace(/\s+/g, '-')) || undefined
-      : raw?.domain;
-
-  const projected: MobileEntryMetadata = {
-    id: String(raw?.id ?? ''),
-    type: fromWireType(raw?.type),
-    title: raw?.title ?? '',
-    subtitle: domain ?? '',
-    domain: domain || undefined,
-    tags: Array.isArray(raw?.tags) ? raw.tags : [],
-    updated: formatUpdated(raw?.updatedAt),
-    brand: brandFromTitle(raw?.title ?? ''),
-  };
-
-  // Defense-in-depth: assert no secret field survived onto the projection.
-  for (const f of SECRET_FIELDS) {
-    if (f in projected) {
-      delete (projected as any)[f];
-    }
-  }
-
-  return projected;
-}
-
-/** @deprecated kept as the metadata-endpoint alias; use toMetadataEntry. */
-const metadataToMobile = toMetadataEntry;
 
 // ---------------------------------------------------------------------------
 // draft -> backend create/update payload
@@ -274,7 +163,7 @@ export const httpClient = {
   /** List view: redacted metadata only — never carries secret fields. */
   async listEntries(): Promise<MobileEntryMetadata[]> {
     const data = await request<{ metadata: any[] }>('/api/metadata');
-    return (data.metadata ?? []).map(metadataToMobile);
+    return (data.metadata ?? []).map(toMetadataEntry);
   },
 
   /**
@@ -320,14 +209,8 @@ export const httpClient = {
  * in-process `localVault`; otherwise it is the real HTTP client. Both expose an
  * identical method surface, so App.tsx and the screens need no changes.
  *
- * Resolved lazily via a Proxy: `localVault` and `apiClient` import each other,
- * so dereferencing `localVault` at module-eval time would hit its temporal dead
- * zone. The Proxy defers the pick to first property access, after both modules
- * have finished initializing.
+ * This is a plain conditional (no Proxy): the shared primitives now live in the
+ * leaf `vaultTypes` module, so apiClient imports localVault one-way with no
+ * require cycle, and `localVault` is fully initialized by the time this runs.
  */
-export const apiClient = new Proxy({} as typeof httpClient, {
-  get(_target, prop) {
-    const backend = OFFLINE ? localVault : httpClient;
-    return (backend as any)[prop];
-  },
-}) as typeof httpClient & { baseUrl: string };
+export const apiClient: typeof httpClient = OFFLINE ? localVault : httpClient;

@@ -19,12 +19,12 @@ import {
   type VaultStatus,
   type AskResult,
   type EntryDraft,
-} from './apiClient.js';
+} from './vaultTypes';
 import {
   seedEntries,
   findMetadata,
   type MobileVaultEntry,
-} from './vaultStore.js';
+} from './vaultStore';
 
 /** Demo unlock passphrase — mirrors apps/mobile-preview (lock passphrase). */
 const DEMO_PASSPHRASE = 'verma-demo';
