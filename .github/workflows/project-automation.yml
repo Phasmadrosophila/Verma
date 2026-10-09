@@ -33,8 +33,8 @@ jobs:
             ];
 
             const projectId = 'PVT_kwDOFC88vM4BmVxq';
-            const workflowFieldId = 'PVTSSF_lADOFC88vM4BmVxqzhk_NtU';
-            const workflowOptions = {
+            const statusFieldId = 'PVTSSF_lADOFC88vM4BmVxqzhk_NtU';
+            const statusOptions = {
               'status:backlog': '38437962',
               'status:ready': 'e58bab61',
               'status:in-progress': 'abacd132',
@@ -104,8 +104,8 @@ jobs:
                 `, {
                   project: projectId,
                   item: projectItem.id,
-                  field: workflowFieldId,
-                  option: workflowOptions[desired],
+                   field: statusFieldId,
+                   option: statusOptions[desired],
                 });
               }
               return current;
