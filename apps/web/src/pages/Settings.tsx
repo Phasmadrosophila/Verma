@@ -16,8 +16,8 @@ export const Settings: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6 pb-12">
       {/* Page Heading */}
-      <div className="border-b border-[var(--color-border)] pb-4 flex items-center justify-between">
-        <div>
+      <div className="border-b border-[var(--color-border)] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold text-[var(--color-text)]">Settings</h1>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">
             Manage your local vault security, direct sync preferences, and device boundaries.
@@ -37,7 +37,7 @@ export const Settings: React.FC = () => {
       {/* Section 1: Vault & Security */}
       <section
         aria-labelledby="security-heading"
-        className="p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-4"
+        className="p-4 sm:p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-4"
       >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[var(--color-canvas)] flex items-center justify-center text-[var(--color-brand-orange)]">
@@ -86,7 +86,7 @@ export const Settings: React.FC = () => {
       {/* Section 2: Direct Device Sync */}
       <section
         aria-labelledby="sync-heading"
-        className="p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-4"
+        className="p-4 sm:p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-4"
       >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[var(--color-canvas)] flex items-center justify-center text-[var(--color-brand-periwinkle)]">
@@ -102,8 +102,8 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-canvas)] border border-[var(--color-border)] flex items-center justify-between">
-          <div>
+        <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-canvas)] border border-[var(--color-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
             <span className="text-sm font-semibold text-[var(--color-text)] block">
               Paired Desktop Devices
             </span>
@@ -125,7 +125,7 @@ export const Settings: React.FC = () => {
       {/* Section 3: Local AI & Privacy Boundaries */}
       <section
         aria-labelledby="ai-heading"
-        className="p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-4"
+        className="p-4 sm:p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-4"
       >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[var(--color-assist-surface)] flex items-center justify-center text-[var(--color-brand-periwinkle)]">
@@ -157,7 +157,7 @@ export const Settings: React.FC = () => {
       {/* Section 4: About Verma */}
       <section
         aria-labelledby="about-heading"
-        className="p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-3"
+        className="p-4 sm:p-6 rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] shadow-xs flex flex-col gap-3"
       >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-[var(--color-canvas)] flex items-center justify-center text-[var(--color-brand-orange)]">

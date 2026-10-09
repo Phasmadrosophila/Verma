@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Sparkles, Shield, RefreshCw, Lock } from 'lucide-react';
 import { api } from '../api';
@@ -24,6 +24,21 @@ export const AskVault: React.FC = () => {
   const [revealingEntryId, setRevealingEntryId] = useState<string | null>(null);
   const [revealedSecret, setRevealedSecret] = useState<string | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
+  const revealCloseButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Escape key closes reveal modal
+  useEffect(() => {
+    if (!revealingEntryId) return;
+    revealCloseButtonRef.current?.focus();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setRevealingEntryId(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [revealingEntryId]);
 
   const sampleQueries = [
     'work google account',
@@ -100,10 +115,10 @@ export const AskVault: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
       {/* Header with Title and Trust Boundary */}
-      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <Search className="w-6 h-6 text-[var(--color-brand-orange)]" />
+            <Search className="w-6 h-6 text-[var(--color-brand-orange)] flex-shrink-0" aria-hidden="true" />
             Ask Your Vault
           </h1>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">
@@ -151,25 +166,29 @@ export const AskVault: React.FC = () => {
 
       {/* Query Input Box */}
       <div className="bg-[var(--color-paper)] p-4 rounded-[var(--radius-xl)] border border-[var(--color-border)] shadow-xs flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <Search className="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" />
-          <input
-            type="text"
-            value={query}
-            disabled={isLocked}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSearch();
-            }}
-            placeholder="e.g., 'my work google account' or 'stripe production key'"
-            className="flex-1 bg-transparent text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none"
-          />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Search className="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" aria-hidden="true" />
+            <input
+              type="text"
+              value={query}
+              disabled={isLocked}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearch();
+              }}
+              placeholder="e.g., 'my work google account' or 'stripe production key'"
+              aria-label="Search vault metadata in natural language"
+              className="flex-1 bg-transparent text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus-ring rounded-md py-1.5 px-2"
+            />
+          </div>
           <button
             type="button"
             disabled={!query.trim() || isSearching || isLocked}
             onClick={() => handleSearch()}
+            aria-label="Ask Vault"
             className={clsx(
-              'flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold transition-all focus:ring-2 focus:ring-[var(--color-brand-orange)]',
+              'flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold transition-all focus-ring min-h-[40px]',
               query.trim() && !isSearching && !isLocked
                 ? 'bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90'
                 : 'bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
@@ -177,12 +196,12 @@ export const AskVault: React.FC = () => {
           >
             {isSearching ? (
               <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
                 Searching...
               </>
             ) : (
               <>
-                <Sparkles className="w-3.5 h-3.5" />
+                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
                 Ask Vault
               </>
             )}
@@ -191,8 +210,8 @@ export const AskVault: React.FC = () => {
 
         {/* Example Queries */}
         {!hasSearched && (
-          <div className="flex items-center gap-2 pt-2 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
-            <span>Examples:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
+            <span className="font-medium">Examples:</span>
             <div className="flex flex-wrap gap-2">
               {sampleQueries.map((sq) => (
                 <button
@@ -202,7 +221,7 @@ export const AskVault: React.FC = () => {
                     setQuery(sq);
                     handleSearch(sq);
                   }}
-                  className="px-2.5 py-1 rounded-full bg-[var(--color-canvas)] hover:bg-[var(--color-border)] text-[var(--color-text)] transition-colors"
+                  className="px-2.5 py-1 rounded-full bg-[var(--color-canvas)] hover:bg-[var(--color-border)] text-[var(--color-text)] transition-colors focus-ring"
                 >
                   "{sq}"
                 </button>
@@ -214,8 +233,12 @@ export const AskVault: React.FC = () => {
 
       {/* Results Section */}
       {isSearching && (
-        <div className="p-8 rounded-[var(--radius-lg)] bg-[var(--color-paper)] border border-[var(--color-border)] flex flex-col items-center justify-center text-center gap-3">
-          <RefreshCw className="w-8 h-8 text-[var(--color-brand-orange)] animate-spin" />
+        <div
+          role="status"
+          aria-live="polite"
+          className="p-8 rounded-[var(--radius-lg)] bg-[var(--color-paper)] border border-[var(--color-border)] flex flex-col items-center justify-center text-center gap-3"
+        >
+          <RefreshCw className="w-8 h-8 text-[var(--color-brand-orange)] animate-spin" aria-hidden="true" />
           <h3 className="text-sm font-semibold">Searching selected metadata on this device…</h3>
           <p className="text-xs text-[var(--color-text-muted)]">
             Comparing query against titles, domains, and tags without exposing secret payloads.
@@ -273,13 +296,15 @@ export const AskVault: React.FC = () => {
           <div className="w-full max-w-md rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] p-6 shadow-2xl flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h3 id="reveal-modal-title" className="text-base font-semibold flex items-center gap-2">
-                <Lock className="w-4 h-4 text-[var(--color-brand-orange)]" />
+                <Lock className="w-4 h-4 text-[var(--color-brand-orange)]" aria-hidden="true" />
                 Explicit Secret Reveal
               </h3>
               <button
+                ref={revealCloseButtonRef}
                 type="button"
                 onClick={() => setRevealingEntryId(null)}
-                className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                aria-label="Close secret reveal dialog"
+                className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)] focus-ring rounded-md p-1.5"
               >
                 Close
               </button>
@@ -289,7 +314,11 @@ export const AskVault: React.FC = () => {
               This secret was retrieved locally from your decrypted vault session upon deliberate click.
             </p>
 
-            <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-canvas)] border border-[var(--color-border)] font-mono text-sm break-all text-[var(--color-text)] select-all">
+            <div
+              tabIndex={0}
+              aria-label="Revealed secret payload"
+              className="p-4 rounded-[var(--radius-md)] bg-[var(--color-canvas)] border border-[var(--color-border)] font-mono text-sm break-all text-[var(--color-text)] select-all focus-ring"
+            >
               {isRevealing ? 'Decrypting...' : revealedSecret}
             </div>
 
@@ -297,7 +326,8 @@ export const AskVault: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRevealingEntryId(null)}
-                className="px-4 py-2 rounded-full text-xs font-semibold bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90 transition-opacity"
+                aria-label="Done with secret reveal"
+                className="px-5 py-2.5 rounded-full text-xs font-semibold bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90 transition-opacity focus-ring min-h-[40px]"
               >
                 Done
               </button>

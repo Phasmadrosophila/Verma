@@ -153,10 +153,10 @@ export const SmartImport: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-6">
       {/* Stepper Header */}
-      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-4">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold flex items-center gap-2">
-            <FileText className="w-6 h-6 text-[var(--color-brand-orange)]" />
+            <FileText className="w-6 h-6 text-[var(--color-brand-orange)] flex-shrink-0" aria-hidden="true" />
             Smart Import
           </h1>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">
@@ -171,8 +171,8 @@ export const SmartImport: React.FC = () => {
       </div>
 
       {error && (
-        <div className="flex items-center gap-3 p-4 rounded-[var(--radius-md)] bg-red-500/10 border border-red-500/30 text-red-500 text-sm">
-          <XCircle className="w-5 h-5 flex-shrink-0" />
+        <div role="alert" className="flex items-center gap-3 p-4 rounded-[var(--radius-md)] bg-red-500/10 border border-red-500/30 text-red-500 text-sm">
+          <XCircle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
           <span>{error}</span>
         </div>
       )}
@@ -189,7 +189,7 @@ export const SmartImport: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <label className="cursor-pointer px-4 py-2 rounded-full bg-[var(--color-brand-orange)] text-white hover:opacity-90 font-medium text-sm flex items-center gap-2 transition-opacity">
+              <label className="cursor-pointer px-4 py-2 rounded-full bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90 font-semibold text-sm flex items-center gap-2 transition-opacity focus-ring">
                 <FileText className="w-4 h-4" />
                 Browse CSV File
                 <input
@@ -203,7 +203,7 @@ export const SmartImport: React.FC = () => {
               <button
                 type="button"
                 onClick={handleLoadFixture}
-                className="px-4 py-2 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] hover:bg-[var(--color-border)] text-sm font-medium transition-colors"
+                className="px-4 py-2 rounded-full bg-[var(--color-canvas)] border border-[var(--color-border)] hover:bg-[var(--color-border)] text-sm font-medium transition-colors focus-ring"
               >
                 Load Synthetic Demo CSV
               </button>
@@ -222,9 +222,9 @@ export const SmartImport: React.FC = () => {
               disabled={!csvText || isLoading}
               onClick={handleAnalyze}
               className={clsx(
-                'flex items-center gap-2 px-6 py-2.5 rounded-full font-medium text-sm transition-all',
+                'flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all focus-ring',
                 csvText && !isLoading
-                  ? 'bg-[var(--color-brand-orange)] text-white hover:opacity-90'
+                  ? 'bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90'
                   : 'bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
               )}
             >
@@ -237,8 +237,8 @@ export const SmartImport: React.FC = () => {
 
       {/* Step 2: Analyzing */}
       {step === 'analyzing' && (
-        <div className="p-12 flex flex-col items-center justify-center text-center bg-[var(--color-paper)] rounded-[var(--radius-lg)] border border-[var(--color-border)]">
-          <RefreshCw className="w-10 h-10 text-[var(--color-brand-orange)] animate-spin mb-4" />
+        <div role="status" aria-live="polite" className="p-8 sm:p-12 flex flex-col items-center justify-center text-center bg-[var(--color-paper)] rounded-[var(--radius-lg)] border border-[var(--color-border)]">
+          <RefreshCw className="w-10 h-10 text-[var(--color-brand-orange)] animate-spin mb-4" aria-hidden="true" />
           <h2 className="text-lg font-medium">Analyzing CSV with Local Intelligence...</h2>
           <p className="text-sm text-[var(--color-text-muted)] mt-1 max-w-md">
             Detecting field mappings, inferring tags, and scanning for duplicate records while
@@ -251,7 +251,7 @@ export const SmartImport: React.FC = () => {
       {step === 'preview' && proposal && (
         <div className="flex flex-col gap-6">
           {/* Non-negotiable security boundary banner */}
-          <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-paper)] border border-[var(--color-brand-orange)]/40 flex items-center justify-between">
+          <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-paper)] border border-[var(--color-brand-orange)]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-[var(--color-brand-orange)]" />
               <div>
@@ -279,7 +279,7 @@ export const SmartImport: React.FC = () => {
                 {proposal.duplicateGroups.map((group) => (
                   <div
                     key={group.id}
-                    className="text-xs p-2 rounded bg-[var(--color-canvas)] border border-[var(--color-border)] flex items-center justify-between"
+                    className="text-xs p-2 rounded bg-[var(--color-canvas)] border border-[var(--color-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                   >
                     <div>
                       <span className="font-semibold">{group.reason}</span>
@@ -387,7 +387,7 @@ export const SmartImport: React.FC = () => {
 
           {/* Section: Entry Preview Table */}
           <div className="bg-[var(--color-paper)] border border-[var(--color-border)] rounded-[var(--radius-lg)] p-5 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <h3 className="text-sm font-semibold">
                 Entry Preview ({selectedRowIndices.size} of {proposal.previewRows.length} selected)
               </h3>
@@ -440,7 +440,8 @@ export const SmartImport: React.FC = () => {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleRowSelection(row.rowIndex)}
-                            className="rounded border-[var(--color-border)] text-[var(--color-brand-orange)] focus:ring-0 cursor-pointer"
+                            aria-label={`Select row ${row.rowIndex + 1}: ${row.proposedEntry.title || 'Untitled'}`}
+                            className="rounded border-[var(--color-border)] text-[var(--color-brand-orange)] focus-ring cursor-pointer"
                           />
                         </td>
                         <td className="py-2.5 font-medium">{row.proposedEntry.title}</td>
@@ -451,7 +452,7 @@ export const SmartImport: React.FC = () => {
                           {row.hasPasswordSecret ? (
                             <span className="flex items-center gap-1 text-[var(--color-text-muted)]">
                               <Lock className="w-3 h-3 text-green-500" />
-                              ••••••••
+                              <span aria-label="Secret hidden">••••••••</span>
                             </span>
                           ) : (
                             <span className="text-zinc-500">None</span>
@@ -483,11 +484,11 @@ export const SmartImport: React.FC = () => {
           </div>
 
           {/* Actions Bar */}
-          <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-4">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between border-t border-[var(--color-border)] pt-4 gap-3">
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 rounded-full border border-[var(--color-border)] hover:bg-[var(--color-paper)] text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-full border border-[var(--color-border)] hover:bg-[var(--color-paper)] text-sm font-medium transition-colors focus-ring"
             >
               Discard / Cancel
             </button>
@@ -497,9 +498,9 @@ export const SmartImport: React.FC = () => {
               disabled={selectedRowIndices.size === 0 || isLoading}
               onClick={handleConfirm}
               className={clsx(
-                'flex items-center gap-2 px-6 py-2 rounded-full font-medium text-sm transition-all',
+                'flex items-center justify-center gap-2 px-6 py-2 rounded-full font-semibold text-sm transition-all focus-ring',
                 selectedRowIndices.size > 0 && !isLoading
-                  ? 'bg-[var(--color-brand-orange)] text-white hover:opacity-90'
+                  ? 'bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90'
                   : 'bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
               )}
             >
@@ -535,11 +536,11 @@ export const SmartImport: React.FC = () => {
             {result.failedCount > 0 && ` (${result.failedCount} failed rows reported)`}
           </p>
 
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3 mt-4">
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[var(--color-brand-orange)] text-white font-medium text-sm hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-[var(--color-brand-orange)] text-[var(--color-text)] font-semibold text-sm hover:opacity-90 transition-opacity focus-ring"
             >
               <Database className="w-4 h-4" />
               View in All Items

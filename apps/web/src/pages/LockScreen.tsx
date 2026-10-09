@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVault } from '../VaultContext';
 import { api } from '../api';
@@ -8,7 +8,7 @@ import { Button } from '../components/primitives/Button';
 import { InputField } from '../components/primitives/InputField';
 import { LoadingState } from '../components/primitives/LoadingState';
 
-export const LockScreen = () => {
+export const LockScreen: React.FC = () => {
   const { isInitialized, checkStatus, status } = useVault();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
@@ -70,27 +70,35 @@ export const LockScreen = () => {
   // RECOVERY PHRASE FLOW
   if (!isInitialized && creationStep === 'recovery') {
     return (
-      <div className="flex flex-col h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
-        <div className="w-full max-w-2xl bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-8 shadow-xs">
+      <div className="flex flex-col min-h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
+        <div className="w-full max-w-2xl bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-6 sm:p-8 shadow-xs">
           <h1 className="text-section-title text-center text-[var(--color-brand-orange)] mb-4">Your Recovery Phrase</h1>
           
           <div className="flex items-start gap-3 p-4 mb-6 rounded-md bg-orange-50/10 border border-[var(--color-brand-orange)]">
-            <AlertTriangle className="text-[var(--color-brand-orange)] shrink-0" />
+            <AlertTriangle className="text-[var(--color-brand-orange)] shrink-0 w-5 h-5" aria-hidden="true" />
             <p className="text-sm">
               Write down these 24 words in exact order. <strong>We cannot recover your vault if you lose this phrase.</strong> Do not screenshot this.
             </p>
           </div>
 
-          <div className="grid grid-cols-4 gap-3 mb-8">
+          <ol
+            aria-label="24-word recovery phrase"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-8"
+          >
             {recoveryPhrase.map((word, idx) => (
-              <div key={idx} className="flex gap-2 p-2 bg-[var(--color-assist-surface)] rounded border border-[var(--color-border)]">
-                <span className="text-[var(--color-text-muted)] select-none w-5 text-right">{idx + 1}.</span>
-                <span className="font-mono font-medium">{word}</span>
-              </div>
+              <li
+                key={idx}
+                className="flex items-center gap-2 p-2 bg-[var(--color-assist-surface)] rounded-[var(--radius-sm)] border border-[var(--color-border)]"
+              >
+                <span className="text-[var(--color-text-muted)] select-none w-5 text-right text-xs">
+                  {idx + 1}.
+                </span>
+                <span className="font-mono font-medium text-xs sm:text-sm">{word}</span>
+              </li>
             ))}
-          </div>
+          </ol>
 
-          <div className="flex justify-end gap-4">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
             <Button variant="secondary" onClick={() => setCreationStep('password')}>Back</Button>
             <Button onClick={() => setCreationStep('confirm')}>I have saved these words</Button>
           </div>
@@ -101,15 +109,15 @@ export const LockScreen = () => {
 
   if (!isInitialized && creationStep === 'confirm') {
     return (
-      <div className="flex flex-col h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
-        <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-8 shadow-xs">
+      <div className="flex flex-col min-h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
+        <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-6 sm:p-8 shadow-xs">
           <h1 className="text-section-title text-center mb-6">Confirm Recovery</h1>
           <p className="text-sm text-[var(--color-text-muted)] text-center mb-6">
             Are you sure you have securely stored your recovery phrase?
           </p>
           
           {error && (
-            <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-[var(--radius-sm)] mb-4">
+            <div role="alert" className="text-xs text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-[var(--radius-sm)] mb-4">
               {error}
             </div>
           )}
@@ -133,8 +141,8 @@ export const LockScreen = () => {
 
   // STANDARD PASSWORD PROMPT
   return (
-    <div className="flex flex-col h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
-      <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-8 shadow-xs">
+    <div className="flex flex-col min-h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
+      <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col items-center mb-8">
           <Shield className="w-12 h-12 text-[var(--color-brand-orange)] mb-4" />
           <h1 className="text-section-title text-center">Verma</h1>
@@ -155,7 +163,7 @@ export const LockScreen = () => {
           />
 
           {error && (
-            <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-[var(--radius-sm)]">
+            <div role="alert" className="text-xs text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-[var(--radius-sm)]">
               {error}
             </div>
           )}
