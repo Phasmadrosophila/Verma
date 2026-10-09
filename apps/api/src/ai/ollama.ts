@@ -30,7 +30,8 @@ Return the top matching IDs in the requested JSON format.`;
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS) || 1500;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     const response = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
@@ -49,26 +50,24 @@ Return the top matching IDs in the requested JSON format.`;
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.warn(`Ollama responded with status: ${response.status}`);
       return null;
     }
 
     const data = (await response.json()) as { response: string };
-    
+
     // Parse the JSON string from the response
     const parsedData = JSON.parse(data.response);
-    
+
     // Validate with zod
     const result = searchResponseSchema.safeParse(parsedData);
-    
+
     if (result.success) {
       return result.data.ids;
     } else {
-      console.warn('Ollama returned invalid JSON schema:', result.error);
       return null;
     }
-  } catch (error) {
-    console.warn('Failed to contact Ollama for Ask Your Vault:', error);
+  } catch {
+    // Model offline or timeout - quiet graceful degradation
     return null;
   }
 }
