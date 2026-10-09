@@ -19,6 +19,10 @@ export const VaultProvider = ({ children }: { children: ReactNode }) => {
 
   const checkStatus = async () => {
     try {
+      // E2E only: makes the otherwise sub-frame startup state observable without
+      // changing production behavior or API timing.
+      const delayMs = Number(import.meta.env.VITE_E2E_STATUS_DELAY_MS ?? '0');
+      if (delayMs > 0) await new Promise((resolvePromise) => setTimeout(resolvePromise, delayMs));
       const data = await api.getVaultStatus();
       setStatus(data.status);
       setIsLocked(data.isLocked);
