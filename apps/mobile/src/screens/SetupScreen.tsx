@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Icon } from '../components/Icon';
 import { recoveryWordList } from '../state/vaultStore';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
@@ -14,8 +15,10 @@ interface SetupScreenProps {
   onSetupComplete: () => void;
 }
 
+type Step = 1 | 2 | 3;
+
 export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => {
-  const [step, setStep] = useState<'passphrase' | 'recovery'>('passphrase');
+  const [step, setStep] = useState<Step>(1);
   const [passphrase, setPassphrase] = useState('');
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [confirmedBackup, setConfirmedBackup] = useState(false);
@@ -23,42 +26,55 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
 
   const handleContinueToRecovery = () => {
     if (passphrase.length < 8) {
-      setError('Master passphrase must be at least 8 characters.');
+      setError('Use at least 8 characters and a sample phrase, never a real password.');
       return;
     }
     if (passphrase !== confirmPassphrase) {
-      setError('Passphrases do not match.');
+      setError('Those phrases don’t quite match. Try once more.');
       return;
     }
     setError('');
-    setStep('recovery');
+    setStep(2);
   };
 
-  const handleFinish = () => {
+  const handleContinueToCompletion = () => {
     if (!confirmedBackup) {
-      setError('Please confirm that you have stored your 24-word recovery phrase.');
+      setError('Please confirm you understand these are sample recovery words.');
       return;
     }
-    onSetupComplete();
+    setError('');
+    setStep(3);
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.brandBadge}>
-          <Text style={styles.brandBadgeText}>V</Text>
-        </View>
-        <Text style={styles.eyebrow}>SECURE VAULT CREATION</Text>
-        <Text style={styles.title}>
-          {step === 'passphrase' ? 'Create Master Passphrase' : '24-Word Recovery Phrase'}
-        </Text>
-        <Text style={styles.subtitle}>
-          {step === 'passphrase'
-            ? 'Your master passphrase encrypts your SQLite database using libsodium.'
-            : 'Write down these 24 words in order. Verma has zero servers and cannot restore lost phrases.'}
-        </Text>
+      {/* Step indicator */}
+      <View style={styles.steps}>
+        {[1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[styles.stepBar, i <= step && styles.stepBarActive]}
+          />
+        ))}
       </View>
+
+      {step !== 3 && (
+        <View style={styles.heading}>
+          <Text style={styles.eyebrow}>
+            {step === 1 ? 'LET’S MAKE THIS YOURS' : 'A SPARE KEY, JUST IN CASE'}
+          </Text>
+          <Text style={styles.title}>
+            {step === 1
+              ? 'Every little universe\nneeds a key.'
+              : 'Some words\nworth keeping.'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {step === 1
+              ? 'Choose a demo passphrase to try the lock and unlock flow.'
+              : 'A preview of your recovery kit. These fixed sample words do not unlock or recover anything.'}
+          </Text>
+        </View>
+      )}
 
       {error ? (
         <View style={styles.errorBanner}>
@@ -66,30 +82,35 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
         </View>
       ) : null}
 
-      {step === 'passphrase' ? (
+      {step === 1 && (
         <View style={styles.formSection}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Master Passphrase</Text>
+            <Text style={styles.label}>Demo passphrase</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter strong passphrase"
+              placeholder="Enter a sample passphrase"
               placeholderTextColor="#A89E92"
               secureTextEntry
+              autoComplete="off"
               value={passphrase}
               onChangeText={(t) => {
                 setPassphrase(t);
                 setError('');
               }}
             />
+            <Text style={styles.fieldHint}>
+              Use at least 8 characters and a sample phrase, never a real password.
+            </Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirm Master Passphrase</Text>
+            <Text style={styles.label}>Once more, to be sure</Text>
             <TextInput
               style={styles.input}
               placeholder="Re-enter passphrase"
               placeholderTextColor="#A89E92"
               secureTextEntry
+              autoComplete="off"
               value={confirmPassphrase}
               onChangeText={(t) => {
                 setConfirmPassphrase(t);
@@ -98,54 +119,89 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
             />
           </View>
 
-          <View style={styles.noticeCard}>
-            <Text style={styles.noticeTitle}>Local-first Guarantee</Text>
-            <Text style={styles.noticeText}>
-              Verma operates offline. This passphrase never touches a remote server.
-            </Text>
-          </View>
-
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={handleContinueToRecovery}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <Text style={styles.primaryButtonText}>Continue to Recovery Phrase</Text>
+            <Text style={styles.primaryButtonText}>Keep going</Text>
+            <Icon name="import" size={16} color={colors.surface} />
           </TouchableOpacity>
         </View>
-      ) : (
+      )}
+
+      {step === 2 && (
         <View style={styles.formSection}>
-          {/* Recovery Words Grid */}
+          <View style={styles.notice}>
+            <Icon name="shield" size={18} color="#714319" />
+            <View style={styles.noticeBody}>
+              <Text style={styles.noticeTitle}>
+                For the real thing: write them down.
+              </Text>
+              <Text style={styles.noticeText}>
+                Keep recovery words somewhere safe, away from the device they unlock.
+              </Text>
+            </View>
+          </View>
+
           <View style={styles.wordsGrid}>
             {recoveryWordList.map((word, idx) => (
               <View key={idx} style={styles.wordPill}>
-                <Text style={styles.wordIndex}>{(idx + 1).toString().padStart(2, '0')}</Text>
+                <Text style={styles.wordIndex}>{idx + 1}</Text>
                 <Text style={styles.wordText}>{word}</Text>
               </View>
             ))}
           </View>
 
-          {/* Confirmation Checkbox */}
           <TouchableOpacity
             style={styles.checkboxRow}
-            onPress={() => setConfirmedBackup(!confirmedBackup)}
+            onPress={() => {
+              setConfirmedBackup(!confirmedBackup);
+              setError('');
+            }}
             activeOpacity={0.8}
           >
             <View style={[styles.checkbox, confirmedBackup && styles.checkboxChecked]}>
               {confirmedBackup && <Text style={styles.checkmark}>✓</Text>}
             </View>
             <Text style={styles.checkboxLabel}>
-              I have written down all 24 recovery words and stored them in a safe place.
+              I understand these are sample recovery words for the demo.
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.primaryButton, !confirmedBackup && styles.buttonDisabled]}
-            onPress={handleFinish}
+            onPress={handleContinueToCompletion}
             disabled={!confirmedBackup}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <Text style={styles.primaryButtonText}>Initialize & Unlock Vault</Text>
+            <Text style={styles.primaryButtonText}>My little universe awaits</Text>
+            <Icon name="import" size={16} color={colors.surface} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {step === 3 && (
+        <View style={styles.completion}>
+          <View style={styles.emblem}>
+            <Icon name="shield" size={44} color={colors.text} />
+          </View>
+          <Text style={styles.eyebrow}>MAKE YOURSELF AT HOME</Text>
+          <Text style={[styles.title, styles.completionTitle]}>
+            Your space.{'\n'}Your fresh start.
+          </Text>
+          <Text style={[styles.subtitle, styles.completionSubtitle]}>
+            Your demo vault is ready. Bring in a few sample passwords or explore
+            what’s already here.
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.primaryButton, styles.completionButton]}
+            onPress={onSetupComplete}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.primaryButtonText}>Enter my vault</Text>
+            <Icon name="import" size={16} color={colors.surface} />
           </TouchableOpacity>
         </View>
       )}
@@ -160,47 +216,46 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.xxl,
-    paddingTop: 50,
+    paddingTop: spacing.xxl,
     paddingBottom: 40,
   },
-  header: {
-    alignItems: 'center',
+  steps: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: spacing.xxl,
+    paddingTop: spacing.sm,
+  },
+  stepBar: {
+    flex: 1,
+    height: 4,
+    borderRadius: radii.pill,
+    backgroundColor: '#EDE4DA',
+  },
+  stepBarActive: {
+    backgroundColor: colors.brandPeri,
+  },
+  heading: {
     marginBottom: spacing.xl,
-  },
-  brandBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: radii.md,
-    backgroundColor: colors.brandOrange,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  brandBadgeText: {
-    fontSize: typography.sizeLg,
-    fontWeight: '800',
-    color: colors.paper,
   },
   eyebrow: {
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 1.5,
+    letterSpacing: 1.8,
     color: colors.brandPeri,
-    marginBottom: 6,
+    marginBottom: spacing.sm,
   },
   title: {
-    fontSize: 24,
+    fontSize: 27,
+    lineHeight: 33,
     fontWeight: '800',
     color: colors.text,
-    textAlign: 'center',
-    marginBottom: 8,
-    letterSpacing: -0.5,
+    letterSpacing: -0.9,
+    marginBottom: spacing.md,
   },
   subtitle: {
     fontSize: 13,
-    lineHeight: 18,
+    lineHeight: 22,
     color: colors.textMuted,
-    textAlign: 'center',
     maxWidth: 300,
   },
   errorBanner: {
@@ -213,7 +268,6 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 12,
     fontWeight: '600',
-    textAlign: 'center',
   },
   formSection: {
     gap: spacing.lg,
@@ -235,26 +289,36 @@ const styles = StyleSheet.create({
     fontSize: typography.sizeBase,
     color: colors.text,
   },
-  noticeCard: {
-    backgroundColor: colors.assist,
-    borderRadius: radii.lg,
+  fieldHint: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginLeft: 4,
+  },
+  notice: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    backgroundColor: colors.warm,
+    borderRadius: radii.xl,
     padding: spacing.lg,
+  },
+  noticeBody: {
+    flex: 1,
   },
   noticeTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#4F66BD',
+    color: '#714319',
     marginBottom: 4,
   },
   noticeText: {
     fontSize: 11,
     lineHeight: 16,
-    color: '#4F66BD',
+    color: '#684019',
   },
   wordsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 7,
     justifyContent: 'space-between',
     backgroundColor: colors.cardBg,
     borderRadius: radii.xl,
@@ -264,20 +328,21 @@ const styles = StyleSheet.create({
     width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: '#F7F2ED',
     paddingVertical: 8,
     paddingHorizontal: 10,
-    borderRadius: radii.md,
+    borderRadius: radii.xl,
     gap: 8,
+    minHeight: 35,
   },
   wordIndex: {
     fontSize: 10,
     color: colors.textMuted,
     fontWeight: '600',
-    width: 18,
+    width: 16,
   },
   wordText: {
-    fontSize: 13,
+    fontSize: 11,
     color: colors.text,
     fontWeight: '700',
   },
@@ -307,24 +372,52 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   checkboxLabel: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 10,
+    lineHeight: 15,
     color: colors.text,
     flex: 1,
   },
   primaryButton: {
-    backgroundColor: colors.brandOrange,
-    borderRadius: radii.pill,
-    paddingVertical: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.text,
+    borderRadius: radii.xxl,
+    paddingVertical: 16,
     marginTop: spacing.sm,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
   primaryButtonText: {
-    fontSize: 14,
+    fontSize: typography.sizeSm,
     fontWeight: '700',
-    color: colors.text,
+    color: colors.surface,
+  },
+  completion: {
+    alignItems: 'center',
+    paddingTop: spacing.xxl,
+  },
+  emblem: {
+    width: 108,
+    height: 108,
+    borderRadius: radii.pill,
+    backgroundColor: colors.warm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
+  },
+  completionTitle: {
+    textAlign: 'center',
+    fontSize: 29,
+    lineHeight: 36,
+  },
+  completionSubtitle: {
+    textAlign: 'center',
+  },
+  completionButton: {
+    marginTop: spacing.xxl,
+    alignSelf: 'stretch',
   },
 });
