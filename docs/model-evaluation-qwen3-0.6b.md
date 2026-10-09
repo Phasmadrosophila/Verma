@@ -1,8 +1,8 @@
-# Verma Model Evaluation Evidence: Qwen3 0.6B Candidate
+# Verma Model Evaluation Evidence: Qwen3 0.6B
 
-## 1. Candidate Artifact & Provenance
+## 1. Application Model and Artifact Provenance
 
-**Status: not selected and not measured.** The candidate metadata below is a proposal record, not verified release evidence. The authoritative `models/manifest.json` remains `tbd` and keeps all model identity, artifact, hash, license, source, and redistribution fields as `TBD`.
+**Application model: Qwen3 0.6B. Model benchmark: not measured. Production artifact: not pinned.** The metadata below is a production-artifact proposal record, not verified release evidence. The authoritative `models/manifest.json` remains `tbd` and keeps all artifact identity, hash, license, source, and redistribution fields as `TBD`.
 
 | Property | Value |
 | --- | --- |

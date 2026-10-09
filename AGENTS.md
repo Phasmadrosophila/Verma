@@ -98,7 +98,7 @@ displace the P0 desktop, offline, AI, or sync acceptance criteria.
 | **Local Storage** | Encrypted SQLite (e.g., SQLCipher / libsodium-backed store) |
 | **Direct Sync** | QUIC-based Syncthing-style protocol |
 | **Cryptography** | `libsodium`, `Ed25519`, `SPAKE2` |
-| **AI Runtime** | `llama.cpp` (proposed Qwen3 0.6B reviewed GGUF default; exact artifact TBD), Ollama (dev only) |
+| **AI Runtime** | `llama.cpp` (Qwen3 0.6B reviewed GGUF target; exact artifact TBD), Ollama with `qwen3:0.6b` (dev only) |
 | **Containerization** | Docker multi-stage builds, non-root, pinned digests |
 | **Repository** | `Phasmadrosophila/Verma` (base branch: `main`) |
 

@@ -2,11 +2,11 @@
 
 ## Status
 
-No model has been approved for release, downloaded, bundled, or benchmarked for Verma yet. The current recommendation is documented in [`model-selection-qwen3-0.6b.md`](model-selection-qwen3-0.6b.md), but the model manifest deliberately remains `TBD` until an exact artifact, hash, license review, and measured evaluation are complete.
+Verma uses Qwen3 0.6B as its local AI model. The application defaults to the Ollama tag `qwen3:0.6b` for local development and falls back to deterministic behavior when the runtime is unavailable. No model artifact is bundled or benchmarked yet; the model manifest deliberately remains `TBD` until the exact production GGUF artifact, hash, provenance, license review, and measured evaluation are complete.
 
 ## Runtime boundary
 
-Production inference is planned to use `llama.cpp` with a local quantized model. The proposed default is Qwen3 0.6B in a reviewed GGUF quantization; it is not selected. Ollama is permitted for local development only; it is not the production runtime. No production launcher, OS-level network denial, read-only filesystem sandbox, or enforced toolless process policy is present in this repository. These remain release requirements rather than implemented claims.
+Production inference is planned to use `llama.cpp` with a reviewed Qwen3 0.6B GGUF quantization. Ollama runs Qwen3 0.6B during local development; it is not the production runtime. No production launcher, OS-level network denial, read-only filesystem sandbox, or enforced toolless process policy is present in this repository. These remain release requirements rather than implemented claims.
 
 The vault remains usable when inference is disabled, unavailable, malformed, or times out. The runtime is never given passwords, secret values, note bodies, recovery material, private keys, file contents, vault keys, or any crypto-wallet metadata.
 
