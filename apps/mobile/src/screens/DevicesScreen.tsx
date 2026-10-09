@@ -4,56 +4,47 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { PairedDevice } from '../state/vaultStore';
-import { colors, radii, spacing, typography } from '../theme/tokens';
+import { Icon } from '../components/Icon';
+import { colors, radii, spacing } from '../theme/tokens';
 
 interface DevicesScreenProps {
   onShowToast: (msg: string) => void;
 }
 
-const initialDevices: PairedDevice[] = [
-  {
-    id: 'dev-laptop-01',
-    name: "Helena's MacBook Pro",
-    type: 'laptop',
-    lastSync: 'Just now',
-    status: 'active',
-  },
-  {
-    id: 'dev-desktop-02',
-    name: 'Home Linux Workstation',
-    type: 'laptop',
-    lastSync: '15 mins ago',
-    status: 'active',
-  },
-];
+// Demo constants — this screen is a simulation. No real pairing or sync, no
+// network. The pairing code and words below are a clearly-labeled SAMPLE shown
+// to illustrate the flow; they are not secrets and are never sent anywhere.
+const SAMPLE_PAIR_CODE = '482 915';
+const SAMPLE_PAIR_WORDS = 'maple · harbor · quiet · lantern';
 
 export const DevicesScreen: React.FC<DevicesScreenProps> = ({ onShowToast }) => {
-  const [directSyncEnabled, setDirectSyncEnabled] = useState(true);
-  const [devices, setDevices] = useState<PairedDevice[]>(initialDevices);
-  const [pairingModalOpen, setPairingModalOpen] = useState(false);
-  const [pairingPhrase, setPairingPhrase] = useState('meadow-cobalt-lantern');
-  const [pairingCode, setPairingCode] = useState('4821');
+  const [paused, setPaused] = useState(false);
+  const [devices, setDevices] = useState<string[]>([]);
+  const [pairingOpen, setPairingOpen] = useState(false);
+  const [deviceName, setDeviceName] = useState('My laptop');
 
-  const localDeviceId = 'ed25519:7f8a42...9c1b52';
+  const circleCount = 2 + devices.length;
 
   const handleToggleSync = () => {
-    const next = !directSyncEnabled;
-    setDirectSyncEnabled(next);
-    onShowToast(next ? 'Direct QUIC sync enabled' : 'Direct sync paused');
+    const next = !paused;
+    setPaused(next);
+    onShowToast(next ? 'Demo sync paused' : 'Demo devices are up to date');
   };
 
-  const handleTriggerSyncNow = () => {
-    onShowToast('Direct QUIC sync synchronized with 2 devices');
-  };
-
-  const handleGeneratePairingCode = () => {
-    setPairingPhrase('orchard-beacon-summit');
-    setPairingCode(Math.floor(1000 + Math.random() * 9000).toString());
-    setPairingModalOpen(true);
+  const handleConfirmPair = () => {
+    const name = deviceName.trim();
+    if (!name) {
+      onShowToast('Give your device a name');
+      return;
+    }
+    setDevices((prev) => [...prev, name]);
+    setPairingOpen(false);
+    onShowToast(`${name} joined your demo circle`);
+    setDeviceName('My laptop');
   };
 
   return (
@@ -62,116 +53,148 @@ export const DevicesScreen: React.FC<DevicesScreenProps> = ({ onShowToast }) => 
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
+      {/* Page head */}
       <View style={styles.header}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>QUIC TRANSPORT</Text>
-        </View>
-        <Text style={styles.title}>Direct Device Sync</Text>
+        <Text style={styles.eyebrow}>YOUR WORLD, CONNECTED</Text>
+        <Text style={styles.title}>Close, even when{'\n'}you're somewhere else.</Text>
         <Text style={styles.subtitle}>
-          Serverless, direct peer-to-peer sync between your authenticated devices using
-          QUIC and SPAKE2 pairing.
+          One personal space, across your devices.{'\n'}Always a little piece of home.
         </Text>
       </View>
 
-      {/* Local Device Info Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardLabel}>THIS DEVICE</Text>
-        <View style={styles.deviceRow}>
-          <View style={styles.deviceIconBox}>
-            <Text style={styles.deviceIcon}>📱</Text>
+      {/* Connected art */}
+      <View style={styles.connectedArt}>
+        <View style={styles.artCornerPeri} />
+        <View style={styles.artCircleOrange} />
+        <View style={styles.artRow}>
+          <View style={styles.artDevice}>
+            <Icon name="shield" size={26} color={colors.brandPeri} />
           </View>
-          <View style={styles.deviceInfo}>
-            <Text style={styles.deviceName}>Android Mobile App</Text>
-            <Text style={styles.deviceHash}>Fingerprint: {localDeviceId}</Text>
+          <Text style={styles.artLink}>{paused ? '⏸' : '⇄'}</Text>
+          <View style={styles.artDevice}>
+            <Icon name="shield" size={26} color={colors.brandOrange} />
           </View>
         </View>
+      </View>
 
-        {/* Sync toggle */}
-        <View style={styles.toggleRow}>
-          <View style={styles.toggleInfo}>
-            <Text style={styles.toggleTitle}>Direct QUIC Sync</Text>
-            <Text style={styles.toggleDesc}>
-              Listen for authenticated peer devices on the local network
+      {/* Trusted circle label */}
+      <View style={styles.sectionLabel}>
+        <Text style={styles.sectionTitle}>
+          Your trusted circle <Text style={styles.sectionCount}>{circleCount}</Text>
+        </Text>
+        <View style={styles.pillBlue}>
+          <Text style={styles.pillBlueText}>Demo</Text>
+        </View>
+      </View>
+
+      {/* This phone */}
+      <View style={styles.deviceCard}>
+        <View style={styles.deviceRow}>
+          <View style={styles.deviceIcon}>
+            <Text style={styles.deviceGlyph}>📱</Text>
+          </View>
+          <View style={styles.grow}>
+            <Text style={styles.deviceName}>This phone</Text>
+            <Text style={styles.deviceMeta}>Right here with you</Text>
+          </View>
+          <View style={styles.pill}>
+            <Text style={styles.pillText}>This device</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Studio desktop with pause/resume demo sync */}
+      <View style={styles.deviceCard}>
+        <View style={styles.deviceRow}>
+          <View style={styles.deviceIcon}>
+            <Text style={styles.deviceGlyph}>💻</Text>
+          </View>
+          <View style={styles.grow}>
+            <Text style={styles.deviceName}>Studio desktop</Text>
+            <Text style={styles.deviceMeta}>
+              {paused ? 'Taking a little break' : 'Everything is up to date'}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={handleToggleSync}
-            style={[styles.toggleBtn, directSyncEnabled && styles.toggleBtnActive]}
-          >
-            <View
-              style={[
-                styles.toggleThumb,
-                directSyncEnabled && styles.toggleThumbActive,
-              ]}
-            />
+          <Text style={styles.deviceState}>{paused ? '⏸' : '✓'}</Text>
+        </View>
+        <View style={styles.deviceFooter}>
+          <Text style={styles.deviceFooterText}>
+            {paused ? 'Sync paused' : 'Last synced just now'}
+          </Text>
+          <TouchableOpacity onPress={handleToggleSync}>
+            <Text style={styles.deviceFooterBtn}>
+              {paused ? 'Resume demo sync' : 'Pause demo sync'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Paired Devices List */}
-      <View style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionHeaderTitle}>
-          PAIRED DEVICES ({devices.length})
-        </Text>
-        <TouchableOpacity onPress={handleTriggerSyncNow}>
-          <Text style={styles.syncNowBtn}>Sync Now</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.deviceList}>
-        {devices.map((dev) => (
-          <View key={dev.id} style={styles.pairedCard}>
-            <View style={styles.pairedLeft}>
-              <View style={styles.pairedIconBox}>
-                <Text style={styles.pairedIcon}>💻</Text>
-              </View>
-              <View>
-                <Text style={styles.pairedName}>{dev.name}</Text>
-                <Text style={styles.pairedMeta}>Last sync: {dev.lastSync}</Text>
-              </View>
+      {/* Added demo devices */}
+      {devices.map((name, i) => (
+        <View key={`${name}-${i}`} style={styles.deviceCard}>
+          <View style={styles.deviceRow}>
+            <View style={styles.deviceIcon}>
+              <Text style={styles.deviceGlyph}>💻</Text>
             </View>
-
-            <View style={styles.statusPill}>
-              <View style={styles.statusDot} />
-              <Text style={styles.statusText}>Active</Text>
+            <View style={styles.grow}>
+              <Text style={styles.deviceName}>{name}</Text>
+              <Text style={styles.deviceMeta}>Added in this demo session</Text>
+            </View>
+            <View style={styles.pillBlue}>
+              <Text style={styles.pillBlueText}>Paired</Text>
             </View>
           </View>
-        ))}
-      </View>
+        </View>
+      ))}
 
-      {/* Pair New Device Action */}
+      {/* Paused warm notice */}
+      {paused && (
+        <View style={styles.noticeWarm}>
+          <Text style={styles.noticeGlyph}>⏸</Text>
+          <View style={styles.grow}>
+            <Text style={styles.noticeStrong}>Your phone is still good to go.</Text>
+            <Text style={styles.noticeText}>
+              Everything here stays available while the desktop is away.
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Pair button */}
       <TouchableOpacity
-        style={styles.pairNewBtn}
-        onPress={handleGeneratePairingCode}
-        activeOpacity={0.8}
+        style={styles.pairBtn}
+        onPress={() => setPairingOpen(true)}
+        activeOpacity={0.85}
       >
-        <Text style={styles.pairNewBtnText}>+ Pair Another Device</Text>
+        <Icon name="plus" size={18} color={colors.text} />
+        <Text style={styles.pairBtnText}>Welcome another device</Text>
       </TouchableOpacity>
 
-      {/* Protocol Guarantee */}
-      <View style={styles.protocolCard}>
-        <Text style={styles.protocolTitle}>Zero Central Server</Text>
-        <Text style={styles.protocolDesc}>
-          Direct sync uses Syncthing-style QUIC tunnels authenticated via Ed25519
-          cryptographic device keys. No cloud provider ever receives your encrypted vault
-          payloads.
-        </Text>
+      {/* Simulated notice */}
+      <View style={styles.noticeNeutral}>
+        <Text style={styles.noticeGlyph}>ℹ️</Text>
+        <View style={styles.grow}>
+          <Text style={styles.noticeStrong}>A preview of a closer connection.</Text>
+          <Text style={styles.noticeText}>
+            Pairing and sync are simulated in this concept. No data is sent to another
+            device.
+          </Text>
+        </View>
       </View>
 
-      {/* Pairing Modal */}
+      {/* Pair sheet */}
       <Modal
         animationType="slide"
-        transparent={true}
-        visible={pairingModalOpen}
-        onRequestClose={() => setPairingModalOpen(false)}
+        transparent
+        visible={pairingOpen}
+        onRequestClose={() => setPairingOpen(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>SPAKE2 Device Pairing</Text>
+              <Text style={styles.modalTitle}>A new member of your circle.</Text>
               <TouchableOpacity
-                onPress={() => setPairingModalOpen(false)}
+                onPress={() => setPairingOpen(false)}
                 style={styles.modalCloseBtn}
               >
                 <Text style={styles.modalCloseText}>✕</Text>
@@ -179,29 +202,36 @@ export const DevicesScreen: React.FC<DevicesScreenProps> = ({ onShowToast }) => 
             </View>
 
             <Text style={styles.modalDesc}>
-              Enter this pairing phrase and confirmation code on your other device to
-              establish an authenticated QUIC channel:
+              In the full app, you'll check that both devices show the same number and
+              words.
             </Text>
 
             <View style={styles.codeBox}>
-              <Text style={styles.phraseText}>{pairingPhrase}</Text>
-              <View style={styles.codeBadge}>
-                <Text style={styles.codeText}>PIN #{pairingCode}</Text>
-              </View>
+              <Text style={styles.codeEyebrow}>SAMPLE PAIRING CODE</Text>
+              <Text style={styles.pairCode}>{SAMPLE_PAIR_CODE}</Text>
+              <Text style={styles.pairWords}>{SAMPLE_PAIR_WORDS}</Text>
             </View>
 
-            <Text style={styles.pairingHint}>
-              Waiting for incoming pairing request over local network...
-            </Text>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Give this demo device a name</Text>
+              <TextInput
+                style={styles.input}
+                value={deviceName}
+                onChangeText={setDeviceName}
+                maxLength={50}
+                placeholder="My laptop"
+                placeholderTextColor={colors.textMuted}
+              />
+            </View>
 
+            <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirmPair}>
+              <Text style={styles.confirmBtnText}>The details match</Text>
+            </TouchableOpacity>
             <TouchableOpacity
-              style={styles.dismissBtn}
-              onPress={() => {
-                setPairingModalOpen(false);
-                onShowToast('New device paired successfully');
-              }}
+              style={styles.ghostBtn}
+              onPress={() => setPairingOpen(false)}
             >
-              <Text style={styles.dismissBtnText}>Done</Text>
+              <Text style={styles.ghostBtnText}>Maybe later</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -223,222 +253,212 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: spacing.lg,
   },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.assist,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radii.pill,
-    marginBottom: spacing.sm,
-  },
-  badgeText: {
-    fontSize: 9,
+  eyebrow: {
+    fontSize: 10,
     fontWeight: '800',
-    color: '#4F66BD',
+    color: colors.textMuted,
     letterSpacing: 1,
+    marginBottom: spacing.sm,
   },
   title: {
     fontSize: 26,
     fontWeight: '800',
     color: colors.text,
     letterSpacing: -0.6,
-    marginBottom: 6,
+    marginBottom: 8,
+    lineHeight: 32,
   },
   subtitle: {
     fontSize: 12,
     lineHeight: 18,
     color: colors.textMuted,
   },
-  card: {
-    backgroundColor: colors.inputBg,
-    borderRadius: radii.xl,
-    padding: spacing.lg,
+  connectedArt: {
+    backgroundColor: colors.assist,
+    borderRadius: 27,
+    height: 144,
+    overflow: 'hidden',
     marginBottom: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  cardLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: colors.textMuted,
-    letterSpacing: 1,
+  artCornerPeri: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 70,
+    height: 70,
+    backgroundColor: colors.brandPeri,
+    borderBottomRightRadius: 70,
+    opacity: 0.45,
+  },
+  artCircleOrange: {
+    position: 'absolute',
+    right: -30,
+    bottom: -25,
+    width: 80,
+    height: 80,
+    borderWidth: 18,
+    borderColor: colors.brandOrange,
+    borderRadius: 40,
+  },
+  artRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+  },
+  artDevice: {
+    width: 56,
+    height: 56,
+    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  artLink: {
+    fontSize: 22,
+    color: colors.text,
+  },
+  sectionLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  sectionCount: {
+    color: colors.brandPeri,
+  },
+  deviceCard: {
+    borderWidth: 1,
+    borderColor: '#e9dfd5',
+    borderRadius: 22,
+    padding: 17,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface,
   },
   deviceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    marginBottom: spacing.md,
   },
-  deviceIconBox: {
+  deviceIcon: {
     width: 44,
     height: 44,
-    borderRadius: radii.md,
+    borderRadius: radii.pill,
     backgroundColor: colors.warm,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deviceIcon: {
-    fontSize: 22,
+  deviceGlyph: {
+    fontSize: 20,
   },
-  deviceInfo: {
+  grow: {
     flex: 1,
   },
   deviceName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: colors.text,
   },
-  deviceHash: {
+  deviceMeta: {
     fontSize: 11,
     color: colors.textMuted,
     marginTop: 2,
   },
-  toggleRow: {
+  deviceState: {
+    fontSize: 18,
+    color: colors.success,
+  },
+  deviceFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: '#EBE2D7',
+    borderTopColor: '#efe5dc',
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
   },
-  toggleInfo: {
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  toggleTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  toggleDesc: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  toggleBtn: {
-    width: 44,
-    height: 26,
-    borderRadius: radii.pill,
-    backgroundColor: '#DDD3C7',
-    padding: 3,
-    justifyContent: 'center',
-  },
-  toggleBtnActive: {
-    backgroundColor: colors.brandOrange,
-  },
-  toggleThumb: {
-    width: 20,
-    height: 20,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surface,
-  },
-  toggleThumbActive: {
-    alignSelf: 'flex-end',
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  sectionHeaderTitle: {
+  deviceFooterText: {
     fontSize: 10,
-    fontWeight: '800',
     color: colors.textMuted,
-    letterSpacing: 1,
   },
-  syncNowBtn: {
+  deviceFooterBtn: {
     fontSize: 11,
     fontWeight: '700',
     color: colors.brandPeri,
+    minHeight: 20,
   },
-  deviceList: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
+  pill: {
+    backgroundColor: colors.cardBg,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radii.pill,
   },
-  pairedCard: {
+  pillText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: colors.textMuted,
+  },
+  pillBlue: {
+    backgroundColor: colors.assist,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radii.pill,
+  },
+  pillBlueText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#5c6daa',
+  },
+  noticeWarm: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: '#EFE7DE',
+    gap: spacing.md,
+    backgroundColor: colors.warm,
+    borderRadius: radii.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  noticeNeutral: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    backgroundColor: colors.cardBg,
     borderRadius: radii.lg,
     padding: spacing.md,
   },
-  pairedLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+  noticeGlyph: {
+    fontSize: 16,
   },
-  pairedIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: radii.md,
-    backgroundColor: colors.cardBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pairedIcon: {
-    fontSize: 18,
-  },
-  pairedName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  pairedMeta: {
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EDF7EE',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: radii.pill,
-    gap: 4,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: radii.pill,
-    backgroundColor: '#2E8540',
-  },
-  statusText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#2E8540',
-  },
-  pairNewBtn: {
-    borderWidth: 1,
-    borderColor: '#DED4CA',
-    borderRadius: radii.pill,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  pairNewBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  protocolCard: {
-    backgroundColor: colors.cardBg,
-    borderRadius: radii.xl,
-    padding: spacing.lg,
-  },
-  protocolTitle: {
-    fontSize: 11,
+  noticeStrong: {
+    fontSize: 12,
     fontWeight: '800',
     color: colors.text,
-    marginBottom: 4,
   },
-  protocolDesc: {
+  noticeText: {
     fontSize: 11,
     lineHeight: 16,
     color: colors.textMuted,
+    marginTop: 2,
+  },
+  pairBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.brandOrange,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+  },
+  pairBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.text,
   },
   modalOverlay: {
     flex: 1,
@@ -461,6 +481,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: colors.text,
+    flex: 1,
+    marginRight: spacing.md,
   },
   modalCloseBtn: {
     width: 32,
@@ -480,45 +502,63 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   codeBox: {
-    backgroundColor: colors.inputBg,
+    backgroundColor: colors.assist,
     borderRadius: radii.lg,
     padding: spacing.lg,
     alignItems: 'center',
-    gap: spacing.sm,
-    marginVertical: spacing.sm,
+    gap: 6,
   },
-  phraseText: {
-    fontSize: 18,
+  codeEyebrow: {
+    fontSize: 10,
     fontWeight: '800',
-    color: colors.text,
+    color: colors.textMuted,
     letterSpacing: 1,
   },
-  codeBadge: {
-    backgroundColor: colors.warm,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: radii.pill,
+  pairCode: {
+    fontSize: 36,
+    fontWeight: '500',
+    color: colors.text,
+    letterSpacing: 5,
   },
-  codeText: {
+  pairWords: {
     fontSize: 13,
+    color: '#5c6daa',
+  },
+  inputGroup: {
+    gap: 6,
+  },
+  inputLabel: {
+    fontSize: 12,
     fontWeight: '700',
-    color: '#8F5413',
+    color: colors.text,
   },
-  pairingHint: {
-    fontSize: 11,
-    color: colors.textMuted,
-    textAlign: 'center',
+  input: {
+    backgroundColor: colors.inputBg,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: colors.text,
   },
-  dismissBtn: {
+  confirmBtn: {
     backgroundColor: colors.brandOrange,
     paddingVertical: 14,
     borderRadius: radii.pill,
     alignItems: 'center',
     marginTop: spacing.sm,
   },
-  dismissBtnText: {
+  confirmBtnText: {
     fontSize: 13,
     fontWeight: '700',
     color: colors.text,
+  },
+  ghostBtn: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  ghostBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textMuted,
   },
 });
