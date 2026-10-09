@@ -137,7 +137,7 @@ jobs:
             await syncIssue(current.number);
 
             if (context.payload.action === 'closed') {
-              const dependentIssues = await github.paginate(github.rest.issues.list, {
+              const dependentIssues = await github.paginate(github.rest.issues.listForRepo, {
                 owner,
                 repo,
                 state: 'open',
@@ -145,23 +145,8 @@ jobs:
               });
               for (const dependent of dependentIssues) {
                 if (dependent.body && new RegExp(`blocked by (?:\\[[^\\]]+\\] [^\\r\\n]+ )?#${current.number}(\\D|$)`, 'i').test(dependent.body)) {
-                  await github.rest.issues.addLabels({
-                    owner,
-                    repo,
-                    issue_number: dependent.number,
-                    labels: ['status:blocked'],
-                  });
                   core.info(`Re-evaluating dependent issue #${dependent.number}.`);
-                  const response = await github.rest.issues.get({ owner, repo, issue_number: dependent.number });
-                  const dependentBlockers = [...(response.data.body || '').matchAll(/blocked by (?:\[[^\]]+\] [^\r\n]+ )?#(\d+)/gi)].map((match) => Number(match[1]));
-                  const states = await Promise.all(dependentBlockers.map(async (number) => {
-                    const blocker = await github.rest.issues.get({ owner, repo, issue_number: number });
-                    return blocker.data.state;
-                  }));
-                  if (states.length > 0 && states.every((state) => state === 'closed')) {
-                    await github.rest.issues.removeLabel({ owner, repo, issue_number: dependent.number, name: 'status:blocked' }).catch(() => {});
-                    await github.rest.issues.addLabels({ owner, repo, issue_number: dependent.number, labels: ['status:ready'] });
-                  }
+                  await syncIssue(dependent.number);
                 }
               }
             }
