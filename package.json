@@ -1,0 +1,16 @@
+{
+  "name": "verma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --recursive run build",
+    "check": "pnpm --recursive run check",
+    "test": "pnpm --recursive run test",
+    "dev": "pnpm --filter @app/api dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "packageManager": "pnpm@12.8.1"
+}
