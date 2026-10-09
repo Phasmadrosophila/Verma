@@ -15,7 +15,7 @@ Verma needs a constrained local copilot, not a general-purpose chatbot. Its init
 - Explaining deterministic password-health findings.
 - Returning short, schema-constrained JSON without tools or mutation access.
 
-`qwen3:0.6b` is a practical baseline because the Ollama listing reports a 523 MB Q4_K_M artifact, 752M parameters, and an Apache 2.0 license. Its size is substantially lighter than the 1B--4B model range originally described in the PRD while remaining more suitable for instruction following and structured extraction than the smallest general-purpose alternatives.
+`qwen3:0.6b` is a candidate baseline because an earlier Ollama listing was reported as a 523 MB Q4_K_M artifact with 752M parameters and an Apache 2.0 license. Those reported characteristics are not independent release evidence: the exact GGUF is not present or verified, the manifest remains `tbd`, and no model benchmark has been measured in this repository. Its proposed size is lighter than the 1B--4B model range originally described in the PRD, but suitability for Verma still requires measured validation.
 
 The Ollama package size is not the final mobile package size. The implementation must evaluate the exact GGUF quantization and platform build that Verma intends to ship.
 
@@ -23,7 +23,7 @@ The Ollama package size is not the final mobile package size. The implementation
 
 | Candidate | Reported Ollama artifact | Strength | Reason not the default |
 | --- | ---: | --- | --- |
-| `qwen3:0.6b` | 523 MB, Q4_K_M | Small, multilingual, structured-task capable, Apache 2.0 | Requires measured validation on target phones |
+| `qwen3:0.6b` | Reported 523 MB, Q4_K_M | Proposed small, multilingual, structured-task candidate | Exact artifact, provenance, license, and target-device behavior are unverified |
 | `qwen2.5:0.5b` | 398 MB, Q4_K_M | Smallest practical fallback and Apache 2.0 | Older generation; lower expected instruction quality |
 | `granite4:350m` | 708 MB, BF16 | Very small parameter count and instruction-following focus | Listed artifact is larger than Qwen3 0.6B and BF16 is not a mobile-oriented quantization |
 | `smollm2:135m` / `360m` / `1.7b` | Compact family | Useful research fallback | Less attractive for reliable JSON extraction and import mapping without evaluation |
