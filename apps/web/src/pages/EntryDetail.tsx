@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { ArrowLeft, Edit2, Trash2, Eye, EyeOff, Lock, Copy } from 'lucide-react';
 import type { VaultEntry } from '@app/shared';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { StatusBanner } from '../components/StatusBanner';
 
 const SecretField = ({ label, value, isRevealed, copyToClipboard }: { label: string; value?: string; isRevealed: boolean; copyToClipboard: (text: string) => void }) => {
   if (!value) return null;
@@ -34,6 +36,7 @@ export const EntryDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchEntry = async () => {
@@ -50,13 +53,14 @@ export const EntryDetail = () => {
     if (id) fetchEntry();
   }, [id]);
 
-  const handleDelete = async () => {
-    if (!window.confirm('Delete entry? This action cannot be undone.')) return;
+  const handleConfirmDelete = async () => {
     try {
       await api.deleteEntry(id!);
+      setIsDeleteDialogOpen(false);
       navigate('/');
     } catch (err: any) {
-      alert(err.message || 'Failed to delete');
+      setIsDeleteDialogOpen(false);
+      setError(err.message || 'Failed to delete');
     }
   };
 
@@ -65,14 +69,24 @@ export const EntryDetail = () => {
   };
 
   if (loading) return <div className="text-body text-[var(--color-text-muted)]">Loading...</div>;
-  if (error || !entry) return <div className="text-body text-red-600">{error || 'Entry not found'}</div>;
+  if (!entry) return <div className="text-body text-red-600">{error || 'Entry not found'}</div>;
 
   return (
     <div className="flex flex-col h-full max-w-2xl mx-auto gap-6 pb-12">
+      {error && (
+        <StatusBanner
+          variant="error"
+          title="Operation Failed"
+          description={error}
+          dismissible={true}
+          onDismiss={() => setError('')}
+        />
+      )}
+
       <div className="flex justify-between items-center">
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-body transition-colors"
+          className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-body transition-colors focus:ring-2 focus:ring-[var(--color-brand-orange)] rounded-sm"
         >
           <ArrowLeft className="w-5 h-5" />
           Back
@@ -80,14 +94,14 @@ export const EntryDetail = () => {
         <div className="flex gap-2">
           <button 
             onClick={() => navigate(`/entry/${id}/edit`)}
-            className="flex items-center gap-2 bg-[var(--color-paper)] text-[var(--color-text)] px-4 py-2 rounded-full border border-[var(--color-border)] text-body hover:bg-[var(--color-canvas)] transition-colors"
+            className="flex items-center gap-2 bg-[var(--color-paper)] text-[var(--color-text)] px-4 py-2 rounded-full border border-[var(--color-border)] text-body hover:bg-[var(--color-canvas)] transition-colors focus:ring-2 focus:ring-[var(--color-brand-orange)]"
           >
             <Edit2 className="w-4 h-4" />
             Edit
           </button>
           <button 
-            onClick={handleDelete}
-            className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full border border-red-200 text-body hover:bg-red-100 transition-colors"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full border border-red-200 text-body hover:bg-red-100 transition-colors focus:ring-2 focus:ring-red-400"
           >
             <Trash2 className="w-4 h-4" />
             Delete
@@ -190,6 +204,18 @@ export const EntryDetail = () => {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title="Delete Entry"
+        description={`Are you sure you want to permanently delete "${entry.title}"?`}
+        consequence="This action removes the entry from your encrypted vault and cannot be undone."
+        confirmText="Delete permanently"
+        cancelText="Keep entry"
+        isDestructive={true}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setIsDeleteDialogOpen(false)}
+      />
     </div>
   );
 };

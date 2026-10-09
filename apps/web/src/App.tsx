@@ -5,6 +5,7 @@ import { LockScreen } from './pages/LockScreen';
 import { EntryList } from './pages/EntryList';
 import { EntryDetail } from './pages/EntryDetail';
 import { EntryForm } from './pages/EntryForm';
+import { AskVault } from './pages/AskVault';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLocked, isInitialized, status } = useVault();
@@ -25,7 +26,7 @@ function App() {
             <Route path="/entry/new" element={<EntryForm />} />
             <Route path="/entry/:id" element={<EntryDetail />} />
             <Route path="/entry/:id/edit" element={<EntryForm />} />
-            <Route path="/ask" element={<div className="p-4">Ask Your Vault (Coming soon)</div>} />
+            <Route path="/ask" element={<AskVault />} />
             <Route path="/import" element={<div className="p-4">Smart Import (Coming soon)</div>} />
           </Route>
         </Routes>
