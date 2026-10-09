@@ -53,7 +53,7 @@ The desktop app combines an Hono API, a local SQLite vault, explicit secret mask
 
 ## Run the desktop integration
 
-Prerequisites: Node.js 22 or newer and pnpm 10 or newer. From a fresh clone, run `pnpm install`, then:
+Prerequisites: Node.js 22 or newer and pnpm 12 (pinned via the `packageManager` field as pnpm@12.8.1; Corepack enabled). From a fresh clone, run `pnpm install`, then:
 
 ```powershell
 pnpm dev:integration
@@ -103,7 +103,7 @@ Running the assistant locally benefits Verma because vault metadata and user que
 | Password generation | Deterministic application flow using browser cryptographic randomness; no AI or internet required. |
 | Smart Import parsing and fallback mapping | CSV parsing, deterministic mapping, duplicate detection, staging, preview, and confirmation run locally. |
 | Metadata projection for Ask Your Vault | Trusted code selects allowed metadata while the vault is unlocked and returns an empty AI view while locked. |
-| AI endpoint boundary | The adapter rejects non-loopback hostnames before making its request; development defaults to AI disabled. |
+| AI endpoint boundary | The adapter rejects non-loopback hostnames before making its request; when no local model endpoint is running on loopback the request fails gracefully and falls back to deterministic metadata search. |
 | Desktop web/API communication | Vite proxies to the local Hono API on `127.0.0.1`; the integration runner uses a local database and synthetic fixtures. |
 | Direct-sync verification | Pairing, encryption, signatures, and sync logic are exercised locally in the verification suite. |
 
@@ -122,7 +122,7 @@ The core desktop vault and its deterministic fallback flows do not require a clo
 
 ## Local versus internet behavior
 
-Normal vault, import, and API operations run in the local Hono process. The current AI adapter rejects configured non-loopback endpoints before making a request, and development defaults to AI disabled. This is an application-layer loopback restriction, not proof of an OS-level network sandbox, read-only filesystem sandbox, or toolless model process.
+Normal vault, import, and API operations run in the local Hono process. The current AI adapter rejects configured non-loopback endpoints before making a request, and when no local model endpoint is running on loopback the request fails gracefully and falls back to deterministic metadata search. This is an application-layer loopback restriction, not proof of an OS-level network sandbox, read-only filesystem sandbox, or toolless model process.
 
 No model artifact is bundled. If a model is selected later, a human will need to acquire it separately, which requires internet access or another transfer method. The current code does not implement model acquisition or a production `llama.cpp` launcher.
 

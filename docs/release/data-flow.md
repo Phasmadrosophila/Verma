@@ -4,17 +4,17 @@
 
 ## Implemented Smart Import path
 
-`POST /api/import/analyze` is the only wired application path that invokes `AiAdapter` ([`apps/api/src/routes/import.routes.ts`](../../apps/api/src/routes/import.routes.ts)). The vault must be initialized and unlocked; the route parses the submitted `csvContent`, obtains existing vault metadata for deterministic duplicate detection, and passes the parsed `headers` and `rows` to `AiAdapter.suggestImportMappings`.
+`POST /api/import/analyze` is one of two wired application paths that invoke `AiAdapter` ([`apps/api/src/routes/import.routes.ts`](../../apps/api/src/routes/import.routes.ts)); the other is `POST /api/ask`, which calls `AiAdapter.askVault` (see the Ask Your Vault path below). For Smart Import, the vault must be initialized and unlocked; the route parses the submitted `csvContent`, obtains existing vault metadata for deterministic duplicate detection, and passes the parsed `headers` and `rows` to `AiAdapter.suggestImportMappings`.
 
 | Stage | Exact data crossing the stage | Enforced behavior | Source |
 | --- | --- | --- | --- |
 | Browser/client → API | Entire caller-supplied `csvContent` request body | The Hono route parses it in the API process. It is retained in the module-global, in-memory `stagingStore` for up to 30 minutes or until cancellation/confirmation. | `apps/api/src/routes/import.routes.ts` |
-| API → import adapter | All CSV header strings plus at most the first three parsed row objects | Before prompt construction, only values whose lower-cased header is exactly `password`, `pass`, `pwd`, or `secret` are replaced with `[REDACTED_SECRET]`. | `apps/api/src/ai/adapter.ts` |
+| API → import adapter | All CSV header strings plus at most the first three parsed row objects | Before prompt construction, each row value is checked by its normalized header (lower-cased, with spaces/underscores/hyphens stripped). A value whose header contains any of 12 secret substrings (`password`, `pass`, `pwd`, `secret`, `totp`, `token`, `key`, `seed`, `phrase`, `pin`, `code`, `private`) is replaced with `[REDACTED_SECRET]`; a value whose header contains any of 6 note substrings (`note`, `desc`, `comment`, `memo`, `content`, `body`) is replaced with `[REDACTED_NOTE]`. | `apps/api/src/ai/adapter.ts` |
 | Adapter → local endpoint | JSON request to `${apiUrl}/api/generate`: `model`, import prompt, `stream: false`, `format: "json"`, and temperature `0.1` | The configured URL is rejected unless its parsed hostname is exactly `localhost`, `127.0.0.1`, or `::1`. The code makes an HTTP `fetch` after that check. | `apps/api/src/ai/adapter.ts` |
 | Local endpoint → API | Response field `response`, expected to be a JSON string | Zod validates mappings and tags. Invalid/non-OK/timeout/error responses fall back to deterministic header mapping and no AI tags. | `apps/api/src/ai/adapter.ts` |
 | API → client / vault | Proposal and staging ID; later, raw staged rows only after `POST /api/import/confirm` | Analysis does not write vault entries. Confirmation persists selected rows; cancellation removes the staging record. | `apps/api/src/routes/import.routes.ts` |
 
-The import prompt contains the full header list and the sanitized three-row sample. It can also contain any value in a header not matching those four exact names; this is an implementation gap, not an approved disclosure claim (see findings).
+The import prompt contains the full header list and the sanitized three-row sample. Redaction is driven by substring matches against the normalized header name, so a secret-bearing header whose name contains none of those 18 substrings is passed through unchanged; this is an implementation gap, not an approved disclosure claim (see findings).
 
 ## Implemented redacted-entry projection
 
@@ -42,7 +42,7 @@ No launcher, sandbox profile, firewall/namespace rule, read-only mount, `llama.c
 
 ## Findings requiring disposition before release
 
-1. **Critical — import sample redaction is header-name limited.** `suggestImportMappings` passes values for headers such as `notes`, `api_key`, `token`, or custom fields unchanged. It also treats only four normalized header names as secret. This conflicts with the required zero-secret-field boundary for arbitrary browser exports.
+1. **Critical — import sample redaction is header-name limited.** `suggestImportMappings` redacts only values whose normalized header contains one of 12 secret or 6 note substrings; a secret-bearing header matching none of them (for example an opaque custom field name) is passed through unchanged. This substring allowlist conflicts with the required zero-secret-field boundary for arbitrary browser exports.
 2. **High — the separately tested trusted redaction boundary is not on the Ask Your Vault production API path.** The route uses the repository's `getMetadataList()` projection, which excludes secret fields, but `TrustedRedactionBoundary` is not invoked by the route and the adapter accepts metadata supplied by its caller.
 3. **Medium — Ask Your Vault is now routed, but runtime isolation remains unverified.** The route has lock-state handling and API coverage, but its local endpoint is only constrained at the application layer; no OS-level network/filesystem/tool sandbox or authenticated local runtime is implemented here.
 4. **High — runtime sandbox claims are not enforced in source.** The adapter’s loopback allowlist prevents it from selecting a remote HTTP endpoint; it does not deny network or filesystem access to a local model server/process.
@@ -50,9 +50,9 @@ No launcher, sandbox profile, firewall/namespace rule, read-only mount, `llama.c
 
 ## Verification performed
 
-- `pnpm --filter @app/shared test` — passed: 55 tests, including AC-B-M1-01 redaction and lock-revocation tests.
+- `pnpm --filter @app/shared test` — passed: 59 tests, including AC-B-M1-01 redaction and lock-revocation tests.
 - `pnpm --filter @app/shared build` — passed.
-- `pnpm --filter @app/api test` — passed: 36 tests, including Smart Import’s external-URL rejection test.
+- `pnpm --filter @app/api test` — passed: 42 tests, including Smart Import’s external-URL rejection test.
 - `pnpm --filter @app/api check` — passed.
 
 The initial API test/check invocation failed before the shared package had been built because `@app/shared/dist/index.js` was absent; after `pnpm --filter @app/shared build`, the API test and typecheck passed.

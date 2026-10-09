@@ -49,6 +49,10 @@ This is the task registry for the Verma Delivery project. GitHub issues are the 
 | C-M0-08 | #49 | Faiithal | P0 Foundation | A-M0-05, C-M0-04, C-M0-05, C-M0-06 |
 | E-MR-04 | #50 | HitsukiMok | Release | A-M0-05, C-M0-08, C-M0-07 |
 | C-M0-09 | #55 | Faiithal | P0 Foundation | None |
+| C-MR-01 | #19 | HitsukiMok | Release | TODO(verify) |
+| B-MR-02 | #60 | whinee | Release | TODO(verify) |
+| A-M0-06 | #61 | whinee | P0 Foundation | TODO(verify) |
+| TODO(verify) | #59 | helenaherrero515 | Release | TODO(verify) |
 
 ## Order of execution
 

@@ -187,6 +187,8 @@ QUIC is valuable here because it is the transport behind a direct, resumable, au
 
 - Managed cloud relay, Cloudflare deployment, billing, and operations.
 - Android mobile app via Expo (`https://expo.dev/`).
+
+  The repository now contains an Expo mobile client (`apps/mobile`). This is an explicit post-MVP scope deviation: desktop web remains the primary hackathon release path, and mobile work must not displace the P0 desktop, offline, AI, or sync acceptance criteria.
 - Enterprise roles, ACLs, audit logs, and organization recovery.
 - Full estate workflows, Legacy Readiness, multiple recipients, legal workflows, and policy controls.
 - Crypto wallet entry workflows.
@@ -227,8 +229,9 @@ The assistant can identify missing critical-account categories and help assemble
 
 ### AI behavior requirements
 
-- The application model is Qwen3 0.6B, delivered for production as a reviewed quantized GGUF artifact through `llama.cpp`; the exact artifact remains unselected until its hash, license, redistribution status, and target-device evaluation are recorded. Ollama with `qwen3:0.6b` is permitted for development only.
-- Use the selected Qwen3 0.6B application model, or a measured replacement of comparable size selected through the documented evaluation gate.
+- The proposed small-device default is Qwen3 0.6B, delivered as a reviewed quantized GGUF artifact through `llama.cpp`; the exact artifact remains unselected until its hash, license, redistribution status, and target-device evaluation are recorded (`models/manifest.json` is `tbd`). Ollama is permitted for development only (`qwen3:0.6b` is the intended dev model; the code currently defaults to `llama3.2`/`llama3`).
+- Current implementation: the API calls Ollama over HTTP on a loopback endpoint. The adapter accepts only `localhost`, `127.0.0.1`, or `::1` hostnames. This is an application-layer loopback restriction; the repository does not implement a production `llama.cpp` launcher or an OS-level network/filesystem sandbox (see `docs/disclosures.md`).
+- Use the proposed small-device Qwen3 0.6B model, or a measured replacement of comparable size, selected through the documented evaluation gate.
 - Use a small embedding model only if it improves measured retrieval quality enough to justify the additional complexity.
 - The model has no tools and cannot invoke network, filesystem, vault, or mutation operations.
 - Outputs use constrained JSON and are validated against a schema before display.
@@ -294,7 +297,7 @@ The model must never receive:
 
 ### Storage and entries
 
-- Store vault data locally in encrypted SQLite or an equivalent encrypted store.
+- Store vault data locally in an encrypted local store. The current implementation uses `better-sqlite3` with application-layer encryption (`node:crypto` aes-256-gcm, scrypt key derivation) rather than SQLCipher.
 - Support login, note, and API key entries for the hackathon demo. Card, crypto wallet, and file entries remain product-roadmap types.
 - Use tags as the default organization tool; provide folders only for specific use cases.
 - Generate passwords through non-AI code using a cryptographically secure random source.
@@ -309,10 +312,10 @@ The model must never receive:
 
 ### Sync and pairing
 
-- Direct device sync uses QUIC in the intended architecture.
+- Direct device sync uses QUIC in the intended architecture. The implemented transport is an in-memory `DirectPeerTransport` test harness (`packages/shared/src/sync/transport.ts`); a native QUIC transport is not yet implemented.
 - Pair devices with a QR code or a word phrase plus a confirmation number for devices without cameras.
-- Assign each device an Ed25519 keypair; the device ID is the hash of its public key.
-- Use a PAKE such as SPAKE2 for pairing. Do not invent cryptography.
+- Assign each device an Ed25519 keypair (`node:crypto`); the device ID is the hash of its public key.
+- A PAKE such as SPAKE2 is the intended pairing direction. The current implementation uses a custom HMAC-based pairing exchange built on `node:crypto`. Do not invent cryptography.
 - Browser JavaScript cannot open raw UDP; desktop sync requires a native bridge or companion process.
 - For the hackathon, demonstrate one authenticated paired-device sync path. Full conflict queues, leases, and history are roadmap work unless the basic sync is already reliable.
 
@@ -425,12 +428,12 @@ These are P1 capabilities and must not delay the offline AI and direct-sync demo
 | --- | --- | --- |
 | Frontend | Single-page app, desktop view first | Android via Expo (`https://expo.dev/`) later |
 | Backend | Hono | Runs on Cloudflare Workers and in Docker |
-| Local storage | Encrypted SQLite | Local-first default |
-| Device sync | QUIC, Syncthing-style | Desktop/native bridge required for raw UDP |
-| Device identity | Ed25519 | ID is a hash of the public key |
-| Pairing | PAKE such as SPAKE2 | Use a vetted implementation |
-| Cryptography | Vetted library such as libsodium | Never hand-roll cryptography |
-| AI runtime | `llama.cpp` | Ollama for development only |
+| Local storage | `better-sqlite3` with application-layer encryption | Local-first default; SQLCipher is not in use |
+| Device sync | Intended QUIC, Syncthing-style | Implemented transport is an in-memory `DirectPeerTransport` test harness (`packages/shared/src/sync/transport.ts`); native QUIC transport is not yet implemented |
+| Device identity | Ed25519 (`node:crypto`) | ID is a hash of the public key |
+| Pairing | Custom HMAC-based pairing exchange (`node:crypto`) | SPAKE2/PAKE is the intended direction, not the current implementation |
+| Cryptography | `node:crypto` (aes-256-gcm, scrypt, ed25519) | libsodium is not in use; never hand-roll cryptography |
+| AI runtime | Ollama HTTP on loopback (dev); `llama.cpp` intended for production | No OS-level sandbox; application-layer loopback restriction only |
 | AI models | Small quantized LLM plus optional embedding model | Benchmark quality, latency, and license |
 | AI process | Local-only socket or stdio, sandboxed | No network; read-only filesystem |
 | Demo hardware | Team lead's laptop with RTX 4050 | Install and test CUDA early |
