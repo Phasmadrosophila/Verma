@@ -16,6 +16,9 @@ apps/api/prisma/*.db-journal
 qa-evidence/
 .playwright-mcp/
 .local/
+__pycache__/
+*.pyc
+*.pyo
 
 # Expo (apps/mobile) — generated build artifacts and local caches
 .expo/

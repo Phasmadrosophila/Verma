@@ -20,7 +20,11 @@ export const defaultConfig: AiAdapterConfig = {
 };
 
 export class AiAdapter {
-  constructor(private config: AiAdapterConfig = defaultConfig) {}
+  private config: AiAdapterConfig;
+
+  constructor(config: Partial<AiAdapterConfig> = {}) {
+    this.config = { ...defaultConfig, ...config };
+  }
 
   /**
    * Run Ask Your Vault inference.
