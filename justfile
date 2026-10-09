@@ -39,6 +39,10 @@ db-migrate:
 check:
     pnpm run check
 
+# Run the full release verification harness (E-MR-01)
+verify:
+    node --experimental-strip-types scripts/verify.ts
+
 # Run every workspace's unit tests (pass runner flags via `just test -- <flags>`)
 test +args="":
     pnpm run test {{ args }}

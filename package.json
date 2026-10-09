@@ -1,0 +1,19 @@
+{
+  "name": "verma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --experimental-strip-types tests/verification/**/*.test.ts",
+    "test:offline": "node --test --experimental-strip-types tests/verification/offline-ai.test.ts",
+    "test:redaction": "node --test --experimental-strip-types tests/verification/redaction-boundary.test.ts",
+    "test:sync": "node --test --experimental-strip-types tests/verification/direct-sync.test.ts",
+    "test:privacy": "node --test --experimental-strip-types tests/verification/privacy-scanner.test.ts",
+    "test:rehearsal": "node --test --experimental-strip-types tests/verification/release-rehearsal.test.ts",
+    "verify": "node --experimental-strip-types scripts/verify.ts",
+    "check": "node --test --experimental-strip-types tests/verification/**/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
