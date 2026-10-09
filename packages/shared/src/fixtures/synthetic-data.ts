@@ -145,3 +145,15 @@ export const ALL_SYNTHETIC_ENTRIES: VaultEntry[] = [
 export const SYNTHETIC_PASSWORD_FOR_VAULT = 'SyntheticMasterPassword2026!';
 export const SYNTHETIC_RECOVERY_PHRASE =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art';
+
+export const SYNTHETIC_MESSY_BROWSER_CSV = `name,url,username,password,note,folder
+"GitHub (Work Account)","https://github.com/login","synth.developer@example.test","Syn-Pass-Gh-982#alpha","Work dev account","Development"
+"Google Workspace","https://accounts.google.com","synth.developer@example.test","Syn-Pass-Gg-441!corp","Company mail","Productivity"
+"AWS Console","https://console.aws.amazon.com","synth.cloud-admin@example.test","Syn-Pass-Aws-773$infra","Infra cloud","Cloud"
+"Slack Workspace","https://phasmateam.slack.com","synth.developer@example.test","Syn-Pass-Gg-441!corp","Team chat","Communication"
+"GitHub (Duplicate Work)","https://github.com/login","synth.developer@example.test","Syn-Pass-Gh-982#alpha","Duplicate entry test","Development"
+"Legacy Internal","http://internal.local/login","synth.legacy_user@example.test","Syn-Pass-123","Old portal","Internal"`;
+
+export const SYNTHETIC_CLEAN_BROWSER_CSV = `Title,URL,Username,Password,Notes
+"GitHub Clean","https://github.com/login","synth.dev@example.test","Syn-Pass-Clean-1","Dev account"
+"Stripe Dashboard","https://dashboard.stripe.com","synth.billing@example.test","Syn-Pass-Clean-2","Billing portal"`;
