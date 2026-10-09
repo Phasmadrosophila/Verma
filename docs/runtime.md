@@ -58,3 +58,11 @@ The `AiAdapter` provides a secure, sandboxed interface for the local model runti
 - **Network Denial**: Rejecting non-local `apiUrl` destinations to guarantee that inference happens entirely locally without exposing metadata to the internet.
 - **Graceful Fallback**: Providing sensible defaults (e.g., empty suggestions or generic search results) if the model is disabled, times out, or fails to respond.
 - **Constrained Output**: Validating the LLM response against a rigorous JSON schema before any other system component processes it, preventing malformed outputs from breaking the core vault.
+
+## Smart Import Integration
+
+Smart Import combines deterministic heuristic parsing with on-device local AI mapping suggestions:
+- **Zero Secret Exposure**: Passwords, note bodies, and confidential columns are NEVER sent to the AI process. Samples are strictly sanitized and passwords redacted to `[REDACTED_SECRET]` before LLM prompting.
+- **Offline & Local Only**: In accordance with AC-B-M1-03-04, outbound network requests to cloud AI services are rejected with strict network denial (`localhost` / `127.0.0.1` enforcement).
+- **Preview vs. Commit Invariant**: Import proposals and mappings exist purely in staging memory. Zero entries are written to encrypted vault storage until explicit user confirmation (AC-B-M1-03-02, AC-B-M1-03-05).
+- **Heuristic Fallback**: If the local AI process is offline or returns malformed data, deterministic heuristics immediately map standard browser columns with no user interruption.

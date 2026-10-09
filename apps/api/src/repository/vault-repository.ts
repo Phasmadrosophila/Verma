@@ -439,6 +439,37 @@ export class VaultRepository {
     return count;
   }
 
+  public async importEntries(
+    entries: CreateEntryInput[]
+  ): Promise<{ imported: VaultEntry[]; failed: { index: number; reason: string }[] }> {
+    this.ensureUnlocked();
+
+    const imported: VaultEntry[] = [];
+    const failed: { index: number; reason: string }[] = [];
+
+    for (let i = 0; i < entries.length; i++) {
+      const input = entries[i];
+      try {
+        const created = await this.createEntry(input);
+        imported.push(created);
+      } catch (err: any) {
+        failed.push({
+          index: i,
+          reason: err?.message || 'Failed to create entry during import',
+        });
+      }
+    }
+
+    this.logger.info('ENTRIES_IMPORTED', {
+      meta: {
+        importedCount: imported.length,
+        failedCount: failed.length,
+      },
+    });
+
+    return { imported, failed };
+  }
+
   public close(): void {
     this.lock();
     this.storage.close();
