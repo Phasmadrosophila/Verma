@@ -16,9 +16,10 @@ export function createAskRoutes(repo: VaultRepository, aiAdapter: AiAdapter): Ho
       const metadata = await repo.getMetadataList();
       const result = await aiAdapter.askVault(query, metadata);
       return c.json(result);
-    } catch (err) {
+    } catch (err: any) {
       if (err instanceof VaultLockedError) return c.json({ error: err.message }, 423);
       if (err instanceof VaultNotInitializedError) return c.json({ error: err.message }, 400);
+      if (err?.message?.includes('AI Adapter network denial')) return c.json({ error: err.message }, 403);
       return c.json({ error: 'Ask Your Vault is unavailable' }, 503);
     }
   });

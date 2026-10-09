@@ -383,10 +383,14 @@ export class VaultRepository {
     const metadataList = projectEntriesMetadata(entries);
 
     // Enforce privacy invariant verification
-    for (let i = 0; i < metadataList.length; i++) {
-      const check = assertSafeMetadata(metadataList[i], entries[i]);
-      if (!check.isSafe) {
-        throw new Error(`Metadata projection invariant violation: ${check.violations.join(', ')}`);
+    const entryMap = new Map<string, VaultEntry>(entries.map((e) => [e.id, e]));
+    for (const metadata of metadataList) {
+      const original = entryMap.get(metadata.id);
+      if (original) {
+        const check = assertSafeMetadata(metadata, original);
+        if (!check.isSafe) {
+          throw new Error(`Metadata projection invariant violation: ${check.violations.join(', ')}`);
+        }
       }
     }
 
