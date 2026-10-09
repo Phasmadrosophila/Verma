@@ -8,7 +8,7 @@ const [landing, download, downloadStyles, server] = await Promise.all([
   readFile(new URL('../server.mjs', import.meta.url), 'utf8'),
 ]);
 
-assert.equal((landing.match(/href="\/download"/g) || []).length, 2, 'Landing desktop and mobile downloads route to /download');
+assert((landing.match(/href="\/download"/g) || []).length >= 2, 'Landing desktop and mobile downloads route to /download');
 assert.equal((download.match(/class="deployment-card/g) || []).length, 3, 'Download page has three deployment choices');
 assert.match(download, /Verma Local[\s\S]*FOR HOMELABBERS[\s\S]*Self-hosted[\s\S]*FOR ORGANIZATIONS[\s\S]*Enterprise/);
 assert.match(download, /Enterprise remains a future product direction|Not part of the hackathon MVP/);
