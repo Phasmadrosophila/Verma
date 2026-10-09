@@ -16,7 +16,7 @@ interface SetupScreenProps {
 }
 
 export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => {
-  const [step, setStep] = useState<'passphrase' | 'recovery'>('passphrase');
+  const [step, setStep] = useState<'passphrase' | 'recovery' | 'complete'>('passphrase');
   const [passphrase, setPassphrase] = useState('');
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [confirmedBackup, setConfirmedBackup] = useState(false);
@@ -40,27 +40,28 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
       setError('Please confirm that you have stored your 24-word recovery phrase.');
       return;
     }
-    onSetupComplete();
+    setStep('complete');
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/verma-logo.png')}
-          style={styles.brandLogo}
-        />
-        <Text style={styles.eyebrow}>SECURE VAULT CREATION</Text>
-        <Text style={styles.title}>
-          {step === 'passphrase' ? 'Create Master Passphrase' : '24-Word Recovery Phrase'}
-        </Text>
-        <Text style={styles.subtitle}>
-          {step === 'passphrase'
-            ? 'Your master passphrase encrypts your SQLite database using libsodium.'
-            : 'Write down these 24 words in order. Verma has zero servers and cannot restore lost phrases.'}
-        </Text>
-      </View>
+      {step !== 'complete' && (
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/verma-logo.png')}
+            style={styles.brandLogo}
+          />
+          <Text style={styles.eyebrow}>SECURE VAULT CREATION</Text>
+          <Text style={styles.title}>
+            {step === 'passphrase' ? 'Create Master Passphrase' : '24-Word Recovery Phrase'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {step === 'passphrase'
+              ? 'Your master passphrase encrypts your SQLite database using libsodium.'
+              : 'Write down these 24 words in order. Verma has zero servers and cannot restore lost phrases.'}
+          </Text>
+        </View>
+      )}
 
       {error ? (
         <View style={styles.errorBanner}>
@@ -115,7 +116,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
             <Text style={styles.primaryButtonText}>Continue to Recovery Phrase</Text>
           </TouchableOpacity>
         </View>
-      ) : (
+      ) : step === 'recovery' ? (
         <View style={styles.formSection}>
           {/* Recovery Words Grid */}
           <View style={styles.wordsGrid}>
@@ -149,6 +150,88 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
           >
             <Text style={styles.primaryButtonText}>Initialize & Unlock Vault</Text>
           </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.completionContainer}>
+          <View style={styles.completionHero}>
+            <View style={styles.successEmblem}>
+              <Image
+                source={require('../../assets/verma-logo.png')}
+                style={styles.emblemLogo}
+              />
+              <View style={styles.emblemCheck}>
+                <Text style={styles.emblemCheckText}>✓</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.completionBadge}>
+            <Text style={styles.completionBadgeText}>🛡️ VAULT INITIALIZED · AES-256</Text>
+          </View>
+
+          <Text style={styles.completionTitle}>
+            Your space.{'\n'}
+            <Text style={{ color: colors.brandOrange }}>Your fresh start.</Text>
+          </Text>
+
+          <Text style={styles.completionDesc}>
+            Your encrypted vault is active on this device. Master key is locked with Argon2id and your recovery phrase is set.
+          </Text>
+
+          <View style={styles.readinessCard}>
+            <View style={styles.readinessItem}>
+              <Text style={styles.readinessEmoji}>🔑</Text>
+              <View style={styles.readinessInfo}>
+                <Text style={styles.readinessTitle}>Master passphrase active</Text>
+                <Text style={styles.readinessSub}>Argon2id · 256-bit local encryption</Text>
+              </View>
+              <Text style={styles.readinessCheck}>✓</Text>
+            </View>
+
+            <View style={styles.readinessDivider} />
+
+            <View style={styles.readinessItem}>
+              <Text style={styles.readinessEmoji}>📝</Text>
+              <View style={styles.readinessInfo}>
+                <Text style={styles.readinessTitle}>Recovery phrase backed up</Text>
+                <Text style={styles.readinessSub}>24 offline words for emergency restore</Text>
+              </View>
+              <Text style={styles.readinessCheck}>✓</Text>
+            </View>
+
+            <View style={styles.readinessDivider} />
+
+            <View style={styles.readinessItem}>
+              <Text style={styles.readinessEmoji}>📶</Text>
+              <View style={styles.readinessInfo}>
+                <Text style={styles.readinessTitle}>Zero cloud exposure</Text>
+                <Text style={styles.readinessSub}>100% offline · No central servers</Text>
+              </View>
+              <Text style={styles.readinessCheck}>✓</Text>
+            </View>
+          </View>
+
+          <View style={styles.completionActions}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={onSetupComplete}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.primaryButtonText}>Import credentials →</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={onSetupComplete}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.secondaryButtonText}>Open my vault</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.completionFootnote}>
+            🔒 Hardware encrypted · Offline guaranteed
+          </Text>
         </View>
       )}
     </ScrollView>
@@ -320,5 +403,148 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: colors.text,
+  },
+  secondaryButton: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#DFD3C6',
+    marginTop: spacing.sm,
+  },
+  secondaryButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  completionContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+  },
+  completionHero: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: spacing.lg,
+  },
+  successEmblem: {
+    width: 92,
+    height: 92,
+    borderRadius: 32,
+    backgroundColor: colors.warm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    borderWidth: 2,
+    borderColor: colors.surface,
+  },
+  emblemLogo: {
+    width: 50,
+    height: 50,
+    resizeMode: 'contain',
+  },
+  emblemCheck: {
+    position: 'absolute',
+    right: -8,
+    bottom: -6,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.brandPeri,
+    borderWidth: 3,
+    borderColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emblemCheckText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  completionBadge: {
+    backgroundColor: colors.assist,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: radii.pill,
+    marginBottom: spacing.md,
+  },
+  completionBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#425ABD',
+    letterSpacing: 0.5,
+  },
+  completionTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: 34,
+    letterSpacing: -0.5,
+  },
+  completionDesc: {
+    fontSize: 12,
+    color: colors.muted,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.sm,
+  },
+  readinessCard: {
+    width: '100%',
+    backgroundColor: '#FDFAF7',
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    borderColor: '#EBE0D5',
+    padding: spacing.md,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  readinessItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  readinessEmoji: {
+    fontSize: 18,
+  },
+  readinessInfo: {
+    flex: 1,
+  },
+  readinessTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  readinessSub: {
+    fontSize: 10,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  readinessCheck: {
+    fontSize: 12,
+    color: '#1F7A36',
+    fontWeight: '800',
+    backgroundColor: '#E7F5EA',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  readinessDivider: {
+    height: 1,
+    backgroundColor: '#F0E5D9',
+  },
+  completionActions: {
+    width: '100%',
+    gap: spacing.xs,
+  },
+  completionFootnote: {
+    fontSize: 11,
+    color: colors.muted,
+    textAlign: 'center',
+    marginTop: spacing.md,
   },
 });
