@@ -308,6 +308,8 @@ Voice is warm, plain-spoken, specific, and calm. Name the object, state, boundar
 
 **Target:** WCAG 2.2 Level AA. This specification supports the target; full conformance still requires automated checks, keyboard review, screen-reader testing, zoom/reflow testing, contrast verification in implementation, and expert/manual review.
 
+**Implementation evidence (C-M0-07, 2026-10-10):** `apps/web/test/accessibility-responsive-states.test.tsx` exercises the synthetic demo path, labelled controls, masked-secret announcements, status/error live regions, focus styles, responsive layout contracts, and understandable AI-disabled fallback behavior. Run it with `pnpm --filter @app/web test`; pair that automated gate with the manual keyboard, screen-reader, and 400% zoom/reflow review required above before claiming full WCAG conformance.
+
 ### Keyboard and focus
 
 - Every action is reachable and operable by keyboard in a logical visual order.
