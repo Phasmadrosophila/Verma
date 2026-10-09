@@ -104,7 +104,6 @@ jobs:
                   option: workflowOptions[desired],
                 });
               }
-              core.info(`Issue #${issueNumber} synchronized to ${desired}.`);
               return current;
             };
 
