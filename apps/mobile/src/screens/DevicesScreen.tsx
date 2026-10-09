@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { PairedDevice } from '../state/vaultStore';
+import { getApiBaseUrl, mobileApi } from '../state/apiClient';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface DevicesScreenProps {
@@ -37,6 +38,29 @@ export const DevicesScreen: React.FC<DevicesScreenProps> = ({ onShowToast }) => 
   const [pairingModalOpen, setPairingModalOpen] = useState(false);
   const [pairingPhrase, setPairingPhrase] = useState('meadow-cobalt-lantern');
   const [pairingCode, setPairingCode] = useState('4821');
+  const [backendStatus, setBackendStatus] = useState<'connected' | 'offline' | 'checking'>('checking');
+  const apiUrl = getApiBaseUrl();
+
+  useEffect(() => {
+    let mounted = true;
+    mobileApi.checkHealth().then((healthy) => {
+      if (mounted) setBackendStatus(healthy ? 'connected' : 'offline');
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleTestBackendConnection = async () => {
+    onShowToast('Checking Verma API backend...');
+    const healthy = await mobileApi.checkHealth();
+    setBackendStatus(healthy ? 'connected' : 'offline');
+    if (healthy) {
+      onShowToast(`Backend API online (HTTP 200 ok at ${apiUrl})`);
+    } else {
+      onShowToast(`Backend offline at ${apiUrl}. Operating in local sandbox.`);
+    }
+  };
 
   const localDeviceId = 'ed25519:7f8a42...9c1b52';
 
@@ -148,6 +172,62 @@ export const DevicesScreen: React.FC<DevicesScreenProps> = ({ onShowToast }) => 
       >
         <Text style={styles.pairNewBtnText}>+ Pair Another Device</Text>
       </TouchableOpacity>
+
+      {/* Backend API Service Card */}
+      <View style={styles.card}>
+        <View style={styles.cardHeaderRow}>
+          <Text style={styles.cardLabel}>BACKEND SERVICE</Text>
+          <View
+            style={[
+              styles.statusPill,
+              backendStatus === 'connected'
+                ? styles.statusPillActive
+                : styles.statusPillOffline,
+            ]}
+          >
+            <View
+              style={[
+                styles.statusDot,
+                backendStatus === 'connected'
+                  ? styles.statusDotActive
+                  : styles.statusDotOffline,
+              ]}
+            />
+            <Text
+              style={[
+                styles.statusText,
+                backendStatus === 'connected'
+                  ? styles.statusTextActive
+                  : styles.statusTextOffline,
+              ]}
+            >
+              {backendStatus === 'connected'
+                ? 'Connected'
+                : backendStatus === 'checking'
+                ? 'Checking...'
+                : 'Offline Sandbox'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.deviceRow}>
+          <View style={styles.deviceIconBox}>
+            <Text style={styles.deviceIcon}>⚡</Text>
+          </View>
+          <View style={styles.deviceInfo}>
+            <Text style={styles.deviceName}>Local Hono API</Text>
+            <Text style={styles.deviceHash}>{apiUrl}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.backendTestBtn}
+          onPress={handleTestBackendConnection}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.backendTestBtnText}>Test Backend Connection</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Protocol Guarantee */}
       <View style={styles.protocolCard}>
@@ -521,4 +601,43 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
   },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  statusPillActive: {
+    backgroundColor: '#E7F5EA',
+  },
+  statusPillOffline: {
+    backgroundColor: '#F0ECE6',
+  },
+  statusDotActive: {
+    backgroundColor: '#2E8540',
+  },
+  statusDotOffline: {
+    backgroundColor: '#A0978C',
+  },
+  statusTextActive: {
+    color: '#2E8540',
+  },
+  statusTextOffline: {
+    color: '#7D7366',
+  },
+  backendTestBtn: {
+    marginTop: spacing.md,
+    backgroundColor: colors.paper,
+    borderWidth: 1,
+    borderColor: '#D9CFC4',
+    borderRadius: radii.pill,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  backendTestBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.text,
+  },
 });
+

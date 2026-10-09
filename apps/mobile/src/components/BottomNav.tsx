@@ -10,6 +10,49 @@ interface BottomNavProps {
   onAddNew: () => void;
 }
 
+interface NavItemProps {
+  tab: NavTab;
+  currentTab: NavTab;
+  icon: string;
+  label: string;
+  onPress: () => void;
+}
+
+const NavItem: React.FC<NavItemProps> = ({
+  tab,
+  currentTab,
+  icon,
+  label,
+  onPress,
+}) => {
+  const isActive = currentTab === tab;
+
+  return (
+    <TouchableOpacity
+      style={styles.tabButton}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View
+        style={[
+          styles.iconWrapper,
+          isActive && styles.iconWrapperActive,
+        ]}
+      >
+        <Text style={styles.tabIcon}>{icon}</Text>
+      </View>
+      <Text
+        style={[
+          styles.tabLabel,
+          isActive && styles.tabLabelActive,
+        ]}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
 export const BottomNav: React.FC<BottomNavProps> = ({
   currentTab,
   onSelectTab,
@@ -18,53 +61,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.navBar}>
-        {/* Vault Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="vault"
+          currentTab={currentTab}
+          icon="📁"
+          label="Vault"
           onPress={() => onSelectTab('vault')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'vault' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>📁</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'vault' && styles.tabLabelActive,
-            ]}
-          >
-            Vault
-          </Text>
-        </TouchableOpacity>
+        />
 
-        {/* Ask Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="ask"
+          currentTab={currentTab}
+          icon="✨"
+          label="Ask"
           onPress={() => onSelectTab('ask')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'ask' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>✨</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'ask' && styles.tabLabelActive,
-            ]}
-          >
-            Ask
-          </Text>
-        </TouchableOpacity>
+        />
 
         {/* Add Floating Pill/Circle */}
         <TouchableOpacity
@@ -78,53 +89,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <Text style={styles.addLabel}>New item</Text>
         </TouchableOpacity>
 
-        {/* Import Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="import"
+          currentTab={currentTab}
+          icon="📥"
+          label="Import"
           onPress={() => onSelectTab('import')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'import' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>📥</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'import' && styles.tabLabelActive,
-            ]}
-          >
-            Import
-          </Text>
-        </TouchableOpacity>
+        />
 
-        {/* Devices Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
+        <NavItem
+          tab="devices"
+          currentTab={currentTab}
+          icon="💻"
+          label="Devices"
           onPress={() => onSelectTab('devices')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'devices' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>💻</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'devices' && styles.tabLabelActive,
-            ]}
-          >
-            Devices
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );

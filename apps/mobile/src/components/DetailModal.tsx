@@ -15,8 +15,9 @@ interface DetailModalProps {
   visible: boolean;
   onClose: () => void;
   onEdit: (entry: MobileVaultEntry) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string | number) => void;
   onCopy: (label: string, text: string) => void;
+  onReveal?: (entry: MobileVaultEntry) => Promise<string>;
 }
 
 export const DetailModal: React.FC<DetailModalProps> = ({
@@ -26,19 +27,53 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   onEdit,
   onDelete,
   onCopy,
+  onReveal,
 }) => {
   const [revealed, setRevealed] = useState(false);
+  const [revealedSecret, setRevealedSecret] = useState<string | null>(null);
+  const [isRevealing, setIsRevealing] = useState(false);
 
   if (!entry) return null;
 
   const handleClose = () => {
     setRevealed(false);
+    setRevealedSecret(null);
     onClose();
   };
 
-  const getSecretDisplay = () => {
+  const currentSecret = revealedSecret || entry.secret;
+
+  const handleToggleReveal = async () => {
     if (revealed) {
-      return entry.secret;
+      setRevealed(false);
+      return;
+    }
+    if (entry.secret) {
+      setRevealed(true);
+      return;
+    }
+    if (onReveal) {
+      setIsRevealing(true);
+      try {
+        const sec = await onReveal(entry);
+        setRevealedSecret(sec);
+        setRevealed(true);
+      } catch {
+        // graceful handle
+      } finally {
+        setIsRevealing(false);
+      }
+    } else {
+      setRevealed(true);
+    }
+  };
+
+  const getSecretDisplay = () => {
+    if (isRevealing) {
+      return 'Decrypting with Argon2id...';
+    }
+    if (revealed) {
+      return currentSecret || '(Empty secret)';
     }
     return '••••••••••••••••';
   };
@@ -129,11 +164,12 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     : 'Password'}
                 </Text>
                 <TouchableOpacity
-                  onPress={() => setRevealed(!revealed)}
+                  onPress={handleToggleReveal}
                   style={styles.revealBtn}
+                  disabled={isRevealing}
                 >
                   <Text style={styles.revealBtnText}>
-                    {revealed ? 'Hide secret' : 'Reveal secret'}
+                    {isRevealing ? 'Decrypting...' : revealed ? 'Hide secret' : 'Reveal secret'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -150,7 +186,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   {getSecretDisplay()}
                 </Text>
                 <TouchableOpacity
-                  onPress={() => onCopy('Secret', entry.secret)}
+                  onPress={() => onCopy('Secret', currentSecret)}
                   style={[styles.actionBtn, styles.actionBtnPrimary]}
                 >
                   <Text style={styles.actionBtnPrimaryText}>Copy</Text>

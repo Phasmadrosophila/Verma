@@ -16,25 +16,64 @@ import { colors, radii, spacing, typography } from '../theme/tokens';
 interface AskScreenProps {
   entries: MobileVaultEntry[];
   onSelectEntry: (entry: MobileVaultEntry) => void;
+  onAskLocalAi?: (query: string) => Promise<{ answer: string; relevantEntryIds: string[] } | null>;
 }
 
 export const AskScreen: React.FC<AskScreenProps> = ({
   entries,
   onSelectEntry,
+  onAskLocalAi,
 }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<
     { entry: MobileVaultEntry; matched: string[]; score: number }[]
   >([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState<string | null>(null);
+  const [isAsking, setIsAsking] = useState(false);
 
-  const handleAsk = (queryText: string) => {
+  const handleAsk = async (queryText: string) => {
     if (!queryText.trim()) return;
     setQuery(queryText);
-    // Strict zero-secret search over metadata only
+    setIsAsking(true);
+    setAiAnswer(null);
+
+    // 1. Initial zero-secret metadata matcher
     const matched = findMetadata(entries, queryText);
+
+    // 2. Invoke local sandboxed AI if available
+    if (onAskLocalAi) {
+      try {
+        const aiRes = await onAskLocalAi(queryText);
+        if (aiRes) {
+          setAiAnswer(aiRes.answer);
+          if (aiRes.relevantEntryIds && aiRes.relevantEntryIds.length > 0) {
+            const relevantSet = new Set(aiRes.relevantEntryIds.map(String));
+            const relevantEntries = entries.filter((e) => relevantSet.has(String(e.id)));
+            const combinedMap = new Map<
+              string | number,
+              { entry: MobileVaultEntry; matched: string[]; score: number }
+            >();
+            for (const m of matched) combinedMap.set(m.entry.id, m);
+            for (const r of relevantEntries) {
+              if (!combinedMap.has(r.id)) {
+                combinedMap.set(r.id, { entry: r, matched: ['AI Selected'], score: 1 });
+              }
+            }
+            setResults(Array.from(combinedMap.values()));
+            setHasSearched(true);
+            setIsAsking(false);
+            return;
+          }
+        }
+      } catch {
+        // Graceful offline fallback
+      }
+    }
+
     setResults(matched);
     setHasSearched(true);
+    setIsAsking(false);
   };
 
   const suggestions = [
@@ -77,14 +116,27 @@ export const AskScreen: React.FC<AskScreenProps> = ({
         />
 
         <TouchableOpacity
-          style={[styles.askBtn, !query.trim() && styles.askBtnDisabled]}
+          style={[styles.askBtn, (!query.trim() || isAsking) && styles.askBtnDisabled]}
           onPress={() => handleAsk(query)}
-          disabled={!query.trim()}
+          disabled={!query.trim() || isAsking}
           activeOpacity={0.8}
         >
-          <Text style={styles.askBtnText}>Ask Local AI</Text>
+          <Text style={styles.askBtnText}>
+            {isAsking ? 'Thinking locally...' : 'Ask Local AI'}
+          </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Local AI Answer Banner */}
+      {aiAnswer && (
+        <View style={styles.aiAnswerCard}>
+          <View style={styles.aiAnswerHeader}>
+            <Text style={styles.aiAnswerIcon}>✨</Text>
+            <Text style={styles.aiAnswerTitle}>Verma Local AI</Text>
+          </View>
+          <Text style={styles.aiAnswerText}>{aiAnswer}</Text>
+        </View>
+      )}
 
       {/* Prompt Suggestions */}
       <View style={styles.suggestionsSection}>
@@ -375,5 +427,34 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     color: '#4F66BD',
+  },
+  aiAnswerCard: {
+    backgroundColor: colors.assist,
+    borderRadius: radii.xl,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#D8DEFA',
+  },
+  aiAnswerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  aiAnswerIcon: {
+    fontSize: 14,
+  },
+  aiAnswerTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#4F66BD',
+    letterSpacing: 0.5,
+  },
+  aiAnswerText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.text,
+    fontWeight: '500',
   },
 });

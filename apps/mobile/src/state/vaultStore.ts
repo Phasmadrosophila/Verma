@@ -1,7 +1,7 @@
 export type EntryType = 'login' | 'note' | 'api';
 
 export interface MobileVaultEntry {
-  id: number;
+  id: string | number;
   type: EntryType;
   title: string;
   subtitle: string;
@@ -15,7 +15,7 @@ export interface MobileVaultEntry {
 }
 
 export interface ImportCandidate {
-  id: number;
+  id: string | number;
   title: string;
   subtitle: string;
   domain: string;
@@ -46,7 +46,7 @@ export const seedEntries: MobileVaultEntry[] = [
     tags: ['Work', 'Company X'],
     favorite: true,
     brand: 'google',
-    secret: 'demo-only-work-lantern-4821',
+    secret: 'kR9#mP2$vX5@wL8*',
     updated: 'Today',
   },
   {
@@ -59,7 +59,7 @@ export const seedEntries: MobileVaultEntry[] = [
     tags: ['Development'],
     favorite: true,
     brand: 'github',
-    secret: 'demo-only-github-cobalt-7294',
+    secret: 'ghp_K9mX2bL8vP5wQ1zR7yT4nS6uV3jH0aB',
     updated: 'Yesterday',
   },
   {
@@ -72,7 +72,7 @@ export const seedEntries: MobileVaultEntry[] = [
     tags: ['Personal', 'Streaming'],
     favorite: true,
     brand: 'netflix',
-    secret: 'demo-only-netflix-maple-6153',
+    secret: 'tN4!mY8#qW2^zV5~',
     updated: '3 days ago',
   },
   {
@@ -80,12 +80,12 @@ export const seedEntries: MobileVaultEntry[] = [
     type: 'login',
     title: 'Google',
     subtitle: 'Personal account',
-    user: 'sam.demo@example.com',
+    user: 'sam.personal@example.com',
     domain: 'accounts.google.com',
     tags: ['Personal'],
     favorite: false,
     brand: 'google',
-    secret: 'demo-only-personal-meadow-2381',
+    secret: 'vR8#bM3$nQ6@wK9*',
     updated: '3 days ago',
   },
   {
@@ -98,7 +98,7 @@ export const seedEntries: MobileVaultEntry[] = [
     tags: ['Development', 'Cloud'],
     favorite: false,
     brand: 'ocean',
-    secret: 'demo-only-api-ocean-9152',
+    secret: 'dop_v1_8f1c4e9a3b7d2f0e5a6c1b8d7e4a9c2f',
     updated: '2 weeks ago',
   },
   {
@@ -111,7 +111,7 @@ export const seedEntries: MobileVaultEntry[] = [
     tags: ['Home', 'Network'],
     favorite: false,
     brand: 'wifi',
-    secret: 'Demo network: Verma Home\nDemo password: little-universe-4821',
+    secret: 'Network SSID: Verma-Private-5G\nWPA3 Key: little-universe-4821\nRouter Admin: https://192.168.1.1',
     updated: '1 month ago',
   },
 ];
@@ -119,7 +119,7 @@ export const seedEntries: MobileVaultEntry[] = [
 export const sampleImportRows: ImportCandidate[] = [
   { id: 101, title: 'Slack', subtitle: 'Company X workspace', domain: 'companyx.slack.com', user: 'sam@companyx.example', tag: 'Work', accepted: true, brand: 'slack', type: 'login' },
   { id: 102, title: 'Spotify', subtitle: 'Family plan', domain: 'spotify.com', user: 'family@example.com', tag: 'Personal', accepted: false, brand: 'spotify', type: 'login' },
-  { id: 103, title: 'Notion', subtitle: 'Your second brain', domain: 'notion.so', user: 'sam.demo@example.com', tag: 'Productivity', accepted: false, brand: 'notion', type: 'login' },
+  { id: 103, title: 'Notion', subtitle: 'Your second brain', domain: 'notion.so', user: 'sam.personal@example.com', tag: 'Productivity', accepted: false, brand: 'notion', type: 'login' },
   { id: 104, title: 'Figma', subtitle: 'A little creative space', domain: 'figma.com', user: 'sam@companyx.example', tag: 'Design', accepted: false, brand: 'figma', type: 'login' },
   { id: 105, title: 'Linear', subtitle: 'Work projects', domain: 'linear.app', user: 'sam@companyx.example', tag: 'Work', accepted: false, brand: 'linear', type: 'login' },
   { id: 106, title: 'DigitalOcean', subtitle: 'New project token', domain: 'cloud.digitalocean.com', user: 'New project', tag: 'Development', accepted: false, brand: 'ocean', type: 'api' },
@@ -241,3 +241,13 @@ export function generatePassword(length: number = 20): string {
 
   return result;
 }
+
+export {
+  mobileApi,
+  toMobileEntry,
+  toWireEntryInput,
+  getApiBaseUrl,
+  setApiBaseUrl,
+} from './apiClient';
+export type { ApiClientResult } from './apiClient';
+

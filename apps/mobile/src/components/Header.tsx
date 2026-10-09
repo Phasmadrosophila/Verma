@@ -5,9 +5,14 @@ import { colors, radii, spacing, typography } from '../theme/tokens';
 interface HeaderProps {
   onLock: () => void;
   syncActive?: boolean;
+  backendConnected?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onLock, syncActive = true }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onLock,
+  syncActive = true,
+  backendConnected = false,
+}) => {
   return (
     <View style={styles.header}>
       <View style={styles.brandRow}>
@@ -21,8 +26,15 @@ export const Header: React.FC<HeaderProps> = ({ onLock, syncActive = true }) => 
 
       <View style={styles.actionsRow}>
         <View style={styles.syncBadge}>
-          <View style={[styles.syncDot, syncActive && styles.syncDotActive]} />
-          <Text style={styles.syncText}>Direct sync</Text>
+          <View
+            style={[
+              styles.syncDot,
+              (syncActive || backendConnected) && styles.syncDotActive,
+            ]}
+          />
+          <Text style={styles.syncText}>
+            {backendConnected ? 'Backend linked' : 'Direct sync'}
+          </Text>
         </View>
 
         <TouchableOpacity

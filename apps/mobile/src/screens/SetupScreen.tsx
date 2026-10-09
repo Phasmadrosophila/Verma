@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,11 +12,11 @@ import { recoveryWordList } from '../state/vaultStore';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface SetupScreenProps {
-  onSetupComplete: () => void;
+  onSetupComplete: (password?: string, action?: 'import' | 'open') => void;
 }
 
 export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => {
-  const [step, setStep] = useState<'passphrase' | 'recovery'>('passphrase');
+  const [step, setStep] = useState<'passphrase' | 'recovery' | 'complete'>('passphrase');
   const [passphrase, setPassphrase] = useState('');
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [confirmedBackup, setConfirmedBackup] = useState(false);
@@ -39,26 +40,28 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
       setError('Please confirm that you have stored your 24-word recovery phrase.');
       return;
     }
-    onSetupComplete();
+    setStep('complete');
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.brandBadge}>
-          <Text style={styles.brandBadgeText}>V</Text>
+      {step !== 'complete' && (
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/verma-logo.png')}
+            style={styles.brandLogo}
+          />
+          <Text style={styles.eyebrow}>SECURE VAULT CREATION</Text>
+          <Text style={styles.title}>
+            {step === 'passphrase' ? 'Create Master Passphrase' : '24-Word Recovery Phrase'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {step === 'passphrase'
+              ? 'Your master passphrase encrypts your SQLite database using libsodium.'
+              : 'Write down these 24 words in order. Verma has zero servers and cannot restore lost phrases.'}
+          </Text>
         </View>
-        <Text style={styles.eyebrow}>SECURE VAULT CREATION</Text>
-        <Text style={styles.title}>
-          {step === 'passphrase' ? 'Create Master Passphrase' : '24-Word Recovery Phrase'}
-        </Text>
-        <Text style={styles.subtitle}>
-          {step === 'passphrase'
-            ? 'Your master passphrase encrypts your SQLite database using libsodium.'
-            : 'Write down these 24 words in order. Verma has zero servers and cannot restore lost phrases.'}
-        </Text>
-      </View>
+      )}
 
       {error ? (
         <View style={styles.errorBanner}>
@@ -113,7 +116,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
             <Text style={styles.primaryButtonText}>Continue to Recovery Phrase</Text>
           </TouchableOpacity>
         </View>
-      ) : (
+      ) : step === 'recovery' ? (
         <View style={styles.formSection}>
           {/* Recovery Words Grid */}
           <View style={styles.wordsGrid}>
@@ -148,6 +151,43 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
             <Text style={styles.primaryButtonText}>Initialize & Unlock Vault</Text>
           </TouchableOpacity>
         </View>
+      ) : (
+        <View style={styles.completionContainer}>
+          <View style={styles.completionHero}>
+            <View style={styles.successEmblem}>
+              <Image
+                source={require('../../assets/verma-logo.png')}
+                style={styles.emblemLogo}
+              />
+              <View style={styles.emblemCheck}>
+                <Text style={styles.emblemCheckText}>✓</Text>
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.completionTitle}>
+            Your space.{'\n'}
+            <Text style={{ color: colors.brandOrange }}>Your fresh start.</Text>
+          </Text>
+
+          <View style={styles.completionActions}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => onSetupComplete(passphrase, 'import')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.primaryButtonText}>Import credentials →</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => onSetupComplete(passphrase, 'open')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.secondaryButtonText}>Open my vault</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
     </ScrollView>
   );
@@ -167,19 +207,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xl,
   },
-  brandBadge: {
+  brandLogo: {
     width: 44,
     height: 44,
-    borderRadius: radii.md,
-    backgroundColor: colors.brandOrange,
-    alignItems: 'center',
-    justifyContent: 'center',
+    resizeMode: 'contain',
     marginBottom: spacing.md,
-  },
-  brandBadgeText: {
-    fontSize: typography.sizeLg,
-    fontWeight: '800',
-    color: colors.paper,
   },
   eyebrow: {
     fontSize: 10,
@@ -326,5 +358,78 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: colors.text,
+  },
+  secondaryButton: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#DFD3C6',
+    marginTop: spacing.sm,
+  },
+  secondaryButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  completionContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl,
+    justifyContent: 'center',
+  },
+  completionHero: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: spacing.xl,
+    position: 'relative',
+  },
+  successEmblem: {
+    width: 136,
+    height: 136,
+    borderRadius: 44,
+    backgroundColor: colors.warm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    borderWidth: 2,
+    borderColor: colors.surface,
+  },
+  emblemLogo: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+  },
+  emblemCheck: {
+    position: 'absolute',
+    right: -10,
+    bottom: -8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.brandPeri,
+    borderWidth: 3,
+    borderColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emblemCheckText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  completionTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: 42,
+    letterSpacing: -1,
+    marginVertical: spacing.xl,
+  },
+  completionActions: {
+    width: '100%',
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
 });
