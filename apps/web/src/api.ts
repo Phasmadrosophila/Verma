@@ -46,6 +46,17 @@ export const api = {
     return res.json();
   },
 
+  askVault: async (query: string): Promise<{ answer: string; relevantEntryIds: string[] }> => {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Ask Your Vault is unavailable');
+    return data;
+  },
+
   getEntry: async (id: string) => {
     const res = await fetch(`/api/entries/${id}`);
     if (!res.ok) throw new Error('Failed to get entry');

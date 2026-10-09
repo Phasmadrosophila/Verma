@@ -5,6 +5,7 @@ import { createEntriesRoutes } from './routes/entries.routes.js';
 import { createMetadataRoutes } from './routes/metadata.routes.js';
 import { createFixturesRoutes } from './routes/fixtures.routes.js';
 import { createImportRoutes } from './routes/import.routes.js';
+import { createAskRoutes } from './routes/ask.routes.js';
 import { AiAdapter } from './ai/adapter.js';
 import { SafeLogger, defaultLogger } from '@app/shared';
 
@@ -48,6 +49,7 @@ export function createApp(options: AppOptions = {}): { app: Hono; repo: VaultRep
   app.route('/api/metadata', createMetadataRoutes(repo));
   app.route('/api/fixtures', createFixturesRoutes(repo));
   app.route('/api/import', createImportRoutes(repo, aiAdapter));
+  app.route('/api/ask', createAskRoutes(repo, aiAdapter));
 
   return { app, repo };
 }
