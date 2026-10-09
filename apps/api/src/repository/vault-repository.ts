@@ -422,25 +422,95 @@ export class VaultRepository {
       return list;
     }
 
-    const aiMatchingIds = await askYourVaultOllama(query, list);
+    try {
+      const aiMatchingIds = await askYourVaultOllama(query, list);
 
-    if (aiMatchingIds && aiMatchingIds.length > 0) {
-      // Return the entries in the order specified by the AI
-      const matchedEntries = aiMatchingIds
-        .map(id => list.find(item => item.id === id))
-        .filter((item): item is RedactedEntryMetadata => item !== undefined);
-      
-      if (matchedEntries.length > 0) {
-        return matchedEntries.slice(0, 3);
+      if (aiMatchingIds && aiMatchingIds.length > 0) {
+        // Return the entries in the order specified by the AI
+        const matchedEntries = aiMatchingIds
+          .map(id => list.find(item => item.id === id))
+          .filter((item): item is RedactedEntryMetadata => item !== undefined);
+
+        if (matchedEntries.length > 0) {
+          return matchedEntries.slice(0, 3);
+        }
       }
+    } catch {
+      // Quiet graceful degradation to deterministic metadata search
     }
 
-    // Graceful fallback to text search if AI fails or returns empty
-    const q = query.toLowerCase().trim();
+    // Graceful fallback to tokenized metadata search if AI fails or returns empty
+    const rawQuery = query.toLowerCase().trim();
+    const stopWords = new Set([
+      'where', 'is', 'my', 'the', 'for', 'a', 'an', 'of', 'to', 'and', 'account',
+      'accounts', 'i', 'me', 'that', 'find', 'please', 'show', 'in', 'get', 'what',
+      'password', 'passwords', 'credential', 'credentials', 'key', 'keys', 'login', 'logins'
+    ]);
+
+    const tokens = Array.from(
+      new Set(
+        rawQuery
+          .split(/[^a-z0-9]+/)
+          .filter((t) => t.length > 1 && !stopWords.has(t))
+      )
+    );
+
+    const aliases: Record<string, string[]> = {
+      streaming: ['netflix', 'streaming', 'spotify', 'hulu', 'disney'],
+      code: ['github', 'gitlab', 'git', 'development', 'dev'],
+      dev: ['development', 'dev', 'github', 'api', 'token'],
+      development: ['development', 'dev', 'github', 'api', 'token'],
+      token: ['api', 'token', 'key', 'secret'],
+      tokens: ['api', 'token', 'key', 'secret'],
+      wifi: ['wi-fi', 'wifi', 'network', 'router'],
+      'wi-fi': ['wi-fi', 'wifi', 'network', 'router'],
+      cloud: ['cloud', 'digitalocean', 'aws', 'gcp', 'azure'],
+      work: ['work', 'company', 'workspace', 'corp'],
+      google: ['google', 'gmail', 'workspace', 'gsuite'],
+    };
+
+    const scored = list.map((item) => {
+      let score = 0;
+      const titleLower = item.title.toLowerCase();
+      const domainLower = (item.domain ?? '').toLowerCase();
+      const tagsLower = item.tags.map((t) => t.toLowerCase());
+      const typeLower = item.type.toLowerCase();
+      const haystack = [titleLower, domainLower, ...tagsLower, typeLower].join(' ');
+
+      if (titleLower.includes(rawQuery) || domainLower.includes(rawQuery) || tagsLower.some((t) => t.includes(rawQuery))) {
+        score += 10;
+      }
+
+      for (const token of tokens) {
+        if (titleLower.includes(token)) score += 5;
+        if (domainLower.includes(token)) score += 4;
+        if (tagsLower.some((t) => t.includes(token))) score += 4;
+        if (typeLower.includes(token)) score += 2;
+
+        const syns = aliases[token] || [];
+        for (const syn of syns) {
+          if (haystack.includes(syn)) {
+            score += 2;
+          }
+        }
+      }
+
+      return { item, score };
+    });
+
+    const matches = scored
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((s) => s.item);
+
+    if (matches.length > 0) {
+      return matches.slice(0, 3);
+    }
+
     return list.filter((item) => {
-      const matchesTitle = item.title.toLowerCase().includes(q);
-      const matchesDomain = item.domain?.toLowerCase().includes(q) ?? false;
-      const matchesTag = item.tags.some((t) => t.toLowerCase().includes(q));
+      const matchesTitle = item.title.toLowerCase().includes(rawQuery);
+      const matchesDomain = item.domain?.toLowerCase().includes(rawQuery) ?? false;
+      const matchesTag = item.tags.some((t) => t.toLowerCase().includes(rawQuery));
       return matchesTitle || matchesDomain || matchesTag;
     }).slice(0, 3);
   }
