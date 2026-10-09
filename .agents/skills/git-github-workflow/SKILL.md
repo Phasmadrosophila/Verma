@@ -8,7 +8,6 @@ description: >-
   opened against `main`, the developer is instructed to have teammates review it,
   and the PR is NEVER merged by the agent.
 ---
-
 # Git / GitHub Development Workflow (Verma)
 
 This is a binding, repository-wide rule for **Verma**. It applies to **every**
@@ -23,6 +22,7 @@ Work is tracked via **GitHub Issues** and structured through an issue-specific b
 - **Instruct dev to request teammate review.** Always notify the developer to ask their teammates to review the PR before merging.
 - **Never push directly to `main`.** All changes reach `main` exclusively through a reviewed pull request.
 - **Never force-push shared branches.** Do not force-push `main` or branches used by teammates.
+- **Always abide by Conventional Commits.**
 
 ## Workflow
 
@@ -45,6 +45,7 @@ git checkout -b lyraphasma/issue-<NUMBER>-<short-slug> main
 ```
 
 Examples:
+
 - `lyraphasma/issue-12-ask-your-vault`
 - `lyraphasma/issue-15-encrypted-sqlite-schema`
 
