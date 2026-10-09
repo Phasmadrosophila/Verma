@@ -15,6 +15,7 @@ apps/api/prisma/*.db-journal
 *.tsbuildinfo
 qa-evidence/
 .playwright-mcp/
+.local/
 
 # Expo (apps/mobile) — generated build artifacts and local caches
 .expo/
