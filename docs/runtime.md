@@ -2,11 +2,11 @@
 
 ## Status
 
-No model has been selected, downloaded, bundled, or benchmarked for Verma yet. The model manifest deliberately records this as `TBD`; it must not be replaced with an invented model name, version, hash, license, benchmark, or redistribution claim.
+No model has been approved for release, downloaded, bundled, or benchmarked for Verma yet. The current recommendation is documented in [`model-selection-qwen3-0.6b.md`](model-selection-qwen3-0.6b.md), but the model manifest deliberately remains `TBD` until an exact artifact, hash, license review, and measured evaluation are complete.
 
 ## Runtime boundary
 
-Production inference is planned to use `llama.cpp` with a local quantized model in the 1B--4B parameter range. Ollama is permitted for local development only; it is not the production runtime. The selected model process must have no network access, must be sandboxed with a read-only filesystem view, must expose no tools, and must receive only trusted-code redacted metadata while the vault is unlocked.
+Production inference is planned to use `llama.cpp` with a local quantized model. The proposed default is Qwen3 0.6B in a reviewed GGUF quantization; an optional larger desktop profile may be evaluated later. Ollama is permitted for local development only; it is not the production runtime. The selected model process must have no network access, must be sandboxed with a read-only filesystem view, must expose no tools, and must receive only trusted-code redacted metadata while the vault is unlocked.
 
 The vault remains usable when inference is disabled, unavailable, malformed, or times out. The runtime is never given passwords, secret values, note bodies, recovery material, private keys, file contents, vault keys, or any crypto-wallet metadata.
 
@@ -47,6 +47,8 @@ Artifact verification fails if the selection remains `TBD`, a model file is abse
 ## Selection and disclosure gate
 
 Before changing an entry from `tbd` to `selected`, record the model's upstream source, exact version, artifact SHA-256, license, and redistribution conclusion. Run a measured evaluation on the demo hardware and document the device, inputs, number of runs, measurement method, latency, and quality result. Do not publish claims until they are measured, and verify license compatibility with Verma's final fair-code/source-available license direction.
+
+The current selection rationale and alternatives are recorded in [`model-selection-qwen3-0.6b.md`](model-selection-qwen3-0.6b.md). That document is a proposal, not a replacement for this selection gate.
 
 For the hackathon disclosure, state separately that model inference and input/output processing run locally, while model acquisition (when a human deliberately chooses to do so) requires internet access. Do not claim that a model is bundled, offline ready, or license-cleared until the manifest contains an approved selected entry.
 

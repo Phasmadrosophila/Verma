@@ -227,8 +227,8 @@ The assistant can identify missing critical-account categories and help assemble
 
 ### AI behavior requirements
 
-- The model runs locally through `llama.cpp` for the demo direction. Ollama is permitted for development.
-- Use a small quantized model, approximately 1B to 4B parameters, selected through a benchmark.
+- The proposed small-device default is Qwen3 0.6B, delivered as a reviewed quantized GGUF artifact through `llama.cpp`; the exact artifact remains unselected until its hash, license, redistribution status, and target-device evaluation are recorded. Ollama is permitted for development only.
+- Use the proposed small-device Qwen3 0.6B model, or a measured replacement of comparable size, selected through the documented evaluation gate.
 - Use a small embedding model only if it improves measured retrieval quality enough to justify the additional complexity.
 - The model has no tools and cannot invoke network, filesystem, vault, or mutation operations.
 - Outputs use constrained JSON and are validated against a schema before display.
