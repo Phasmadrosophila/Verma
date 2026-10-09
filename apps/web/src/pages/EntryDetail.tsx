@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { ArrowLeft, Edit2, Trash2, Eye, EyeOff, Lock, Copy } from 'lucide-react';
@@ -11,17 +11,21 @@ const SecretField = ({ label, value, isRevealed, copyToClipboard }: { label: str
   return (
     <div className="flex flex-col gap-1 mb-4 p-4 border border-[var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-surface)]">
       <span className="text-label text-[var(--color-text-muted)]">{label}</span>
-      <div className="flex items-center justify-between">
-        <span className="text-body font-mono">
+      <div className="flex items-center justify-between gap-3">
+        <span
+          className="text-body font-mono break-all"
+          aria-label={isRevealed ? undefined : 'Secret hidden'}
+        >
           {isRevealed ? value : '••••••••'}
         </span>
         {isRevealed && (
           <button
+            type="button"
             onClick={() => copyToClipboard(value)}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-2"
+            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md focus-ring"
             aria-label={`Copy ${label}`}
           >
-            <Copy className="w-5 h-5" />
+            <Copy className="w-5 h-5" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -29,7 +33,7 @@ const SecretField = ({ label, value, isRevealed, copyToClipboard }: { label: str
   );
 };
 
-export const EntryDetail = () => {
+export const EntryDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [entry, setEntry] = useState<VaultEntry | null>(null);
@@ -68,8 +72,8 @@ export const EntryDetail = () => {
     navigator.clipboard.writeText(text);
   };
 
-  if (loading) return <div className="text-body text-[var(--color-text-muted)]">Loading...</div>;
-  if (!entry) return <div className="text-body text-red-600">{error || 'Entry not found'}</div>;
+  if (loading) return <div role="status" aria-live="polite" className="text-body text-[var(--color-text-muted)] p-4">Loading entry details...</div>;
+  if (!entry) return <div role="alert" className="text-body text-red-600 p-4">{error || 'Entry not found'}</div>;
 
   return (
     <div className="flex flex-col h-full max-w-2xl mx-auto gap-6 pb-12">
@@ -83,35 +87,41 @@ export const EntryDetail = () => {
         />
       )}
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <button 
+          type="button"
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-body transition-colors focus:ring-2 focus:ring-[var(--color-brand-orange)] rounded-sm"
+          aria-label="Back to all items"
+          className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] text-body transition-colors focus-ring rounded-md px-3 py-2 min-h-[40px]"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           Back
         </button>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button 
+            type="button"
             onClick={() => navigate(`/entry/${id}/edit`)}
-            className="flex items-center gap-2 bg-[var(--color-paper)] text-[var(--color-text)] px-4 py-2 rounded-full border border-[var(--color-border)] text-body hover:bg-[var(--color-canvas)] transition-colors focus:ring-2 focus:ring-[var(--color-brand-orange)]"
+            aria-label="Edit entry"
+            className="flex items-center gap-2 bg-[var(--color-paper)] text-[var(--color-text)] px-4 py-2 rounded-full border border-[var(--color-border)] text-body hover:bg-[var(--color-canvas)] transition-colors focus-ring min-h-[40px]"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit2 className="w-4 h-4" aria-hidden="true" />
             Edit
           </button>
           <button 
+            type="button"
             onClick={() => setIsDeleteDialogOpen(true)}
-            className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full border border-red-200 text-body hover:bg-red-100 transition-colors focus:ring-2 focus:ring-red-400"
+            aria-label="Delete entry"
+            className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full border border-red-200 text-body hover:bg-red-100 transition-colors focus-ring min-h-[40px]"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" aria-hidden="true" />
             Delete
           </button>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <h2 className="text-section-title">{entry.title}</h2>
-        <div className="flex gap-2">
+        <h2 className="text-section-title break-words">{entry.title}</h2>
+        <div className="flex gap-2 flex-wrap">
           <span className="text-label text-[var(--color-text-muted)] uppercase bg-[var(--color-paper)] px-2 py-0.5 rounded-[var(--radius-sm)] border border-[var(--color-border)]">
             {entry.type}
           </span>
@@ -130,7 +140,7 @@ export const EntryDetail = () => {
           {entry.type === 'login' && entry.domain && (
             <div>
               <span className="text-label text-[var(--color-text-muted)]">Domain</span>
-              <div className="text-body">{entry.domain}</div>
+              <div className="text-body break-words">{entry.domain}</div>
             </div>
           )}
           {entry.type === 'login' && entry.url && (
@@ -142,19 +152,19 @@ export const EntryDetail = () => {
           {entry.type === 'api_key' && entry.service && (
             <div>
               <span className="text-label text-[var(--color-text-muted)]">Service</span>
-              <div className="text-body">{entry.service}</div>
+              <div className="text-body break-words">{entry.service}</div>
             </div>
           )}
           {entry.type === 'api_key' && entry.keyId && (
             <div>
               <span className="text-label text-[var(--color-text-muted)]">Key ID</span>
-              <div className="text-body font-mono">{entry.keyId}</div>
+              <div className="text-body font-mono break-all">{entry.keyId}</div>
             </div>
           )}
           {entry.type === 'note' && entry.category && (
             <div>
               <span className="text-label text-[var(--color-text-muted)]">Category</span>
-              <div className="text-body">{entry.category}</div>
+              <div className="text-body break-words">{entry.category}</div>
             </div>
           )}
         </div>
@@ -163,14 +173,17 @@ export const EntryDetail = () => {
         <div className="flex flex-col gap-4 mt-4 pt-6 border-t border-[var(--color-border)] relative">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-interface-heading flex items-center gap-2">
-              <Lock className="w-5 h-5 text-[var(--color-text-muted)]" />
+              <Lock className="w-5 h-5 text-[var(--color-text-muted)]" aria-hidden="true" />
               Secrets
             </h3>
             <button
+              type="button"
               onClick={() => setIsRevealed(!isRevealed)}
-              className="flex items-center gap-2 text-body text-[var(--color-brand-orange)] hover:opacity-80 transition-opacity"
+              aria-label={isRevealed ? 'Hide secret values' : 'Unlock to reveal secret values'}
+              aria-expanded={isRevealed}
+              className="flex items-center gap-2 text-body text-[var(--color-brand-orange)] hover:opacity-80 transition-opacity focus-ring rounded-md px-2 py-1 min-h-[40px]"
             >
-              {isRevealed ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {isRevealed ? <EyeOff className="w-5 h-5" aria-hidden="true" /> : <Eye className="w-5 h-5" aria-hidden="true" />}
               {isRevealed ? 'Hide' : 'Unlock to reveal'}
             </button>
           </div>
@@ -197,7 +210,10 @@ export const EntryDetail = () => {
           {entry.type === 'note' && (
             <div className="flex flex-col gap-1 mb-4 p-4 border border-[var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-surface)]">
               <span className="text-label text-[var(--color-text-muted)]">Note Content</span>
-              <div className="text-body whitespace-pre-wrap font-mono">
+              <div
+                className="text-body whitespace-pre-wrap font-mono break-words"
+                aria-label={isRevealed ? undefined : 'Secret hidden'}
+              >
                 {isRevealed ? entry.content : '••••••••••••••••••••••••••••••••••••••'}
               </div>
             </div>

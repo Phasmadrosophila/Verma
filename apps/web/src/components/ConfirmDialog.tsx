@@ -30,6 +30,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
 
     // Focus confirm button when dialog opens
     const timer = setTimeout(() => {
@@ -40,6 +41,22 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       if (e.key === 'Escape') {
         e.preventDefault();
         onCancel();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusable = Array.from(
+          dialogRef.current?.querySelectorAll<HTMLElement>('button, [tabindex="0"]') ?? []
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
 
@@ -47,6 +64,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     return () => {
       clearTimeout(timer);
       window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus();
     };
   }, [isOpen, onCancel]);
 
