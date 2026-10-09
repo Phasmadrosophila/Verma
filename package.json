@@ -19,6 +19,7 @@
     "dev:web": "pnpm --filter @app/web dev",
     "dev:integration": "node --experimental-strip-types scripts/dev-integration.ts",
     "test:integration": "node --test --experimental-strip-types tests/integration/runtime.test.ts",
+    "test:e2e:offline": "node --test --experimental-strip-types tests/e2e/offline-visual-e2e.test.ts",
     "mobile:start": "pnpm --filter @app/mobile start",
     "preview:web": "pnpm --filter @app/mobile-preview dev",
     "test:mobile": "pnpm --filter @app/mobile test",
