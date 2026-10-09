@@ -1,18 +1,35 @@
-# Verma
+<p align="center">
+  <img width="180" src="./assets/verma-logo.png" alt="Verma logo" />
+</p>
 
-An offline AI, local-first password manager with a desktop app for more hands-off management of secrets and passwords.
+<h1 align="center">Verma</h1>
 
-## Navigation
+<p align="center"><strong>An offline AI, local-first password manager with a desktop app for more hands-off management of secrets and passwords.</strong></p>
 
-- [What Verma is](#what-verma-is)
-- [Current release state](#current-release-state)
-- [Run the desktop integration](#run-the-desktop-integration)
-- [What is included](#what-is-included)
-- [Local versus internet behavior](#local-versus-internet-behavior)
-- [AI model status](#ai-model-status)
-- [Known limitations](#known-limitations)
-- [Documentation and disclosures](#documentation-and-disclosures)
-- [Development checks](#development-checks)
+<p align="center">
+  <strong>Navigation</strong><br />
+  <a href="#what-verma-is">What Verma is</a> ·
+  <a href="#current-release-state">Current release state</a> ·
+  <a href="#run-the-desktop-integration">Run the desktop integration</a> ·
+  <a href="#what-is-included">What is included</a> ·
+  <a href="#why-local-ai">Why Local AI</a> ·
+  <a href="#local-versus-internet-behavior">Local versus internet behavior</a> ·
+  <a href="#ai-model-status">AI model status</a> ·
+  <a href="#known-limitations">Known limitations</a> ·
+  <a href="#documentation-and-disclosures">Documentation and disclosures</a> ·
+  <a href="#development-checks">Development checks</a>
+</p>
+
+<p align="center">
+  <img alt="Local-first" src="https://img.shields.io/badge/local--first-yes-6D5DFB?style=flat-square" />
+  <img alt="Cloud AI required: no" src="https://img.shields.io/badge/cloud_AI_required-no-14866D?style=flat-square" />
+  <img alt="Model status: TBD" src="https://img.shields.io/badge/model_status-TBD-D97706?style=flat-square" />
+  <img alt="License direction: fair-code/source-available" src="https://img.shields.io/badge/license_direction-fair--code%20%2F%20source--available-334155?style=flat-square" />
+</p>
+
+<p align="center">
+  <img width="100%" src="./docs/img/verma-demo.gif" alt="Verma desktop app demo" />
+</p>
 
 ## What Verma is
 
@@ -20,11 +37,13 @@ Verma is an offline AI, local-first password manager with a desktop app for peop
 
 The desktop app combines an Hono API, a local SQLite vault, explicit secret masking, deterministic password generation, Smart Import, Ask Your Vault metadata search, and direct device-sync workflows. AI assistance is designed around trusted-code redaction and local execution; the vault remains usable when AI is disabled or unavailable.
 
-The primary hackathon release path is the desktop web application. The repository also contains mobile and mobile-preview work; mobile backend integration is tracked separately in issue [#55](https://github.com/Phasmadrosophila/Verma/issues/55) and is not the primary hackathon acceptance path.
+> [!NOTE]
+> The primary hackathon release path is the desktop web application. The repository also contains mobile and mobile-preview work; mobile backend integration is tracked separately in issue [#55](https://github.com/Phasmadrosophila/Verma/issues/55) and is not the primary hackathon acceptance path.
 
 ## Current release state
 
-This repository is in feature freeze. The remaining work is documentation, verification, and release-blocking fixes only.
+> [!IMPORTANT]
+> This repository is in feature freeze. The remaining work is documentation, verification, and release-blocking fixes only.
 
 - The real desktop web-to-Hono integration is available through the local integration runner.
 - The local AI model is not selected, bundled, or release-approved. `models/manifest.json` intentionally remains `tbd`.
@@ -40,7 +59,8 @@ Prerequisites: Node.js 22 or newer and pnpm 10 or newer. From a fresh clone, run
 pnpm dev:integration
 ```
 
-This command is documented and implemented, but has not been re-run from a clean clone during this documentation pass. Treat clean-clone setup as **unverified** until `pnpm test:integration` and a browser check pass on the target machine.
+> [!WARNING]
+> This command is documented and implemented, but has not been re-run from a clean clone during this documentation pass. Treat clean-clone setup as **unverified** until `pnpm test:integration` and a browser check pass on the target machine.
 
 The runner starts:
 
@@ -62,6 +82,43 @@ For the standalone landing/download preview, use `pnpm preview:landing` and open
 - Direct device pairing and sync workflows in the desktop application.
 - A local AI adapter with schema validation and deterministic fallbacks when AI is disabled, unavailable, malformed, or timed out.
 - P1 prototype/test-mode continuity components: self-hosted opaque-envelope relay, heartbeat concepts, and Dead Man's Switch test mode.
+
+## Why Local AI
+
+Password management is repetitive, sensitive, and easy to postpone. People accumulate logins, API keys, imports, duplicate entries, and password-health warnings, but reviewing and organizing them manually takes attention. Verma uses AI to make those routine tasks more hands-off without making the assistant the owner of the vault.
+
+Running the assistant locally benefits Verma because vault metadata and user questions do not need to be sent to a cloud AI provider for search, import suggestions, or explanations. Local execution supports privacy, works during network outages, avoids a required cloud AI account, and keeps response behavior tied to the user's device. Trusted application code redacts denied fields before inference, and the user must review and confirm suggestions before changes are applied.
+
+> [!NOTE]
+> This is an application-level local-AI path, not a claim that the current repository already provides an audited air gap or OS-level sandbox. The exact production model is not selected, and the current development adapter reaches only an allowed loopback endpoint.
+
+## On-device versus internet-required processing
+
+### Runs on the device today
+
+| Capability | Current behavior |
+| --- | --- |
+| Vault storage and normal vault operations | Local Hono API and local SQLite database; usable without AI. |
+| Secret masking and reveal behavior | Performed in the desktop application and API flow; secrets stay behind explicit user interaction. |
+| Password generation | Deterministic application flow using browser cryptographic randomness; no AI or internet required. |
+| Smart Import parsing and fallback mapping | CSV parsing, deterministic mapping, duplicate detection, staging, preview, and confirmation run locally. |
+| Metadata projection for Ask Your Vault | Trusted code selects allowed metadata while the vault is unlocked and returns an empty AI view while locked. |
+| AI endpoint boundary | The adapter rejects non-loopback hostnames before making its request; development defaults to AI disabled. |
+| Desktop web/API communication | Vite proxies to the local Hono API on `127.0.0.1`; the integration runner uses a local database and synthetic fixtures. |
+| Direct-sync verification | Pairing, encryption, signatures, and sync logic are exercised locally in the verification suite. |
+
+### Requires internet or an external transfer
+
+| Activity | Current requirement or limitation |
+| --- | --- |
+| Installing dependencies | `pnpm install` normally requires access to the package registry unless dependencies are already cached. |
+| Obtaining a model artifact | No model is bundled or selected. A future approved artifact must be acquired separately. |
+| GitHub and pull-request workflows | Repository hosting, issue tracking, CI, and review require internet access. |
+| Deployment and hosted asset delivery | Hosting, deployment, and any remote asset delivery are network-dependent. |
+| Optional relay use | The P1 self-hosted opaque-envelope relay requires a reachable relay deployment; it is not required for the local vault or P0 local AI path. |
+| Mobile physical-device integration | The separate Expo/mobile path may require a configurable LAN API URL; it is not the primary desktop release path. |
+
+The core desktop vault and its deterministic fallback flows do not require a cloud AI service. The current repository does not implement a production `llama.cpp` launcher, model download flow, or OS-level network/filesystem sandbox. See [`docs/release/local-vs-online.md`](docs/release/local-vs-online.md) for the detailed evidence boundary.
 
 ## Local versus internet behavior
 
@@ -98,7 +155,8 @@ Model/runtime documentation:
 - [`docs/COMPETITION-HANDBOOK.md`](docs/COMPETITION-HANDBOOK.md) — competition requirements and evidence rules.
 - [`docs/prd.md`](docs/prd.md) — product requirements and scope.
 
-Verma's code license direction is **fair-code/source-available**. The specific final license and its commercial-use terms remain pending legal and release review, so no final license file or compatibility conclusion has been selected yet.
+> [!NOTE]
+> Verma's code license direction is **fair-code/source-available**. The specific final license and its commercial-use terms remain pending legal and release review, so no final license file or compatibility conclusion has been selected yet.
 
 ## Development checks
 

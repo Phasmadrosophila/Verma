@@ -28,6 +28,18 @@ The repository contains external URLs as documentation, source references, synth
 
 The loopback restriction is an application-layer control. The repository does not provide evidence for an OS-level network-denial sandbox, read-only model filesystem, or audited air gap.
 
+## Why local AI benefits Verma
+
+Verma targets the repetitive work around secrets and passwords: organizing entries, searching metadata, reviewing imports, and understanding deterministic password-health findings. Local AI can make that work more hands-off without requiring vault metadata or user questions to be sent to a cloud AI provider. It also keeps the core assistant path usable during network outages and avoids making a cloud AI account a prerequisite.
+
+The privacy benefit is bounded by the implementation evidence. Trusted application code redacts denied fields before the AI adapter receives data, and user confirmation is required before suggestions become mutations. The current loopback restriction is not an audited air gap or OS-level process sandbox, and the exact production model has not been selected.
+
+## Processing breakdown
+
+On-device today: local vault operations, SQLite storage, secret masking, password generation, CSV parsing, deterministic import fallback behavior, metadata projection, direct-sync cryptographic verification, and the desktop web/API loopback path. AI-enabled application requests are restricted to allowed loopback endpoints; AI is disabled by default in development.
+
+Internet or external transfer: installing uncached dependencies, obtaining a future model artifact, GitHub/CI/review workflows, deployment and hosted assets, optional P1 relay access, and some physical-device mobile development setups. No cloud AI service is required by the core desktop path.
+
 ## Models and AI frameworks
 
 - `models/manifest.json` is the authoritative inventory and remains `status: "tbd"` with model identity, artifact, hash, license, source, and redistribution fields set to `TBD`.
