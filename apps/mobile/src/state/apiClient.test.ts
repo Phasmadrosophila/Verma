@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  apiClient,
+  httpClient,
   ApiError,
   toWireType,
   fromWireType,
@@ -98,7 +98,7 @@ test('apiClient: listEntries hits /api/metadata and maps api_key -> api', async 
     };
   });
   try {
-    const entries = await apiClient.listEntries();
+    const entries = await httpClient.listEntries();
     assert.equal(calls.length, 1);
     assert.equal(entries.length, 2);
     assert.equal(entries[0].type, 'login');
@@ -120,7 +120,7 @@ test('apiClient: createEntry maps mobile "api" draft to api_key wire payload', a
     };
   });
   try {
-    const created = await apiClient.createEntry({
+    const created = await httpClient.createEntry({
       type: 'api',
       title: 'Stripe',
       domain: 'stripe',
@@ -147,7 +147,7 @@ test('apiClient: updateEntry uses PUT /api/entries/:id and omits type', async ()
     return { body: { entry: { id: 'e9', type: 'login', title: 'X', password: 'p', tags: [], updatedAt: 0 } } };
   });
   try {
-    await apiClient.updateEntry('e9', { type: 'login', title: 'X', user: 'u', tags: [], secret: 'p' });
+    await httpClient.updateEntry('e9', { type: 'login', title: 'X', user: 'u', tags: [], secret: 'p' });
     const sent = JSON.parse(String(calls[0].init?.body));
     assert.equal(calls[0].init?.method, 'PUT');
     assert.ok(!('type' in sent), 'update payload must not include type');
@@ -163,7 +163,7 @@ test('apiClient: getEntrySecret fetches full entry and returns the plaintext sec
     return { body: { entry: { id: 'e1', type: 'login', title: 'X', password: 'hunter2', tags: [], updatedAt: 0 } } };
   });
   try {
-    const secret = await apiClient.getEntrySecret('e1');
+    const secret = await httpClient.getEntrySecret('e1');
     assert.equal(secret, 'hunter2');
     assert.equal(calls[0].init?.method ?? 'GET', 'GET');
   } finally {
@@ -174,7 +174,7 @@ test('apiClient: getEntrySecret fetches full entry and returns the plaintext sec
 test('apiClient: deleteEntry issues DELETE to the entry URL', async () => {
   const { calls, restore } = mockFetch(() => ({ body: { success: true } }));
   try {
-    await apiClient.deleteEntry('e1');
+    await httpClient.deleteEntry('e1');
     assert.ok(calls[0].url.endsWith('/api/entries/e1'));
     assert.equal(calls[0].init?.method, 'DELETE');
   } finally {
@@ -186,7 +186,7 @@ test('apiClient: a transport failure yields a typed network ApiError (no crash)'
   const { restore } = mockFetch(() => 'reject');
   try {
     await assert.rejects(
-      () => apiClient.listEntries(),
+      () => httpClient.listEntries(),
       (err: unknown) => {
         assert.ok(err instanceof ApiError, 'must be an ApiError, not a raw throw');
         assert.equal(err.isNetworkError, true);
@@ -203,7 +203,7 @@ test('apiClient: a non-2xx response yields a typed ApiError carrying the server 
   const { restore } = mockFetch(() => ({ status: 423, body: { error: 'Vault is locked' } }));
   try {
     await assert.rejects(
-      () => apiClient.listEntries(),
+      () => httpClient.listEntries(),
       (err: unknown) => {
         assert.ok(err instanceof ApiError);
         assert.equal(err.status, 423);

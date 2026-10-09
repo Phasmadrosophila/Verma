@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "check": "tsc --noEmit",
-    "test": "node --test --import tsx src/state/vaultStore.test.ts src/state/apiClient.test.ts"
+    "test": "node --test --import tsx src/state/vaultStore.test.ts src/state/apiClient.test.ts src/state/localVault.test.ts"
   },
   "dependencies": {
     "@app/shared": "workspace:*",
