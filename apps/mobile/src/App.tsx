@@ -190,7 +190,7 @@ export function App() {
     <SafeAreaView style={styles.safeContainer}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.brandOrange} />
 
-      <Header onLock={handleLock} syncActive={true} />
+      <Header onLock={handleLock} syncActive={!isLocked} />
 
       <View style={styles.mainContent}>
         {currentTab === 'vault' && (
@@ -287,6 +287,9 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     backgroundColor: colors.surface,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    overflow: 'hidden',
   },
   centerFill: {
     flex: 1,
@@ -327,14 +330,14 @@ const styles = StyleSheet.create({
   },
   toastPill: {
     backgroundColor: colors.text,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 10,
-    borderRadius: radii.pill,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: 11,
+    borderRadius: 30,
     elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
   },
   toastText: {
     color: colors.paper,

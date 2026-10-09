@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, radii, spacing, typography } from '../theme/tokens';
+import { colors, radii, spacing } from '../theme/tokens';
+import { Icon, IconName } from './Icon';
 
 export type NavTab = 'vault' | 'ask' | 'import' | 'devices';
 
@@ -10,198 +11,105 @@ interface BottomNavProps {
   onAddNew: () => void;
 }
 
+const TABS: { tab: NavTab; label: string; icon: IconName }[] = [
+  { tab: 'vault', label: 'My vault', icon: 'vault' },
+  { tab: 'ask', label: 'Ask Verma', icon: 'spark' },
+  { tab: 'import', label: 'Import', icon: 'import' },
+  { tab: 'devices', label: 'Devices', icon: 'devices' },
+];
+
 export const BottomNav: React.FC<BottomNavProps> = ({
   currentTab,
   onSelectTab,
   onAddNew,
 }) => {
+  const navButton = ({ tab, label, icon }: (typeof TABS)[number]) => {
+    const active = currentTab === tab;
+    return (
+      <TouchableOpacity
+        key={tab}
+        style={styles.navButton}
+        onPress={() => onSelectTab(tab)}
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+        activeOpacity={0.7}
+      >
+        <View style={[styles.navIcon, active && styles.navIconActive]}>
+          <Icon name={icon} size={20} color={colors.text} />
+        </View>
+        <Text style={styles.navLabel}>{label}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.navBar}>
-        {/* Vault Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
-          onPress={() => onSelectTab('vault')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'vault' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>📁</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'vault' && styles.tabLabelActive,
-            ]}
-          >
-            Vault
-          </Text>
-        </TouchableOpacity>
+    <View style={styles.navBar}>
+      {navButton(TABS[0])}
+      {navButton(TABS[1])}
 
-        {/* Ask Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
-          onPress={() => onSelectTab('ask')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'ask' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>✨</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'ask' && styles.tabLabelActive,
-            ]}
-          >
-            Ask
-          </Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={onAddNew}
+        accessibilityLabel="Add new item"
+        accessibilityRole="button"
+        activeOpacity={0.8}
+      >
+        <View style={styles.addIcon}>
+          <Icon name="plus" size={22} color={colors.text} />
+        </View>
+        <Text style={styles.navLabel}>New item</Text>
+      </TouchableOpacity>
 
-        {/* Add Floating Pill/Circle */}
-        <TouchableOpacity
-          style={styles.addButtonWrapper}
-          onPress={onAddNew}
-          activeOpacity={0.8}
-        >
-          <View style={styles.addButton}>
-            <Text style={styles.addIcon}>＋</Text>
-          </View>
-          <Text style={styles.addLabel}>New item</Text>
-        </TouchableOpacity>
-
-        {/* Import Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
-          onPress={() => onSelectTab('import')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'import' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>📥</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'import' && styles.tabLabelActive,
-            ]}
-          >
-            Import
-          </Text>
-        </TouchableOpacity>
-
-        {/* Devices Tab */}
-        <TouchableOpacity
-          style={styles.tabButton}
-          onPress={() => onSelectTab('devices')}
-          activeOpacity={0.7}
-        >
-          <View
-            style={[
-              styles.iconWrapper,
-              currentTab === 'devices' && styles.iconWrapperActive,
-            ]}
-          >
-            <Text style={styles.tabIcon}>💻</Text>
-          </View>
-          <Text
-            style={[
-              styles.tabLabel,
-              currentTab === 'devices' && styles.tabLabelActive,
-            ]}
-          >
-            Devices
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {navButton(TABS[2])}
+      {navButton(TABS[3])}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-  },
   navBar: {
     backgroundColor: colors.brandPeri,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingTop: 10,
-    paddingBottom: 16,
-    paddingHorizontal: spacing.sm,
+    paddingBottom: 10,
+    paddingHorizontal: spacing.md,
   },
-  tabButton: {
+  navButton: {
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    gap: 5,
     minWidth: 54,
+    minHeight: 52,
   },
-  iconWrapper: {
-    width: 38,
+  navIcon: {
+    width: 39,
     height: 28,
-    borderRadius: radii.pill,
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconWrapperActive: {
+  navIconActive: {
     backgroundColor: colors.surface,
   },
-  tabIcon: {
-    fontSize: 16,
-  },
-  tabLabel: {
+  navLabel: {
     fontSize: 9,
     fontWeight: '600',
     color: colors.text,
-    marginTop: 3,
+    textAlign: 'center',
   },
-  tabLabelActive: {
-    fontWeight: '800',
-  },
-  addButtonWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: -22,
-  },
-  addButton: {
-    width: 48,
-    height: 48,
+  addIcon: {
+    width: 46,
+    height: 46,
     borderRadius: radii.pill,
     backgroundColor: colors.brandOrange,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 4,
+    borderWidth: 5,
     borderColor: colors.surface,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-  },
-  addIcon: {
-    fontSize: 24,
-    color: colors.text,
-    fontWeight: '700',
-    lineHeight: 26,
-  },
-  addLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 2,
+    marginTop: -17,
   },
 });
