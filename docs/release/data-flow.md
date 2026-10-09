@@ -26,13 +26,13 @@ The shared `TrustedRedactionBoundary` is a separate library abstraction. When it
 | `domain`, `isWeak`, `isReused`, `importSource`, `conflictMetadata` | Optional. Weak/reuse flags are deterministic checks computed before inference. |
 | No property named `password`, `totpSecret`, `recoveryCodes`, `seedPhrase`, `privateKey`, `secret`, `apiKey`, `apiSecret`, `content`, `fileContent`, `masterKey`, `recoveryPhrase`, `mnemonic`, `walletAddress`, or `privateData` | The projection's denied-key list is checked, and tests also check representative secret values do not occur in serialized context. Crypto-wallet entry types are excluded. |
 
-Sources: [`packages/shared/src/redaction/projection.ts`](../../packages/shared/src/redaction/projection.ts), [`packages/shared/src/redaction/boundary.ts`](../../packages/shared/src/redaction/boundary.ts), and [`packages/shared/src/types/metadata.ts`](../../packages/shared/src/types/metadata.ts). The boundary’s model interface is currently represented by `FakeLocalAiAdapter` in tests; it is not connected to the API `AiAdapter` or an HTTP route.
+Sources: [`packages/shared/src/redaction/projection.ts`](../../packages/shared/src/redaction/projection.ts), [`packages/shared/src/redaction/boundary.ts`](../../packages/shared/src/redaction/boundary.ts), and [`packages/shared/src/types/metadata.ts`](../../packages/shared/src/types/metadata.ts). The boundary’s model interface is currently represented by `FakeLocalAiAdapter` in tests; it is not connected directly to the API `AiAdapter`.
 
-## Ask Your Vault adapter path (not routed)
+## Ask Your Vault path
 
 `AiAdapter.askVault(query, metadata)` accepts a caller-provided natural-language query plus a prebuilt `RedactedEntryMetadata[]`. It serializes that metadata and the query into a prompt, sends it to the same local-only endpoint check described above, and only accepts `{"answer": string, "relevantEntryIds": string[]}`. Parse failure, endpoint failure, timeout, or disabled AI returns a generic fallback.
 
-No source call site invokes `askVault`, and `createApp` mounts no Ask Your Vault endpoint. Therefore the repository has unit coverage of the adapter and library coverage of the trusted boundary, but not an end-to-end Ask Your Vault route that proves a vault entry is redacted before the runtime receives it.
+`POST /api/ask` is mounted by `createApp` and calls `repo.getMetadataList()` before invoking `AiAdapter.askVault`. The route is covered by `apps/api/test/api-routes.test.ts` using synthetic data. The repository projection excludes secret values and note bodies before the adapter call, but this route does not independently invoke `TrustedRedactionBoundary` and does not prove that an OS-level model sandbox is active.
 
 ## Process and capability boundary
 
@@ -43,8 +43,8 @@ No launcher, sandbox profile, firewall/namespace rule, read-only mount, `llama.c
 ## Findings requiring disposition before release
 
 1. **Critical — import sample redaction is header-name limited.** `suggestImportMappings` passes values for headers such as `notes`, `api_key`, `token`, or custom fields unchanged. It also treats only four normalized header names as secret. This conflicts with the required zero-secret-field boundary for arbitrary browser exports.
-2. **High — trusted redaction is not on the production API path.** `TrustedRedactionBoundary` is not wired to `AiAdapter`, and the Ask Your Vault adapter takes metadata supplied by its caller rather than projecting raw entries itself.
-3. **High — Ask Your Vault is not an API feature yet.** There is no route or call site for `askVault`, so its prompt, lock handling, and redaction cannot be demonstrated end to end.
+2. **High — the separately tested trusted redaction boundary is not on the Ask Your Vault production API path.** The route uses the repository's `getMetadataList()` projection, which excludes secret fields, but `TrustedRedactionBoundary` is not invoked by the route and the adapter accepts metadata supplied by its caller.
+3. **Medium — Ask Your Vault is now routed, but runtime isolation remains unverified.** The route has lock-state handling and API coverage, but its local endpoint is only constrained at the application layer; no OS-level network/filesystem/tool sandbox or authenticated local runtime is implemented here.
 4. **High — runtime sandbox claims are not enforced in source.** The adapter’s loopback allowlist prevents it from selecting a remote HTTP endpoint; it does not deny network or filesystem access to a local model server/process.
 5. **Medium — local endpoint authenticity is not enforced.** Any service bound to an allowed loopback hostname/port can receive the prompt; there is no socket-only transport or authentication token.
 

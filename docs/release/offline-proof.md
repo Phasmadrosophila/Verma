@@ -39,7 +39,7 @@ These controls must be performed by a human on the exact demo device. Do not sub
 4. Launch the already-installed local build using the release team's approved command. Record the exact command, not an inferred one.
 5. Confirm the visible local/offline status. If it is absent or says it is online, stop and mark the run `FAIL`.
 6. Use the provided synthetic browser CSV only. In Smart Import, inspect mappings, tags, and duplicate candidates; confirm no record is written until the explicit confirmation control. Confirm imported secret cells remain masked.
-7. In Ask Your Vault, use a synthetic metadata-only query. Confirm returned title/domain/tag metadata is useful and that secret fields remain masked until explicit unlock. If this build still renders the known `Ask Your Vault (Coming soon)` route, record `OPEN` rather than treating the route as a pass.
+7. In Ask Your Vault, use a synthetic metadata-only query. Confirm returned title/domain/tag metadata is useful and that secret fields remain masked until explicit unlock. Record `OPEN` until this behavior is observed on the release device.
 8. Disable or stop the local AI runtime using the release team's approved control. Verify manual create/edit/search and Smart Import's deterministic mapping remain usable, with an honest model-unavailable indication. Do not claim the model was sandboxed merely because fallback occurred.
 9. Repeat steps 4–8 immediately with the same build and a fresh synthetic vault. Both numbered runs must be `PASS` for a two-consecutive-run claim; any `FAIL` or `OPEN` breaks the streak.
 

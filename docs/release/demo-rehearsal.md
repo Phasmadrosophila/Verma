@@ -28,4 +28,4 @@ Do not say “zero knowledge,” “security audited,” “no network sandbox,�
 - A real secret, recovery phrase, or personal account label appears: stop recording, remove the capture from distribution, and restart with sanitized fixtures.
 - A secret appears in an AI panel, preview, diagnostic, or log: stop and mark `FAIL`.
 - Network remains available, the local/offline status is misleading, fallback blocks manual vault access, or an import writes before confirmation: stop and mark `FAIL`.
-- The Ask route is placeholder or unavailable: mark the Ask row `OPEN`; the rehearsal cannot earn the two-run pass until it is implemented and observed.
+- The Ask route is unavailable: mark the Ask row `OPEN`; the rehearsal cannot earn the two-run pass until it is observed on the release device.
