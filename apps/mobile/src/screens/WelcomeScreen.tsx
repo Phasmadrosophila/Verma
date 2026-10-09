@@ -69,13 +69,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
     }).start();
   }, [currentSlide]);
 
+  const isFirstSlide = currentSlide === 0;
+
   const slideTranslateX = slideAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [60, 0],
+    outputRange: [isFirstSlide ? 0 : 60, 0],
+  });
+  const slideTranslateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [isFirstSlide ? 60 : 0, 0],
   });
   const slideOpacity = slideAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.2, 1],
+    outputRange: [isFirstSlide ? 0 : 0.2, 1],
   });
 
   const slide = slides[currentSlide];
@@ -113,7 +119,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           styles.content,
           {
             opacity: slideOpacity,
-            transform: [{ translateX: slideTranslateX }],
+            transform: [
+              { translateX: slideTranslateX },
+              { translateY: slideTranslateY },
+            ],
           },
         ]}
       >

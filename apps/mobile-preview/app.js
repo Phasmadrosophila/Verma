@@ -433,7 +433,7 @@ const welcomeSlides = [
 ];
 function renderWelcome() {
   const [title, description, tag, art] = welcomeSlides[state.intro];
-  const slideDir = state.introDir || 'next';
+  const slideDir = state.intro === 0 ? 'rise' : (state.introDir || 'next');
   content.innerHTML = `<section class="welcome-page slide-${slideDir}" data-slide="${state.intro}"><div class="welcome-top"><div class="welcome-brand">${brandMark}<span class="wordmark">Verma<span class="brand-period">.</span></span></div><button id="skip-welcome">Go to vault ${icon('arrow')}</button></div><div class="welcome-illustration" aria-hidden="true"><img src="assets/${art}" alt=""></div><div class="welcome-copy"><div class="eyebrow">${tag}</div><h1 tabindex="-1">${title.split('\n').join('<br>')}</h1><p>${description}</p></div><div class="welcome-controls"><div class="welcome-progress"><span class="progress-number">0${state.intro + 1}<span> / 03</span></span><div class="dots" aria-label="Introduction ${state.intro + 1} of 3">${welcomeSlides.map((_,i) => `<i class="${i === state.intro ? 'active' : ''}"></i>`).join('')}</div>${state.intro ? `<button class="welcome-back" id="back-welcome" aria-label="Previous introduction">${icon('back')}</button>` : '<span class="welcome-back-space" aria-hidden="true"></span>'}</div><button class="button primary" id="next-welcome">${state.intro === 2 ? 'Create your secure vault' : 'Continue'} ${icon('arrow')}</button><p class="field-hint center">${state.intro === 2 ? 'Your space. Your rules. Your Verma.' : 'Local-first encryption · Zero cloud exposure'}</p></div></section>`;
   $('#skip-welcome').onclick = () => navTo('vault');
   $('#next-welcome').onclick = () => {
