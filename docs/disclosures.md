@@ -47,6 +47,7 @@ The documented AI-assisted development tools used for this work are:
 - Kiro CLI.
 - Antigravity.
 - Claude Code.
+- OpenCode.
 
 Before final submission, the human team should confirm whether any additional AI development tools or model providers were used. No additional tools are added to this disclosure without that confirmation.
 
