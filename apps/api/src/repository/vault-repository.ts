@@ -10,6 +10,7 @@ import type {
   LockStateInfo,
   VaultMetaRecord,
 } from '@app/shared';
+import { askYourVaultOllama } from '../ai/ollama.js';
 import {
   deriveMasterKey,
   generateSalt,
@@ -417,13 +418,27 @@ export class VaultRepository {
       return list;
     }
 
+    const aiMatchingIds = await askYourVaultOllama(query, list);
+
+    if (aiMatchingIds && aiMatchingIds.length > 0) {
+      // Return the entries in the order specified by the AI
+      const matchedEntries = aiMatchingIds
+        .map(id => list.find(item => item.id === id))
+        .filter((item): item is RedactedEntryMetadata => item !== undefined);
+      
+      if (matchedEntries.length > 0) {
+        return matchedEntries.slice(0, 3);
+      }
+    }
+
+    // Graceful fallback to text search if AI fails or returns empty
     const q = query.toLowerCase().trim();
     return list.filter((item) => {
       const matchesTitle = item.title.toLowerCase().includes(q);
       const matchesDomain = item.domain?.toLowerCase().includes(q) ?? false;
       const matchesTag = item.tags.some((t) => t.toLowerCase().includes(q));
       return matchesTitle || matchesDomain || matchesTag;
-    });
+    }).slice(0, 3);
   }
 
   public async seedSyntheticFixtures(): Promise<number> {
@@ -437,6 +452,37 @@ export class VaultRepository {
 
     this.logger.info('FIXTURES_SEEDED', { meta: { count } });
     return count;
+  }
+
+  public async importEntries(
+    entries: CreateEntryInput[]
+  ): Promise<{ imported: VaultEntry[]; failed: { index: number; reason: string }[] }> {
+    this.ensureUnlocked();
+
+    const imported: VaultEntry[] = [];
+    const failed: { index: number; reason: string }[] = [];
+
+    for (let i = 0; i < entries.length; i++) {
+      const input = entries[i];
+      try {
+        const created = await this.createEntry(input);
+        imported.push(created);
+      } catch (err: any) {
+        failed.push({
+          index: i,
+          reason: err?.message || 'Failed to create entry during import',
+        });
+      }
+    }
+
+    this.logger.info('ENTRIES_IMPORTED', {
+      meta: {
+        importedCount: imported.length,
+        failedCount: failed.length,
+      },
+    });
+
+    return { imported, failed };
   }
 
   public close(): void {

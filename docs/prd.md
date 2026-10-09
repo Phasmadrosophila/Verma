@@ -227,8 +227,8 @@ The assistant can identify missing critical-account categories and help assemble
 
 ### AI behavior requirements
 
-- The model runs locally through `llama.cpp` for the demo direction. Ollama is permitted for development.
-- Use a small quantized model, approximately 1B to 4B parameters, selected through a benchmark.
+- The proposed small-device default is Qwen3 0.6B, delivered as a reviewed quantized GGUF artifact through `llama.cpp`; the exact artifact remains unselected until its hash, license, redistribution status, and target-device evaluation are recorded. Ollama is permitted for development only.
+- Use the proposed small-device Qwen3 0.6B model, or a measured replacement of comparable size, selected through the documented evaluation gate.
 - Use a small embedding model only if it improves measured retrieval quality enough to justify the additional complexity.
 - The model has no tools and cannot invoke network, filesystem, vault, or mutation operations.
 - Outputs use constrained JSON and are validated against a schema before display.
@@ -610,7 +610,7 @@ Keep the pitch focused on the daily password-manager problem, Local AI Assistant
 - [ ] Implement encrypted local vault and lock state.
 - [ ] Implement the redaction layer as an explicit trusted module.
 - [ ] Run the model in a no-network sandbox.
-- [ ] Build Smart Import preview and confirmation.
+- [x] Build Smart Import preview and confirmation.
 - [ ] Build Ask Your Vault over metadata.
 - [ ] Add direct sync between two paired desktop devices.
 - [ ] Add Auto-Tagging or Health Coach only if the P0 demo is already stable.
