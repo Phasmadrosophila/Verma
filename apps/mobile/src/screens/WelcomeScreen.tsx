@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -56,6 +57,25 @@ const slides: Slide[] = [
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const slideAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    slideAnim.setValue(0);
+    Animated.timing(slideAnim, {
+      toValue: 1,
+      duration: 320,
+      useNativeDriver: true,
+    }).start();
+  }, [currentSlide]);
+
+  const slideTranslateX = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [60, 0],
+  });
+  const slideOpacity = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.2, 1],
+  });
 
   const slide = slides[currentSlide];
 
@@ -86,7 +106,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
       </View>
 
       {/* Main Art & Content */}
-      <View style={styles.content}>
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: slideOpacity,
+            transform: [{ translateX: slideTranslateX }],
+          },
+        ]}
+      >
         <View style={[styles.iconCircle, { borderColor: slide.accentColor }]}>
           <Text style={styles.heroEmoji}>{slide.icon}</Text>
         </View>
@@ -98,7 +126,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           <Text style={styles.title}>{slide.title}</Text>
           <Text style={styles.description}>{slide.description}</Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Bottom Controls */}
       <View style={styles.footer}>

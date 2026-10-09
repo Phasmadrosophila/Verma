@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  Animated,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -38,31 +37,6 @@ export function App() {
 
   // Toast state
   const [toast, setToast] = useState<string | null>(null);
-
-  const tabAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    tabAnim.setValue(0);
-    Animated.spring(tabAnim, {
-      toValue: 1,
-      friction: 5,
-      tension: 65,
-      useNativeDriver: true,
-    }).start();
-  }, [currentTab]);
-
-  const contentTranslateY = tabAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [24, 0],
-  });
-  const contentScale = tabAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.92, 1],
-  });
-  const contentOpacity = tabAnim.interpolate({
-    inputRange: [0, 0.4, 1],
-    outputRange: [0, 1, 1],
-  });
 
   const showToast = (message: string) => {
     setToast(message);
@@ -149,18 +123,7 @@ export function App() {
       <Header onLock={() => setIsLocked(true)} syncActive={true} />
 
       {/* Main Content Area */}
-      <Animated.View
-        style={[
-          styles.mainContent,
-          {
-            opacity: contentOpacity,
-            transform: [
-              { translateY: contentTranslateY },
-              { scale: contentScale },
-            ],
-          },
-        ]}
-      >
+      <View style={styles.mainContent}>
         {currentTab === 'vault' && (
           <VaultScreen
             entries={entries}
@@ -183,7 +146,7 @@ export function App() {
         {currentTab === 'devices' && (
           <DevicesScreen onShowToast={showToast} />
         )}
-      </Animated.View>
+      </View>
 
       {/* Bottom Navigation */}
       <BottomNav

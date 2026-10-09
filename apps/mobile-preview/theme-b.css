@@ -27,8 +27,8 @@ body.variant-b{background:#0e1013;margin:0;padding:0;display:flex;justify-conten
 .app-brand .brand-period{color:var(--paper)}
 .device-status{background:#ffffff36;border-radius:30px;min-height:33px;padding:6px 11px;font-size:9px}
 .app-header>.icon-button{background:var(--paper);border:0;width:40px;height:40px}
-.app-content{background:var(--surface);border-radius:32px 32px 0 0;padding:21px 24px 28px;overflow-x:hidden}
-.app-content>section{position:relative;transform-origin:center top;animation:chat-bubble-pop 540ms cubic-bezier(.34,1.58,.64,1) both;will-change:transform,opacity}
+.app-content{background:var(--surface);border-radius:32px 32px 0 0;padding:21px 24px 28px;overflow-x:hidden;position:relative}
+.app-content>section{position:relative}
 .page-head{padding:5px 0 24px}
 .page-head .eyebrow{color:#596cb5;font-size:8px;letter-spacing:1.5px}
 .page-head h1{font-size:27px;letter-spacing:-1px;line-height:1.23}
@@ -73,37 +73,209 @@ body.variant-b{background:#0e1013;margin:0;padding:0;display:flex;justify-conten
 .entry-row small{font-size:10px}
 .entry-row .tag{border-radius:30px;background:#f6f0e8;font-size:8px;padding:4px 8px}
 .bottom-nav{background:var(--peri);border:0;border-radius:24px 24px 0 0;padding:10px 12px 5px;flex:none;z-index:2}
-.nav-button{color:var(--text);min-height:52px;font-size:9px;gap:5px;transition:transform 120ms ease}
-.nav-button:active .nav-icon{transform:scale(.86);transition:transform 100ms cubic-bezier(.23,1,.32,1)}
-.nav-button .nav-icon{width:39px;height:28px;border-radius:25px;transition:background 180ms ease,transform 200ms ease}
+.nav-button{color:var(--text);min-height:52px;font-size:9px;gap:5px}
+.nav-button .nav-icon{width:39px;height:28px;border-radius:25px;transition:background 140ms ease}
 .nav-button[aria-current=page]{color:var(--text)}
-.nav-button[aria-current=page] .nav-icon{background:var(--surface);animation:nav-chat-bubble-pop 520ms cubic-bezier(.34,1.58,.64,1) both;will-change:transform,opacity}
-.nav-button[aria-current=page] .icon{animation:nav-chat-icon-wiggle 520ms cubic-bezier(.34,1.58,.64,1) both}
-.nav-button[aria-current=page]>span:last-child{animation:nav-chat-label-pop 480ms cubic-bezier(.34,1.58,.64,1) both}
-.nav-button.add .nav-icon{background:var(--orange);color:var(--text);width:46px;height:46px;border-radius:50%;box-shadow:0 0 0 5px var(--surface);margin-top:-17px;transition:transform 240ms cubic-bezier(.34,1.58,.64,1),box-shadow 180ms ease}
-.nav-button.add:active .nav-icon,.nav-button.add.is-popped .nav-icon{transform:scale(.85) rotate(15deg)}
-@keyframes chat-bubble-pop{
-  0%{opacity:0;transform:translateY(24px) scale(.91)}
-  55%{opacity:1}
-  75%{transform:translateY(-3px) scale(1.018)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
+.nav-button[aria-current=page] .nav-icon{background:var(--surface)}
+.nav-button.add .nav-icon{background:var(--orange);color:var(--text);width:46px;height:46px;border-radius:50%;box-shadow:0 0 0 5px var(--surface);margin-top:-17px}
+
+/* --- Onboarding Slide Transitions --- */
+@keyframes slide-in-next {
+  0% {
+    transform: translateX(80px);
+    opacity: 0.1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
-@keyframes nav-chat-bubble-pop{
-  0%{opacity:.6;transform:translateY(4px) scale(.74)}
-  55%{opacity:1;transform:translateY(-2px) scale(1.2)}
-  80%{transform:translateY(1px) scale(.96)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
+@keyframes slide-in-prev {
+  0% {
+    transform: translateX(-80px);
+    opacity: 0.1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
-@keyframes nav-chat-icon-wiggle{
-  0%{transform:scale(.72) rotate(-8deg)}
-  55%{transform:scale(1.18) rotate(4deg)}
-  80%{transform:scale(.96) rotate(-1deg)}
-  100%{transform:scale(1) rotate(0deg)}
+.welcome-page.slide-next,
+.setup-page.slide-next {
+  animation: slide-in-next 340ms cubic-bezier(.16, 1, .3, 1) both;
 }
-@keyframes nav-chat-label-pop{
-  0%{opacity:.5;transform:translateY(3px) scale(.9)}
-  60%{opacity:1;transform:translateY(-1px) scale(1.05)}
-  100%{opacity:1;transform:translateY(0) scale(1)}
+.welcome-page.slide-prev,
+.setup-page.slide-prev {
+  animation: slide-in-prev 340ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.welcome-page.slide-next .welcome-illustration {
+  animation: slide-in-next 360ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.welcome-page.slide-next .welcome-copy {
+  animation: slide-in-next 400ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.welcome-page.slide-prev .welcome-illustration {
+  animation: slide-in-prev 360ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.welcome-page.slide-prev .welcome-copy {
+  animation: slide-in-prev 400ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+/* --- Skeleton UI / UX Loading Styles --- */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-box {
+  background: linear-gradient(90deg, #ede7de 0%, #fbf8f4 50%, #ede7de 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+.skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border-radius: 32px 32px 0 0;
+  padding: 21px 24px 28px;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 180ms ease;
+  overflow: hidden;
+}
+.skeleton-overlay.is-fading {
+  opacity: 0;
+}
+.skeleton-vault .sk-hero {
+  height: 136px;
+  border-radius: 22px;
+  margin-bottom: 16px;
+}
+.skeleton-vault .sk-search {
+  height: 48px;
+  border-radius: 30px;
+  margin-bottom: 16px;
+}
+.skeleton-vault .sk-chips {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+.skeleton-vault .sk-chip {
+  height: 32px;
+  width: 68px;
+  border-radius: 20px;
+}
+.skeleton-vault .sk-favorites {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-bottom: 18px;
+}
+.skeleton-vault .sk-fav {
+  height: 98px;
+  border-radius: 18px;
+}
+.skeleton-vault .sk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #f0e9e2;
+}
+.skeleton-vault .sk-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  flex: none;
+}
+.skeleton-vault .sk-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.skeleton-vault .sk-line-title {
+  height: 13px;
+  width: 52%;
+  border-radius: 4px;
+}
+.skeleton-vault .sk-line-sub {
+  height: 10px;
+  width: 78%;
+  border-radius: 4px;
+}
+.skeleton-vault .sk-tag {
+  height: 18px;
+  width: 44px;
+  border-radius: 12px;
+  flex: none;
+}
+.skeleton-ask .sk-orb {
+  width: 90px;
+  height: 90px;
+  border-radius: 30px;
+  margin: 14px auto 22px;
+}
+.skeleton-ask .sk-title {
+  height: 24px;
+  width: 60%;
+  margin: 0 auto 10px;
+  border-radius: 6px;
+}
+.skeleton-ask .sk-desc {
+  height: 13px;
+  width: 80%;
+  margin: 0 auto 22px;
+  border-radius: 4px;
+}
+.skeleton-ask .sk-input {
+  height: 90px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+.skeleton-ask .sk-prompt {
+  height: 42px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.skeleton-import .sk-head {
+  height: 24px;
+  width: 55%;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+.skeleton-import .sk-sub {
+  height: 13px;
+  width: 85%;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+.skeleton-import .sk-sources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 18px;
+}
+.skeleton-import .sk-source {
+  height: 64px;
+  border-radius: 14px;
+}
+.skeleton-import .sk-card {
+  height: 74px;
+  border-radius: 16px;
+  margin-bottom: 10px;
+}
+.skeleton-devices .sk-status {
+  height: 110px;
+  border-radius: 22px;
+  margin-bottom: 18px;
+}
+.skeleton-devices .sk-dev-card {
+  height: 90px;
+  border-radius: 18px;
+  margin-bottom: 12px;
 }
 .home-indicator{background:var(--peri);height:18px;flex:none}
 .home-indicator::after{width:95px;height:3px;background:var(--text);opacity:.8}
@@ -364,5 +536,5 @@ textarea.input{border-radius:20px}
   .ask-banner p{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){
-  .app-content>section,.nav-button[aria-current=page] .nav-icon,.nav-button[aria-current=page] .icon,.nav-button[aria-current=page]>span:last-child{animation:none!important;transform:none!important}
+  .welcome-page.slide-next, .welcome-page.slide-prev, .setup-page.slide-next, .setup-page.slide-prev, .skeleton-box{animation:none!important;transform:none!important}
 }

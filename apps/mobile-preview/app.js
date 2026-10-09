@@ -112,8 +112,67 @@ function toast(message) {
   $('#toast').classList.add('visible');
   toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 3300);
 }
+function getSkeletonHtml(tab) {
+  if (tab === 'vault') {
+    return `<div class="skeleton-vault">
+      <div class="skeleton-box sk-hero"></div>
+      <div class="skeleton-box sk-search"></div>
+      <div class="sk-chips"><div class="skeleton-box sk-chip"></div><div class="skeleton-box sk-chip"></div><div class="skeleton-box sk-chip"></div></div>
+      <div class="sk-favorites"><div class="skeleton-box sk-fav"></div><div class="skeleton-box sk-fav"></div><div class="skeleton-box sk-fav"></div></div>
+      <div class="sk-row"><div class="skeleton-box sk-avatar"></div><div class="sk-lines"><div class="skeleton-box sk-line-title"></div><div class="skeleton-box sk-line-sub"></div></div><div class="skeleton-box sk-tag"></div></div>
+      <div class="sk-row"><div class="skeleton-box sk-avatar"></div><div class="sk-lines"><div class="skeleton-box sk-line-title" style="width:40%"></div><div class="skeleton-box sk-line-sub" style="width:65%"></div></div><div class="skeleton-box sk-tag"></div></div>
+      <div class="sk-row"><div class="skeleton-box sk-avatar"></div><div class="sk-lines"><div class="skeleton-box sk-line-title" style="width:60%"></div><div class="skeleton-box sk-line-sub" style="width:70%"></div></div><div class="skeleton-box sk-tag"></div></div>
+    </div>`;
+  }
+  if (tab === 'ask') {
+    return `<div class="skeleton-ask">
+      <div class="skeleton-box sk-orb"></div>
+      <div class="skeleton-box sk-title"></div>
+      <div class="skeleton-box sk-desc"></div>
+      <div class="skeleton-box sk-input"></div>
+      <div class="skeleton-box sk-prompt"></div>
+      <div class="skeleton-box sk-prompt"></div>
+      <div class="skeleton-box sk-prompt"></div>
+    </div>`;
+  }
+  if (tab === 'import') {
+    return `<div class="skeleton-import">
+      <div class="skeleton-box sk-head"></div>
+      <div class="skeleton-box sk-sub"></div>
+      <div class="sk-sources"><div class="skeleton-box sk-source"></div><div class="skeleton-box sk-source"></div></div>
+      <div class="skeleton-box sk-card"></div>
+      <div class="skeleton-box sk-card"></div>
+    </div>`;
+  }
+  return `<div class="skeleton-devices">
+    <div class="skeleton-box sk-status"></div>
+    <div class="skeleton-box sk-dev-card"></div>
+    <div class="skeleton-box sk-dev-card"></div>
+  </div>`;
+}
+
+let skeletonTimer = null;
+function triggerSkeletonLoading(tab) {
+  if (state.locked || state.screen !== 'main') return;
+  let overlay = content.querySelector('.skeleton-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'skeleton-overlay';
+    content.appendChild(overlay);
+  }
+  overlay.innerHTML = getSkeletonHtml(tab);
+  overlay.classList.remove('is-fading');
+  clearTimeout(skeletonTimer);
+  skeletonTimer = setTimeout(() => {
+    overlay.classList.add('is-fading');
+    setTimeout(() => {
+      overlay?.remove();
+    }, 180);
+  }, 240);
+}
+
 function navTo(tab) {
-  closeSheet(false); state.tab = tab; state.screen = 'main'; render(true);
+  closeSheet(false); state.tab = tab; state.screen = 'main'; render(true); triggerSkeletonLoading(tab);
 }
 function render(focus = false) {
   renderChrome();
@@ -374,15 +433,26 @@ const welcomeSlides = [
 ];
 function renderWelcome() {
   const [title, description, tag, art] = welcomeSlides[state.intro];
-  content.innerHTML = `<section class="welcome-page" data-slide="${state.intro}"><div class="welcome-top"><div class="welcome-brand">${brandMark}<span class="wordmark">Verma<span class="brand-period">.</span></span></div><button id="skip-welcome">Go to vault ${icon('arrow')}</button></div><div class="welcome-illustration" aria-hidden="true"><img src="assets/${art}" alt=""></div><div class="welcome-copy"><div class="eyebrow">${tag}</div><h1 tabindex="-1">${title.split('\n').join('<br>')}</h1><p>${description}</p></div><div class="welcome-controls"><div class="welcome-progress"><span class="progress-number">0${state.intro + 1}<span> / 03</span></span><div class="dots" aria-label="Introduction ${state.intro + 1} of 3">${welcomeSlides.map((_,i) => `<i class="${i === state.intro ? 'active' : ''}"></i>`).join('')}</div>${state.intro ? `<button class="welcome-back" id="back-welcome" aria-label="Previous introduction">${icon('back')}</button>` : '<span class="welcome-back-space" aria-hidden="true"></span>'}</div><button class="button primary" id="next-welcome">${state.intro === 2 ? 'Create your secure vault' : 'Continue'} ${icon('arrow')}</button><p class="field-hint center">${state.intro === 2 ? 'Your space. Your rules. Your Verma.' : 'Local-first encryption · Zero cloud exposure'}</p></div></section>`;
+  const slideDir = state.introDir || 'next';
+  content.innerHTML = `<section class="welcome-page slide-${slideDir}" data-slide="${state.intro}"><div class="welcome-top"><div class="welcome-brand">${brandMark}<span class="wordmark">Verma<span class="brand-period">.</span></span></div><button id="skip-welcome">Go to vault ${icon('arrow')}</button></div><div class="welcome-illustration" aria-hidden="true"><img src="assets/${art}" alt=""></div><div class="welcome-copy"><div class="eyebrow">${tag}</div><h1 tabindex="-1">${title.split('\n').join('<br>')}</h1><p>${description}</p></div><div class="welcome-controls"><div class="welcome-progress"><span class="progress-number">0${state.intro + 1}<span> / 03</span></span><div class="dots" aria-label="Introduction ${state.intro + 1} of 3">${welcomeSlides.map((_,i) => `<i class="${i === state.intro ? 'active' : ''}"></i>`).join('')}</div>${state.intro ? `<button class="welcome-back" id="back-welcome" aria-label="Previous introduction">${icon('back')}</button>` : '<span class="welcome-back-space" aria-hidden="true"></span>'}</div><button class="button primary" id="next-welcome">${state.intro === 2 ? 'Create your secure vault' : 'Continue'} ${icon('arrow')}</button><p class="field-hint center">${state.intro === 2 ? 'Your space. Your rules. Your Verma.' : 'Local-first encryption · Zero cloud exposure'}</p></div></section>`;
   $('#skip-welcome').onclick = () => navTo('vault');
-  $('#next-welcome').onclick = () => { if (state.intro < 2) state.intro++; else { state.screen = 'setup'; state.setup = 1; } render(true); };
-  if ($('#back-welcome')) $('#back-welcome').onclick = () => { state.intro--; render(true); };
+  $('#next-welcome').onclick = () => {
+    state.introDir = 'next';
+    if (state.intro < 2) state.intro++;
+    else { state.screen = 'setup'; state.setup = 1; state.setupDir = 'next'; }
+    render(true);
+  };
+  if ($('#back-welcome')) $('#back-welcome').onclick = () => {
+    state.introDir = 'prev';
+    state.intro--;
+    render(true);
+  };
 }
 const demoWords = 'maple harbor quiet lantern ember river cobalt meadow thistle orbit saffron willow pebble canyon mosaic juniper tundra velvet anchor biscuit comet driftwood fable gentle'.split(' ');
 function renderSetup() {
+  const setupDir = state.setupDir || 'next';
   if (state.setup === 1) {
-    content.innerHTML = `<section>${steps(1)}<div class="setup-heading"><div class="eyebrow">CREATE MASTER KEY</div><h1 tabindex="-1" class="mt-sm">Every little universe<br>needs a key.</h1><p>Choose a strong master passphrase to protect your encrypted vault.</p></div><form id="setup-form" class="stack"><div class="input-group"><label for="setup-pass">Master passphrase</label><input class="input" id="setup-pass" type="password" required minlength="8" autocomplete="new-password"><p class="field-hint">Use at least 8 characters. Your master key is derived locally using Argon2id.</p></div><div class="input-group"><label for="confirm-pass">Once more, to be sure</label><input class="input" id="confirm-pass" type="password" required autocomplete="new-password"></div><p id="setup-error" class="error-text" role="alert"></p><button class="button primary" type="submit">Continue ${icon('arrow')}</button><button class="button ghost" type="button" data-tab="vault">Cancel</button></form></section>`;
+    content.innerHTML = `<section class="setup-page slide-${setupDir}">${steps(1)}<div class="setup-heading"><div class="eyebrow">CREATE MASTER KEY</div><h1 tabindex="-1" class="mt-sm">Every little universe<br>needs a key.</h1><p>Choose a strong master passphrase to protect your encrypted vault.</p></div><form id="setup-form" class="stack"><div class="input-group"><label for="setup-pass">Master passphrase</label><input class="input" id="setup-pass" type="password" required minlength="8" autocomplete="new-password"><p class="field-hint">Use at least 8 characters. Your master key is derived locally using Argon2id.</p></div><div class="input-group"><label for="confirm-pass">Once more, to be sure</label><input class="input" id="confirm-pass" type="password" required autocomplete="new-password"></div><p id="setup-error" class="error-text" role="alert"></p><button class="button primary" type="submit">Continue ${icon('arrow')}</button><button class="button ghost" type="button" data-tab="vault">Cancel</button></form></section>`;
     $('#setup-form').onsubmit = e => {
       e.preventDefault();
       const value = $('#setup-pass').value;
@@ -393,16 +463,21 @@ function renderSetup() {
       }
       state.passphrase = value;
       try { localStorage.setItem(STORAGE_KEY_PASSPHRASE, value); } catch {}
+      state.setupDir = 'next';
       state.setup = 2;
       render(true);
     };
   } else if (state.setup === 2) {
     const recoveryPhraseWords = 'maple harbor quiet lantern ember river cobalt meadow thistle orbit saffron willow pebble canyon mosaic juniper tundra velvet anchor biscuit comet driftwood fable gentle'.split(' ');
-    content.innerHTML = `<section>${steps(2)}<div class="setup-heading"><div class="eyebrow">24-WORD RECOVERY PHRASE</div><h1 tabindex="-1" class="mt-sm">Some words<br>worth keeping.</h1><p>Your master recovery phrase. Write these 24 words down in order and store them in a secure physical location.</p></div><div class="notice warm">${icon('note')}<div><strong>Store these safely: write them down.</strong><p>Verma is completely decentralized and serverless. We cannot recover lost passphrases without these words.</p></div></div><div class="recovery-words">${recoveryPhraseWords.map((w,i) => `<span><small>${i + 1}</small>${w}</span>`).join('')}</div><label class="checkbox-row"><input type="checkbox" id="saved-words"><span>I have written down and safely stored my 24-word recovery phrase.</span></label><button class="button primary mt" id="finish-setup" disabled>Open your secure vault ${icon('arrow')}</button></section>`;
+    content.innerHTML = `<section class="setup-page slide-${setupDir}">${steps(2)}<div class="setup-heading"><div class="eyebrow">24-WORD RECOVERY PHRASE</div><h1 tabindex="-1" class="mt-sm">Some words<br>worth keeping.</h1><p>Your master recovery phrase. Write these 24 words down in order and store them in a secure physical location.</p></div><div class="notice warm">${icon('note')}<div><strong>Store these safely: write them down.</strong><p>Verma is completely decentralized and serverless. We cannot recover lost passphrases without these words.</p></div></div><div class="recovery-words">${recoveryPhraseWords.map((w,i) => `<span><small>${i + 1}</small>${w}</span>`).join('')}</div><label class="checkbox-row"><input type="checkbox" id="saved-words"><span>I have written down and safely stored my 24-word recovery phrase.</span></label><button class="button primary mt" id="finish-setup" disabled>Open your secure vault ${icon('arrow')}</button></section>`;
     $('#saved-words').onchange = e => $('#finish-setup').disabled = !e.target.checked;
-    $('#finish-setup').onclick = () => { state.setup = 3; render(true); };
+    $('#finish-setup').onclick = () => {
+      state.setupDir = 'next';
+      state.setup = 3;
+      render(true);
+    };
   } else {
-    content.innerHTML = `<section>${steps(3)}<div class="completion"><div class="success-emblem">${icon('heart')}</div><div class="eyebrow">VAULT INITIALIZED</div><h1 tabindex="-1" class="mt">Your space.<br>Your fresh start.</h1><p>Your encrypted vault is active. Import your credentials or begin organizing your secrets.</p><button class="button primary" data-tab="import">Import credentials ${icon('arrow')}</button><button class="text-button" data-tab="vault">Open my vault</button></div></section>`;
+    content.innerHTML = `<section class="setup-page slide-${setupDir}">${steps(3)}<div class="completion"><div class="success-emblem">${icon('heart')}</div><div class="eyebrow">VAULT INITIALIZED</div><h1 tabindex="-1" class="mt">Your space.<br>Your fresh start.</h1><p>Your encrypted vault is active. Import your credentials or begin organizing your secrets.</p><button class="button primary" data-tab="import">Import credentials ${icon('arrow')}</button><button class="text-button" data-tab="vault">Open my vault</button></div></section>`;
   }
 }
 
@@ -413,11 +488,7 @@ document.addEventListener('click', event => {
   if (button.dataset.open) { entrySheet(Number(button.dataset.open)); return; }
   const action = button.dataset.action;
   if (action === 'close') closeSheet();
-  if (action === 'add') {
-    button.classList.add('is-popped');
-    setTimeout(() => button.classList.remove('is-popped'), 520);
-    editSheet();
-  }
+  if (action === 'add') editSheet();
   if (action === 'privacy') privacySheet();
   if (action === 'profile') profileSheet();
   if (action === 'lock') lockVault();

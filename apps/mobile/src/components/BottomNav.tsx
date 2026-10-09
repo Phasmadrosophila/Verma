@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 export type NavTab = 'vault' | 'ask' | 'import' | 'devices';
@@ -26,31 +26,6 @@ const NavItem: React.FC<NavItemProps> = ({
   onPress,
 }) => {
   const isActive = currentTab === tab;
-  const popAnim = useRef(new Animated.Value(isActive ? 1 : 0)).current;
-
-  useEffect(() => {
-    if (isActive) {
-      popAnim.setValue(0);
-      Animated.spring(popAnim, {
-        toValue: 1,
-        friction: 4,
-        tension: 80,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      popAnim.setValue(0);
-    }
-  }, [isActive]);
-
-  const scale = popAnim.interpolate({
-    inputRange: [0, 0.55, 1],
-    outputRange: [0.75, 1.18, 1],
-  });
-
-  const translateY = popAnim.interpolate({
-    inputRange: [0, 0.55, 1],
-    outputRange: [4, -2, 0],
-  });
 
   return (
     <TouchableOpacity
@@ -58,15 +33,14 @@ const NavItem: React.FC<NavItemProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Animated.View
+      <View
         style={[
           styles.iconWrapper,
           isActive && styles.iconWrapperActive,
-          isActive && { transform: [{ scale }, { translateY }] },
         ]}
       >
         <Text style={styles.tabIcon}>{icon}</Text>
-      </Animated.View>
+      </View>
       <Text
         style={[
           styles.tabLabel,
@@ -84,25 +58,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onSelectTab,
   onAddNew,
 }) => {
-  const addScale = useRef(new Animated.Value(1)).current;
-
-  const handleAddNew = () => {
-    Animated.sequence([
-      Animated.timing(addScale, {
-        toValue: 0.85,
-        duration: 80,
-        useNativeDriver: true,
-      }),
-      Animated.spring(addScale, {
-        toValue: 1,
-        friction: 4,
-        tension: 80,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    onAddNew();
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.navBar}>
@@ -125,17 +80,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         {/* Add Floating Pill/Circle */}
         <TouchableOpacity
           style={styles.addButtonWrapper}
-          onPress={handleAddNew}
+          onPress={onAddNew}
           activeOpacity={0.8}
         >
-          <Animated.View
-            style={[
-              styles.addButton,
-              { transform: [{ scale: addScale }] },
-            ]}
-          >
+          <View style={styles.addButton}>
             <Text style={styles.addIcon}>＋</Text>
-          </Animated.View>
+          </View>
           <Text style={styles.addLabel}>New item</Text>
         </TouchableOpacity>
 
