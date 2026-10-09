@@ -15,6 +15,7 @@ assert.match(download, /Enterprise remains a future product direction|Not part o
 assert.match(download, /type="button" disabled>Not yet available<\/button>/);
 assert.match(downloadStyles, /@media\(max-width:680px\)/, 'Download page has a mobile breakpoint');
 assert.match(downloadStyles, /@media\(max-width:360px\)/, 'Download page supports 320px-class screens');
+assert.match(downloadStyles, /deployment-card-shine/, 'Download page cards have hover shiny effect');
 assert.match(server, /pathname === '\/download'/);
 
 console.log('Download page checks passed');
