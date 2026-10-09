@@ -56,7 +56,7 @@ function brand(e) {
 
 const $ = s => document.querySelector(s);
 const content = $('#content');
-const state = { tab: 'vault', screen: 'main', query: '', filter: 'all', sorted: false, assistant: true, locked: false, passphrase: 'verma-demo', askQuery: '', importStep: 0, importRows: [], duplicate: '', importedIds: [], source: 'browser', intro: 0, setup: 1, paused: false, devices: [] };
+const state = { tab: 'vault', screen: 'welcome', query: '', filter: 'all', sorted: false, assistant: true, locked: false, passphrase: 'verma-demo', askQuery: '', importStep: 0, importRows: [], duplicate: '', importedIds: [], source: 'browser', intro: 0, setup: 1, paused: false, devices: [] };
 let entries = structuredClone(seedEntries);
 let nextId = 100;
 let sheetTrigger;
@@ -90,6 +90,7 @@ function renderChrome() {
   $('#app-header').innerHTML = `<button class="app-brand" aria-label="Verma profile and settings" data-action="profile">${brandMark}<span class="wordmark">Verma<span class="brand-period">.</span></span></button><button class="device-status" data-action="privacy" aria-label="Privacy and assistant settings">${icon(state.locked ? 'lock' : 'shield')}${state.locked ? 'Vault locked' : 'On your device'}</button><button class="icon-button" data-action="lock" aria-label="${state.locked ? 'Unlock demo vault' : 'Lock vault'}">${icon('lock')}</button>`;
   const nav = tabs.map(([tab, label, name]) => `<button class="nav-button" data-tab="${tab}" ${tab === state.tab ? 'aria-current="page"' : ''}><span class="nav-icon">${icon(name)}</span><span>${label}</span></button>`);
   nav.splice(2, 0, `<button class="nav-button add" data-action="add" aria-label="Add new item"><span class="nav-icon">${icon('plus')}</span><span>New item</span></button>`);
+  $('#bottom-nav').innerHTML = nav.join('');
   const pNav = $('.preview-nav');
   if (pNav) pNav.innerHTML = tabs.map(([tab, label], i) => `<button data-tab="${tab}" ${tab === state.tab && state.screen === 'main' ? 'aria-current="page"' : ''}><span>0${i + 1}</span>${label}${icon('arrow')}</button>`).join('');
 }
@@ -348,6 +349,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && !$(
 function readPreviewRoute() {
   if (location.hash === '#welcome') { state.screen = 'welcome'; state.intro = 0; }
   else if (tabs.some(([name]) => location.hash === `#${name}`)) { state.tab = location.hash.slice(1); state.screen = 'main'; }
+  else { state.screen = 'welcome'; state.intro = 0; }
 }
 window.addEventListener('hashchange', () => { if (state.locked) return; closeSheet(false); readPreviewRoute(); render(true); });
 readPreviewRoute();

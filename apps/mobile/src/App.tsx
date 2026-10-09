@@ -24,7 +24,7 @@ import {
 import { colors, radii, spacing, typography } from './theme/tokens';
 
 export function App() {
-  const [hasOnboarded, setHasOnboarded] = useState(true);
+  const [hasOnboarded, setHasOnboarded] = useState(false);
   const [hasSetup, setHasSetup] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const [currentTab, setCurrentTab] = useState<NavTab>('vault');
