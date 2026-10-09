@@ -10,7 +10,7 @@
   <link rel="icon" href="assets/verma-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Parkinsans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Parkinsans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="landing.css">
   <script src="landing.js" defer></script>
 </head>
@@ -23,15 +23,16 @@
     <symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
     <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
     <symbol id="key" viewBox="0 0 24 24"><circle cx="8" cy="9" r="5"/><path d="m11.5 12.5 8.5 8.5M16 17l3-3M18 19l3-3"/></symbol>
+    <symbol id="cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
     <symbol id="menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   </defs></svg>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header container">
-    <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span>Verma<span class="brand-dot">.</span></span></a>
-    <nav class="desktop-nav" aria-label="Main navigation"><a href="#features">Why Verma</a><a href="#inside">A look inside</a><a href="#how">How it works</a><a href="#questions">FAQs</a></nav>
+    <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
+    <nav class="desktop-nav" aria-label="Main navigation"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">Guide</a><a class="nav-cloud" href="/cloud"><svg class="icon cloud-icon" aria-hidden="true"><use href="#cloud"/></svg>Cloud</a></nav>
     <a class="button dark header-cta" href="/download">Download Verma</a>
     <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu"><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
-    <nav id="mobile-menu" aria-label="Mobile navigation" hidden><a href="#features">Why Verma</a><a href="#inside">A look inside</a><a href="#how">How it works</a><a href="#questions">FAQs</a><a href="/download">Download Verma ↗</a></nav>
+    <nav id="mobile-menu" aria-label="Mobile navigation" hidden><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">Guide</a><a href="/cloud">Cloud</a><a href="/download">Download Verma ↗</a></nav>
   </header>
   <main id="main">
     <section class="hero container" aria-labelledby="hero-title">
@@ -44,54 +45,91 @@
       </div>
       <div class="hero-visual">
         <div class="hero-blob" aria-hidden="true"></div><div class="hero-orbit" aria-hidden="true"></div>
-        <div class="phone-mockup hero-phone"><img src="assets/screen-vault.png" width="390" height="844" alt="Verma vault with favorite logins, search, and organized items" fetchpriority="high"></div>
+        <div class="phone-mockup hero-phone" id="hero-demo-phone" aria-label="Interactive demo of Verma mobile app">
+          <div class="demo-screen-stage">
+            <div class="demo-progress-bar" aria-hidden="true">
+              <span class="demo-progress-segment active" data-step="0"><i class="demo-progress-fill"></i></span>
+              <span class="demo-progress-segment" data-step="1"><i class="demo-progress-fill"></i></span>
+              <span class="demo-progress-segment" data-step="2"><i class="demo-progress-fill"></i></span>
+              <span class="demo-progress-segment" data-step="3"><i class="demo-progress-fill"></i></span>
+            </div>
+            <div class="demo-flow-badge" aria-live="polite">
+              <span class="demo-flow-dot" aria-hidden="true"></span>
+              <span class="demo-flow-text" id="demo-flow-text">1/4 · Your Vault</span>
+            </div>
+            <div class="demo-screen-list">
+              <div class="demo-screen active" data-step="0">
+                <img src="assets/screen-vault.png" width="390" height="844" alt="Verma vault with favorite logins, search, and organized items" fetchpriority="high">
+              </div>
+              <div class="demo-screen" data-step="1">
+                <img src="assets/screen-ask.png" width="390" height="844" alt="Ask Verma natural language search" loading="lazy">
+              </div>
+              <div class="demo-screen" data-step="2">
+                <img src="assets/screen-import.png" width="390" height="844" alt="Smart messy CSV import with AI suggestions" loading="lazy">
+              </div>
+              <div class="demo-screen" data-step="3">
+                <img src="assets/screen-devices.png" width="390" height="844" alt="Direct peer-to-peer authenticated sync" loading="lazy">
+              </div>
+            </div>
+            <div class="demo-cursor" id="demo-cursor" aria-hidden="true">
+              <span class="cursor-ripple"></span>
+              <span class="cursor-pointer"></span>
+            </div>
+            <div class="demo-nav-overlay" aria-label="Demo screen switcher">
+              <button type="button" class="demo-tab-target" data-target="0" title="Switch to Vault" aria-label="Vault tab"></button>
+              <button type="button" class="demo-tab-target" data-target="1" title="Switch to Ask Verma" aria-label="Ask Verma tab"></button>
+              <button type="button" class="demo-tab-target" data-target="2" title="Switch to Import" aria-label="Import tab"></button>
+              <button type="button" class="demo-tab-target" data-target="3" title="Switch to Devices" aria-label="Devices tab"></button>
+            </div>
+          </div>
+        </div>
         <img class="hero-illustration" src="assets/welcome-vault.svg" width="360" height="300" alt="">
-        <div class="floating-note"><span class="note-check"><svg class="icon" aria-hidden="true"><use href="#check"/></svg></span><div>Everything in its place.<small>That’s a good feeling.</small></div></div>
+        <div class="floating-note scroll-pop chat-bubble-pop"><span class="note-check"><svg class="icon" aria-hidden="true"><use href="#check"/></svg></span><div>Everything in its place.<small>That’s a good feeling.</small></div></div>
         <span class="hero-spark" aria-hidden="true">✳</span>
       </div>
     </section>
-    <div class="promise-strip container"><span><svg class="icon" aria-hidden="true"><use href="#key"/></svg>Your little digital things</span><span><svg class="icon" aria-hidden="true"><use href="#star"/></svg>A little help finding them</span><span><svg class="icon" aria-hidden="true"><use href="#shield"/></svg>You’re always in control</span></div>
+    <div class="promise-strip container scroll-pop" id="pricing"><span class="scroll-pop"><svg class="icon" aria-hidden="true"><use href="#key"/></svg>Your little digital things</span><span class="scroll-pop"><svg class="icon" aria-hidden="true"><use href="#star"/></svg>A little help finding them</span><span class="scroll-pop"><svg class="icon" aria-hidden="true"><use href="#shield"/></svg>You’re always in control</span></div>
 
     <section class="features-section container" id="features" aria-labelledby="features-title">
-      <div class="section-heading center"><div class="eyebrow">LESS FRICTION. MORE LIVING.</div><h2 id="features-title">Small things.<br><span>Big peace of mind.</span></h2><p>A thoughtful home for the things that open your world.</p></div>
+      <div class="section-heading center scroll-pop"><div class="eyebrow">LESS FRICTION. MORE LIVING.</div><h2 id="features-title">Small things.<br><span>Big peace of mind.</span></h2><p>A thoughtful home for the things that open your world.</p></div>
       <div class="feature-grid">
-        <article class="feature-card"><div class="feature-art"><img src="assets/welcome-vault.svg" width="360" height="300" alt="" loading="lazy"></div><span class="feature-number">01 / KEEP</span><h3>Everything has<br>a little home.</h3><p>Logins, private notes, and API keys. Find your everyday essentials in one calm, organized space.</p><a class="text-link" href="/app#vault">Step inside your vault <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></article>
-        <article class="feature-card"><div class="feature-art"><img src="assets/welcome-organize.svg" width="360" height="300" alt="" loading="lazy"></div><span class="feature-number">02 / ORGANIZE</span><h3>Bring the mess.<br>Find a little order.</h3><p>A fresh start for your scattered logins. Review suggested tags and duplicates before anything is added.</p><a class="text-link" href="/app#import">Try a sample import <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></article>
-        <article class="feature-card"><div class="feature-art"><img src="assets/welcome-find.svg" width="360" height="300" alt="" loading="lazy"></div><span class="feature-number">03 / FIND</span><h3>On the tip<br>of your tongue?</h3><p>“That work Google account.” Describe what you remember, and let Verma help you find the right one.</p><a class="text-link" href="/app#ask">Say it your way <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></article>
+        <article class="feature-card scroll-pop"><div class="feature-art"><img src="assets/welcome-vault.svg" width="360" height="300" alt="" loading="lazy"></div><span class="feature-number">01 / KEEP</span><h3>Everything has<br>a little home.</h3><p>Logins, private notes, and API keys. Find your everyday essentials in one calm, organized space.</p><a class="text-link" href="/app#vault">Step inside your vault <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></article>
+        <article class="feature-card scroll-pop"><div class="feature-art"><img src="assets/welcome-organize.svg" width="360" height="300" alt="" loading="lazy"></div><span class="feature-number">02 / ORGANIZE</span><h3>Bring the mess.<br>Find a little order.</h3><p>A fresh start for your scattered logins. Review suggested tags and duplicates before anything is added.</p><a class="text-link" href="/app#import">Try a sample import <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></article>
+        <article class="feature-card scroll-pop"><div class="feature-art"><img src="assets/welcome-find.svg" width="360" height="300" alt="" loading="lazy"></div><span class="feature-number">03 / FIND</span><h3>On the tip<br>of your tongue?</h3><p>“That work Google account.” Describe what you remember, and let Verma help you find the right one.</p><a class="text-link" href="/app#ask">Say it your way <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></article>
       </div>
     </section>
 
     <section class="showcase-section" id="inside" aria-labelledby="inside-title">
-      <div class="section-heading container horizontal"><div><div class="eyebrow">A PEEK INTO YOUR NEW SPACE</div><h2 id="inside-title">Feels good to<br><span>find your things.</span></h2></div><div class="gallery-controls"><button class="round-button" id="gallery-prev" aria-label="Previous app screens" aria-controls="showcase-track"><svg class="icon reverse" aria-hidden="true"><use href="#arrow"/></svg></button><button class="round-button" id="gallery-next" aria-label="Next app screens" aria-controls="showcase-track"><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></button></div></div>
+      <div class="section-heading container horizontal scroll-pop"><div><div class="eyebrow">A PEEK INTO YOUR NEW SPACE</div><h2 id="inside-title">Feels good to<br><span>find your things.</span></h2></div><div class="gallery-controls"><button class="round-button" id="gallery-prev" aria-label="Previous app screens" aria-controls="showcase-track"><svg class="icon reverse" aria-hidden="true"><use href="#arrow"/></svg></button><button class="round-button" id="gallery-next" aria-label="Next app screens" aria-controls="showcase-track"><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></button></div></div>
       <div class="showcase-track container" id="showcase-track" tabindex="0" aria-label="App screen gallery">
-        <a class="showcase-card showcase-orange" href="/app#vault"><div class="showcase-copy"><span>01 / YOUR VAULT</span><h3>All your little things.<br>One happy home.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-vault.png" width="390" height="844" alt="Explore the vault screen" loading="lazy"></div></a>
-        <a class="showcase-card showcase-blue" href="/app#ask"><div class="showcase-copy"><span>02 / ASK VERMA</span><h3>You know the one.<br>We’ll help find it.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-ask.png" width="390" height="844" alt="Explore the Ask Verma screen" loading="lazy"></div></a>
-        <a class="showcase-card showcase-cream" href="/app#import"><div class="showcase-copy"><span>03 / A FRESH START</span><h3>Moving in.<br>Minus the stress.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-import.png" width="390" height="844" alt="Explore the guided import screen" loading="lazy"></div></a>
-        <a class="showcase-card showcase-ink" href="/app#devices"><div class="showcase-copy"><span>04 / YOUR DEVICES</span><h3>Your own space.<br>Familiar places.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-devices.png" width="390" height="844" alt="Explore the device pairing concept" loading="lazy"></div></a>
+        <a class="showcase-card showcase-orange scroll-pop" href="/app#vault"><div class="showcase-copy"><span>01 / YOUR VAULT</span><h3>All your little things.<br>One happy home.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-vault.png" width="390" height="844" alt="Explore the vault screen" loading="lazy"></div></a>
+        <a class="showcase-card showcase-blue scroll-pop" href="/app#ask"><div class="showcase-copy"><span>02 / ASK VERMA</span><h3>You know the one.<br>We’ll help find it.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-ask.png" width="390" height="844" alt="Explore the Ask Verma screen" loading="lazy"></div></a>
+        <a class="showcase-card showcase-cream scroll-pop" href="/app#import"><div class="showcase-copy"><span>03 / A FRESH START</span><h3>Moving in.<br>Minus the stress.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-import.png" width="390" height="844" alt="Explore the guided import screen" loading="lazy"></div></a>
+        <a class="showcase-card showcase-ink scroll-pop" href="/app#devices"><div class="showcase-copy"><span>04 / YOUR DEVICES</span><h3>Your own space.<br>Familiar places.</h3><svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></div><div class="showcase-screen"><img src="assets/screen-devices.png" width="390" height="844" alt="Explore the device pairing concept" loading="lazy"></div></a>
       </div>
       <p class="gallery-caption">A real look at the interactive concept. Pick a screen to explore.</p>
     </section>
 
-    <section class="how-section container" id="how" aria-labelledby="how-title"><div class="how-card">
-      <div class="how-copy"><div class="eyebrow">MAKE YOURSELF AT HOME</div><h2 id="how-title">A fresh start.<br>Three little steps.</h2><p class="section-description">There’s nothing to install to take a look around.</p><ol class="step-list"><li><span>01</span><div><h3>Say hello to your vault.</h3><p>Meet Verma, then walk through the demo setup.</p></div></li><li><span>02</span><div><h3>Bring a few things along.</h3><p>Try the sample import. Keep the tags you like.</p></div></li><li><span>03</span><div><h3>Make a little room for you.</h3><p>Favorite a login, add a note, or ask for a hand.</p></div></li></ol><a class="text-link" href="/app">Let’s get you settled in <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div>
-      <div class="how-art"><div class="how-geometry" aria-hidden="true"></div><img src="assets/welcome-organize.svg" width="360" height="300" alt="Illustrated cards finding a home in a colorful box" loading="lazy"><div class="tidy-note"><span class="note-check"><svg class="icon" aria-hidden="true"><use href="#check"/></svg></span><div>A place for everything.<small>And a little more headspace for you.</small></div><svg class="icon" aria-hidden="true"><use href="#star"/></svg></div></div>
+    <section class="how-section container" id="how" aria-labelledby="how-title"><div class="how-card scroll-pop">
+      <div class="how-copy"><div class="eyebrow">MAKE YOURSELF AT HOME</div><h2 id="how-title">A fresh start.<br>Three little steps.</h2><p class="section-description">There’s nothing to install to take a look around.</p><ol class="step-list"><li class="scroll-pop"><span>01</span><div><h3>Say hello to your vault.</h3><p>Meet Verma, then walk through the demo setup.</p></div></li><li class="scroll-pop"><span>02</span><div><h3>Bring a few things along.</h3><p>Try the sample import. Keep the tags you like.</p></div></li><li class="scroll-pop"><span>03</span><div><h3>Make a little room for you.</h3><p>Favorite a login, add a note, or ask for a hand.</p></div></li></ol><a class="text-link" href="/app">Let’s get you settled in <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div>
+      <div class="how-art"><div class="how-geometry" aria-hidden="true"></div><img src="assets/welcome-organize.svg" width="360" height="300" alt="Illustrated cards finding a home in a colorful box" loading="lazy"><div class="tidy-note scroll-pop chat-bubble-pop"><span class="note-check"><svg class="icon" aria-hidden="true"><use href="#check"/></svg></span><div>A place for everything.<small>And a little more headspace for you.</small></div><svg class="icon" aria-hidden="true"><use href="#star"/></svg></div></div>
     </div></section>
 
-    <section class="privacy-section container" id="privacy" aria-labelledby="privacy-title"><div class="privacy-card">
+    <section class="privacy-section container" id="privacy" aria-labelledby="privacy-title"><div class="privacy-card scroll-pop">
       <div class="privacy-copy"><div class="privacy-emblem"><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div><div class="eyebrow">YOUR SPACE. YOUR SAY.</div><h2 id="privacy-title">A helpful little assistant.<br>With a very clear line.</h2><p>The demo helper searches titles, websites, and tags. Passwords, note contents, and keys stay out of its search. You choose what to reveal, and when.</p><a class="text-link" href="/app#ask">Meet your little helper <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div>
-      <div class="privacy-visual"><div class="privacy-window"><div class="window-top"><span aria-hidden="true"><i></i><i></i><i></i></span><small>Your little universe</small><svg class="icon" aria-hidden="true"><use href="#lock"/></svg></div><div class="boundary-group"><p><span class="boundary-dot"></span> HELPFUL LITTLE CLUES</p><div class="clue-chips"><span>Google · Work</span><span>accounts.google.com</span><span>Work</span></div></div><div class="boundary-line"><span></span><svg class="icon" aria-hidden="true"><use href="#lock"/></svg><span></span></div><div class="boundary-group secret-group"><p>YOUR SECRETS STAY YOURS</p><div class="secret-demo"><div><small>Password</small><strong aria-label="Password hidden">••••••••••••</strong></div><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div><small>Hidden until you choose to reveal it.</small></div></div><div class="privacy-sticker"><svg class="icon" aria-hidden="true"><use href="#star"/></svg> Your space. Your say.</div></div>
+      <div class="privacy-visual"><div class="privacy-window scroll-pop"><div class="window-top"><span aria-hidden="true"><i></i><i></i><i></i></span><small>Your little universe</small><svg class="icon" aria-hidden="true"><use href="#lock"/></svg></div><div class="boundary-group"><p><span class="boundary-dot"></span> HELPFUL LITTLE CLUES</p><div class="clue-chips"><span class="scroll-pop">Google · Work</span><span class="scroll-pop">accounts.google.com</span><span class="scroll-pop">Work</span></div></div><div class="boundary-line"><span></span><svg class="icon" aria-hidden="true"><use href="#lock"/></svg><span></span></div><div class="boundary-group secret-group"><p>YOUR SECRETS STAY YOURS</p><div class="secret-demo scroll-pop"><div><small>Password</small><strong aria-label="Password hidden">••••••••••••</strong></div><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div><small>Hidden until you choose to reveal it.</small></div></div><div class="privacy-sticker scroll-pop chat-bubble-pop"><svg class="icon" aria-hidden="true"><use href="#star"/></svg> Your space. Your say.</div></div>
     </div></section>
 
-    <section class="faq-section container" id="questions" aria-labelledby="faq-title"><div class="section-heading center"><div class="eyebrow">GOOD QUESTIONS, SIMPLE ANSWERS</div><h2 id="faq-title">A little more <span>clarity.</span></h2></div><div class="faq-list">
-      <details><summary>What can I keep in Verma?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>The concept brings logins, private notes, and API keys together in one vault. Try it with the included sample items, or add your own fictional examples.</p></details>
-      <details><summary>Do I need an account to try it?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>No account or download is needed. Open the demo, explore the welcome screens, and create a sample vault. You can also choose “Explore demo” to jump into the sample items.</p></details>
-      <details><summary>Can the helper see my passwords?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>The demo’s search only uses titles, websites, and tags. It does not search passwords, private note contents, or keys. You can turn the helper off and continue using regular search.</p></details>
-      <details><summary>Can I bring passwords from another app?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>You can explore that flow with a sample import: review suggested tags, decide how to handle a duplicate, and confirm what gets added. Importing real files is not part of this design concept.</p></details>
-      <details><summary>Is this ready for my real passwords?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>This is an interactive design concept, so please use sample values only. Data stays in the current page session and resets on reload. Encryption, real recovery, AI, and device synchronization are not implemented.</p></details>
+    <section class="faq-section container" id="questions" aria-labelledby="faq-title"><div class="section-heading center scroll-pop"><div class="eyebrow">GOOD QUESTIONS, SIMPLE ANSWERS</div><h2 id="faq-title">A little more <span>clarity.</span></h2></div><div class="faq-list">
+      <details class="scroll-pop"><summary>What can I keep in Verma?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>The concept brings logins, private notes, and API keys together in one vault. Try it with the included sample items, or add your own fictional examples.</p></details>
+      <details class="scroll-pop"><summary>Do I need an account to try it?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>No account or download is needed. Open the demo, explore the welcome screens, and create a sample vault. You can also choose “Explore demo” to jump into the sample items.</p></details>
+      <details class="scroll-pop"><summary>Can the helper see my passwords?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>The demo’s search only uses titles, websites, and tags. It does not search passwords, private note contents, or keys. You can turn the helper off and continue using regular search.</p></details>
+      <details class="scroll-pop"><summary>Can I bring passwords from another app?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>You can explore that flow with a sample import: review suggested tags, decide how to handle a duplicate, and confirm what gets added. Importing real files is not part of this design concept.</p></details>
+      <details class="scroll-pop"><summary>Is this ready for my real passwords?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>This is an interactive design concept, so please use sample values only. Data stays in the current page session and resets on reload. Encryption, real recovery, AI, and device synchronization are not implemented.</p></details>
     </div></section>
 
-    <section class="final-section container" aria-labelledby="final-title"><div class="final-card"><div class="final-ring" aria-hidden="true"></div><span class="final-star" aria-hidden="true">✳</span><div class="eyebrow">A LITTLE LESS TO REMEMBER</div><h2 id="final-title">Ready for a little<br>peace of mind?</h2><p>Let’s find a happy home for your digital life.</p><a class="button dark" href="/app">Say hello to Verma <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><small>Explore the concept. Make yourself at home.</small><img src="assets/geometric.svg" width="240" height="240" alt="" loading="lazy"></div></section>
+    <section class="final-section container" aria-labelledby="final-title"><div class="final-card scroll-pop"><div class="final-ring" aria-hidden="true"></div><span class="final-star" aria-hidden="true">✳</span><div class="eyebrow">A LITTLE LESS TO REMEMBER</div><h2 id="final-title">Ready for a little<br>peace of mind?</h2><p>Let’s find a happy home for your digital life.</p><a class="button dark" href="/app">Say hello to Verma <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><small>Explore the concept. Make yourself at home.</small><img src="assets/geometric.svg" width="240" height="240" alt="" loading="lazy"></div></section>
   </main>
-  <footer class="site-footer container"><div class="footer-top"><a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span>Verma<span class="brand-dot">.</span></span></a><p>Your digital life. A little lighter.</p><nav aria-label="Footer navigation"><a href="#features">Why Verma</a><a href="#privacy">Your privacy</a><a href="#questions">FAQs</a></nav></div><div class="footer-bottom"><span>Made for your everyday.</span><span>Verma B · Interactive design concept</span></div></footer>
+  <footer class="site-footer container"><div class="footer-top"><a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a><p>Your digital life. A little lighter.</p><nav aria-label="Footer navigation"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">Guide</a><a href="/cloud">Cloud</a><a href="#privacy">Privacy</a><a href="#questions">FAQs</a></nav></div><div class="footer-bottom"><span>© 2026 Verma. All rights reserved.</span><span>Made by Phasmadrosophilia</span></div></footer>
 </body>
 </html>
