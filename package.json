@@ -1,0 +1,15 @@
+{
+  "name": "verma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "pnpm --filter '@app/*' test",
+    "test:shared": "pnpm --filter @app/shared test",
+    "check": "pnpm --filter '@app/*' check",
+    "build": "pnpm --filter '@app/*' build"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

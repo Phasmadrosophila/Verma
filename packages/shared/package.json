@@ -1,0 +1,39 @@
+{
+  "name": "@app/shared",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./redaction": {
+      "types": "./src/redaction/index.ts",
+      "import": "./src/redaction/index.ts",
+      "default": "./dist/redaction/index.js"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./ai": {
+      "types": "./src/ai/index.ts",
+      "import": "./src/ai/index.ts",
+      "default": "./dist/ai/index.js"
+    }
+  },
+  "scripts": {
+    "test": "node --import tsx/esm --test 'src/**/*.test.ts'",
+    "check": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
