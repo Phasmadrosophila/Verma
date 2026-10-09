@@ -9,27 +9,42 @@ import {
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface LockedScreenProps {
-  onUnlock: () => void;
+  /** Resolves on success; rejects to signal invalid credentials. */
+  onUnlock: (passphrase?: string) => void | Promise<void>;
 }
 
 export const LockedScreen: React.FC<LockedScreenProps> = ({ onUnlock }) => {
   const [passphrase, setPassphrase] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleUnlock = () => {
-    // Accepts demo passphrase 'verma-demo' or any entered phrase for interactive testing
+  const handleUnlock = async () => {
     if (!passphrase.trim()) {
-      setError('Please enter your master passphrase (or demo: verma-demo).');
+      setError('Please enter your master passphrase.');
       return;
     }
     setError('');
-    setPassphrase('');
-    onUnlock();
+    setBusy(true);
+    try {
+      await onUnlock(passphrase.trim());
+      setPassphrase('');
+    } catch {
+      setError('That passphrase did not unlock the vault. Try again.');
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const handleBiometric = () => {
-    // Biometric authentication trigger simulation (LocalAuthentication)
-    onUnlock();
+  const handleBiometric = async () => {
+    // Biometric authentication trigger (LocalAuthentication) — demo path.
+    setBusy(true);
+    try {
+      await onUnlock();
+    } catch {
+      setError('Biometric unlock is unavailable right now.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -66,23 +81,28 @@ export const LockedScreen: React.FC<LockedScreenProps> = ({ onUnlock }) => {
                 setPassphrase(t);
                 setError('');
               }}
-              onSubmitEditing={handleUnlock}
+              onSubmitEditing={() => void handleUnlock()}
               returnKeyType="done"
+              editable={!busy}
             />
           </View>
 
           <TouchableOpacity
-            style={styles.unlockBtn}
-            onPress={handleUnlock}
+            style={[styles.unlockBtn, busy && styles.unlockBtnDisabled]}
+            onPress={() => void handleUnlock()}
             activeOpacity={0.8}
+            disabled={busy}
           >
-            <Text style={styles.unlockBtnText}>Unlock Vault</Text>
+            <Text style={styles.unlockBtnText}>
+              {busy ? 'Unlocking…' : 'Unlock Vault'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.biometricBtn}
-            onPress={handleBiometric}
+            onPress={() => void handleBiometric()}
             activeOpacity={0.7}
+            disabled={busy}
           >
             <Text style={styles.biometricIcon}>👆</Text>
             <Text style={styles.biometricBtnText}>Unlock with Biometrics</Text>
@@ -185,6 +205,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radii.pill,
     alignItems: 'center',
+  },
+  unlockBtnDisabled: {
+    opacity: 0.6,
   },
   unlockBtnText: {
     fontSize: 14,

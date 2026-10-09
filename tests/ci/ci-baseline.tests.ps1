@@ -18,18 +18,13 @@ foreach ($job in 'typecheck', 'lint', 'test') {
 }
 
 foreach ($command in @(
-    'node --check relay/server.mjs',
-    'node --check tests/relay/deployment.test.mjs',
-    'node --check tests/relay/relay.test.mjs',
-    'node --test tests/relay/*.test.mjs'
+    'corepack enable pnpm',
+    'pnpm install --frozen-lockfile',
+    'pnpm run check'
 )) {
     if (-not $content.Contains($command)) {
-        throw "Expected repository-appropriate CI command: $command"
+        throw "Expected workspace CI command: $command"
     }
 }
 
-if ($content -match '(?im)^\s*- run: pnpm ' -or $content -match '(?im)^\s*cache: pnpm\s*$') {
-    throw 'The documentation-only baseline must not require an untracked pnpm manifest or lockfile.'
-}
-
-Write-Host 'AC-A-M0-04-05: Typecheck, Lint, and Test use tracked dependency-free Node commands.'
+Write-Host 'AC-A-M0-04-05: Typecheck, Lint, and Test use the tracked pnpm workspace commands.'

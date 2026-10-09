@@ -42,7 +42,7 @@ export function createImportRoutes(repo: VaultRepository, aiAdapter?: AiAdapter)
    * duplicate groups, and masked preview rows.
    * INVARIANT: Does NOT write any records to the vault.
    */
-  router.post('/analyze', async (c) => {
+  const handleAnalyze = async (c: any) => {
     cleanupStagingStore();
 
     try {
@@ -106,7 +106,10 @@ export function createImportRoutes(repo: VaultRepository, aiAdapter?: AiAdapter)
       }
       return c.json({ error: err?.message || 'Failed to analyze import' }, 500);
     }
-  });
+  };
+
+  router.post('/analyze', handleAnalyze);
+  router.post('/preview', handleAnalyze);
 
   /**
    * POST /cancel: Cancels staging without persisting anything to the vault.

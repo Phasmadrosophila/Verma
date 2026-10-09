@@ -14,13 +14,17 @@ export interface AiAdapterConfig {
 
 export const defaultConfig: AiAdapterConfig = {
   enabled: true,
-  apiUrl: 'http://127.0.0.1:11434', // Ollama default
-  model: 'llama3.2', // generic dev default, can be TBD
-  timeoutMs: 10000,
+  apiUrl: process.env.OLLAMA_URL || 'http://127.0.0.1:11434',
+  model: process.env.OLLAMA_MODEL || 'qwen3:0.6b',
+  timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS) || 1500,
 };
 
 export class AiAdapter {
-  constructor(private config: AiAdapterConfig = defaultConfig) {}
+  private config: AiAdapterConfig;
+
+  constructor(config: Partial<AiAdapterConfig> = {}) {
+    this.config = { ...defaultConfig, ...config };
+  }
 
   /**
    * Run Ask Your Vault inference.
@@ -93,13 +97,38 @@ export class AiAdapter {
       };
     }
 
-    // Redaction boundary: never pass raw password/secret values to AI
+    // Redaction boundary: never pass raw password/secret values or note bodies to AI
     const sanitizedSamples = sampleRows.slice(0, 3).map((row) => {
       const safeRow: Record<string, string> = {};
       for (const [key, val] of Object.entries(row)) {
-        const normKey = key.toLowerCase();
-        if (['password', 'pass', 'pwd', 'secret'].includes(normKey)) {
+        const normKey = key.toLowerCase().replace(/[\s_\-]+/g, '');
+        const isSecretKey = [
+          'password',
+          'pass',
+          'pwd',
+          'secret',
+          'totp',
+          'token',
+          'key',
+          'seed',
+          'phrase',
+          'pin',
+          'code',
+          'private',
+        ].some((pattern) => normKey.includes(pattern));
+        const isNoteKey = [
+          'note',
+          'desc',
+          'comment',
+          'memo',
+          'content',
+          'body',
+        ].some((pattern) => normKey.includes(pattern));
+
+        if (isSecretKey) {
           safeRow[key] = '[REDACTED_SECRET]';
+        } else if (isNoteKey) {
+          safeRow[key] = '[REDACTED_NOTE]';
         } else {
           safeRow[key] = val;
         }
@@ -150,7 +179,8 @@ export class AiAdapter {
   private isLocalUrl(url: string): boolean {
     try {
       const parsed = new URL(url);
-      return parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '::1';
+      const host = parsed.hostname.replace(/^\[|\]$/g, '');
+      return host === '127.0.0.1' || host === 'localhost' || host === '::1';
     } catch {
       return false;
     }

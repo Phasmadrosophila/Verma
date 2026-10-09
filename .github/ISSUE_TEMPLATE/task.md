@@ -64,4 +64,4 @@ GitHub milestone: `<P0 Foundation | P0 AI Demo | P0 Direct Sync | P1 Continuity 
 - [ ] The change is exercised locally or in CI.
 - [ ] Privacy rules are respected: no logged content, no secrets, synthetic fixtures only.
 
-<sub>Workflow: [docs/development-workflow.md](../../docs/development-workflow.md) · Backlog: [docs/workplan.md](../../docs/workplan.md)</sub>
+<sub>Workflow: [docs/development-workflow.md](docs/development-workflow.md) · Backlog: [docs/workplan.md](docs/workplan.md)</sub>

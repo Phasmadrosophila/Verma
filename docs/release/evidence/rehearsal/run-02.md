@@ -10,7 +10,7 @@
 
 | Step | Exact command/action | Expected | Actual | Status |
 | --- | --- | --- | --- | --- |
-| Shared synthetic suite | `pnpm --filter @app/shared test` | 55 pass, 0 fail | 55 pass, 0 fail | PASS |
+| Shared synthetic suite | `pnpm --filter @app/shared test` | 59 pass, 0 fail | 59 pass, 0 fail | PASS |
 | Offline/fallback fixture gate | `python scripts/models/evaluate_artifact.py --check-all` | Exit 0 and `AC-B-M1-05-04 PASS` | Exit 0 and `AC-B-M1-05-04 PASS` | PASS |
 | Network disabled | Human disconnects Wi-Fi/Ethernet; `Test-NetConnection 1.1.1.1 -Port 443` | `TcpTestSucceeded : False` | Not executed in this terminal | OPEN |
 | Smart Import GUI | Human reviews synthetic import before confirmation | Suggestions visible; secret cells masked; no write before confirmation | Not executed in this terminal | OPEN |

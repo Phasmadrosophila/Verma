@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F7EDE3">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Verma Cloud is the optional zero-knowledge layer: blind encrypted remote relay, browser web vault, and automated emergency continuity.">
+  <title>Verma Cloud — optional blind relay, web vault, and continuity</title>
+  <link rel="icon" href="assets/verma-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Parkinsans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="cloud.css">
+  <script src="landing.js" defer></script>
+</head>
+<body>
+  <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="star" viewBox="0 0 24 24"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/></symbol>
+    <symbol id="shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L20 6"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+    <symbol id="key" viewBox="0 0 24 24"><circle cx="8" cy="9" r="5"/><path d="m11.5 12.5 8.5 8.5M16 17l3-3M18 19l3-3"/></symbol>
+    <symbol id="cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+    <symbol id="menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="sync" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67M2.5 22v-6h6M2.66 8.43a10 10 0 1 1 .57 8.38L2.5 22"/></symbol>
+    <symbol id="laptop" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></symbol>
+    <symbol id="sparkles" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7L21 11.5l-4.5 4.4 1 6.3-5.5-2.9-5.5 2.9 1-6.3L3 11.5l6.2-2.8L12 3z"/></symbol>
+  </defs></svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header container">
+    <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="/#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/#how">Guide</a>
+      <a class="nav-cloud active" href="/cloud"><svg class="icon cloud-icon" aria-hidden="true"><use href="#cloud"/></svg>Cloud</a>
+    </nav>
+    <a class="button dark header-cta" href="/download">Download Verma</a>
+    <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu"><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
+    <nav id="mobile-menu" aria-label="Mobile navigation" hidden>
+      <a href="/#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/#how">Guide</a>
+      <a href="/cloud">Cloud</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Hero Section -->
+    <section class="hero container cloud-hero" aria-labelledby="cloud-hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#cloud"/></svg> OPTIONAL ZERO-KNOWLEDGE CONTINUITY</div>
+        <h1 id="cloud-hero-title">Verma Cloud.<br>When you want to <span class="underline">reach further.</span></h1>
+        <p>Verma is completely offline and local-first by default. Verma Cloud is an optional zero-knowledge layer: blind encrypted relay across remote networks, browser access, automated emergency heartbeat, and privacy-guaranteed cloud triage.</p>
+        <div class="hero-actions">
+          <a class="button dark" href="/download">Get Verma Cloud <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+          <a class="text-link" href="#pricing">Explore pricing &amp; tiers <span aria-hidden="true">↘</span></a>
+        </div>
+        <div class="hero-note">
+          <span class="tiny-seals" aria-hidden="true">
+            <i><svg class="icon"><use href="#lock"/></svg></i>
+            <i><svg class="icon"><use href="#shield"/></svg></i>
+            <i><svg class="icon"><use href="#star"/></svg></i>
+          </span>
+          <div>Blind encrypted relay.<small>Your master keys and plaintext secrets never touch our servers.</small></div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-blob" aria-hidden="true"></div>
+        <div class="hero-orbit" aria-hidden="true"></div>
+        <span class="hero-spark" aria-hidden="true">✳</span>
+
+        <!-- Cloud Sync Card Mockup -->
+        <div class="cloud-sync-card scroll-pop" aria-label="Blind relay sync status">
+          <div class="sync-card-header">
+            <span class="sync-status-badge"><span class="sync-status-dot"></span> Remote Relay Active</span>
+            <svg class="icon" style="width:18px;height:18px;color:var(--muted);"><use href="#cloud"/></svg>
+          </div>
+          <div class="sync-peers-list">
+            <div class="sync-peer-item">
+              <span class="sync-peer-info"><svg class="icon"><use href="#laptop"/></svg> MacBook Workstation</span>
+              <span class="sync-peer-tag">Local · QUIC</span>
+            </div>
+            <div class="sync-peer-item">
+              <span class="sync-peer-info"><svg class="icon"><use href="#shield"/></svg> Pixel 9 Pro</span>
+              <span class="sync-peer-tag">Cellular · Relay</span>
+            </div>
+          </div>
+          <div class="sync-encryption-bar">
+            <svg class="icon"><use href="#lock"/></svg>
+            <span>ChaCha20-Poly1305 · End-to-end encrypted</span>
+          </div>
+        </div>
+
+        <div class="floating-note scroll-pop chat-bubble-pop">
+          <span class="note-check"><svg class="icon" aria-hidden="true"><use href="#check"/></svg></span>
+          <div>Zero secret exposure.<small>Redaction happens before transmission.</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Promise Strip -->
+    <div class="promise-strip container scroll-pop">
+      <span class="scroll-pop"><svg class="icon" aria-hidden="true"><use href="#lock"/></svg>Blind encrypted relay</span>
+      <span class="scroll-pop"><svg class="icon" aria-hidden="true"><use href="#shield"/></svg>Metadata-only allowlist</span>
+      <span class="scroll-pop"><svg class="icon" aria-hidden="true"><use href="#star"/></svg>Offline core remains 100% free</span>
+    </div>
+
+    <!-- What Cloud Adds (3 Core Pillars from docs/prd.md) -->
+    <section class="cloud-features-section container" aria-labelledby="cloud-features-title">
+      <div class="section-heading center scroll-pop">
+        <div class="eyebrow">WHAT CLOUD ADDS</div>
+        <h2 id="cloud-features-title">Everything Cloud adds.<br><span>Without breaking local trust.</span></h2>
+        <p>You never have to give up offline ownership to get multi-device convenience.</p>
+      </div>
+
+      <div class="cloud-features-grid">
+        <article class="cloud-feature-card scroll-pop">
+          <div class="cloud-card-emblem"><svg class="icon" aria-hidden="true"><use href="#sync"/></svg></div>
+          <span class="feature-number">01 / REMOTE SYNC</span>
+          <h3>Sync beyond your living room.</h3>
+          <p>Direct peer-to-peer QUIC sync works seamlessly on the same Wi-Fi. Verma Cloud adds an always-on encrypted relay on Cloudflare Workers, allowing your paired phone and laptop to sync across cellular data and remote networks without port forwarding. The relay only transports encrypted ciphertext blobs.</p>
+          <a class="text-link" href="/#inside">Explore direct sync <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+        </article>
+
+        <article class="cloud-feature-card scroll-pop">
+          <div class="cloud-card-emblem"><svg class="icon" aria-hidden="true"><use href="#laptop"/></svg></div>
+          <span class="feature-number">02 / BROWSER VAULT</span>
+          <h3>Your vault in any modern browser.</h3>
+          <p>Need to grab an API key or recovery code while away from your primary workstation? Log into web.verma.cloud. Client-side libsodium decrypts your vault directly in your browser tab. Your master password and plaintext secrets are never seen by the server.</p>
+          <a class="text-link" href="/app">Open Web Vault <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+        </article>
+
+        <article class="cloud-feature-card scroll-pop">
+          <div class="cloud-card-emblem"><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div>
+          <span class="feature-number">03 / CONTINUITY</span>
+          <h3>Emergency access that doesn't sleep.</h3>
+          <p>Store a pre-encrypted emergency recovery package in the cloud relay. If you fail to check in after your defined grace period (e.g., 90 days), the service automatically alerts you, and if unacknowledged, safely delivers the package to your designated trusted recipient.</p>
+          <a class="text-link" href="/#privacy">Read emergency spec <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+        </article>
+      </div>
+    </section>
+
+    <!-- Cloud AI Privacy Boundary Section -->
+    <section class="privacy-section container" aria-labelledby="cloud-privacy-title">
+      <div class="privacy-card scroll-pop">
+        <div class="privacy-copy">
+          <div class="privacy-emblem"><svg class="icon" aria-hidden="true"><use href="#sparkles"/></svg></div>
+          <div class="eyebrow">SANDBOXED CLOUD COPILOT</div>
+          <h2 id="cloud-privacy-title">Cloud AI triage.<br>With an unbreakable line.</h2>
+          <p>When using Verma Cloud’s optional assisted search or messy CSV triage, secret fields (passwords, TOTP seeds, private keys, notes) are stripped by trusted client-side code before any network call. The AI runs in a no-network sandbox and only ever sees non-secret metadata.</p>
+          <a class="text-link" href="/app#ask">See the redaction engine <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+        </div>
+        <div class="privacy-visual">
+          <div class="privacy-window scroll-pop">
+            <div class="window-top">
+              <span aria-hidden="true"><i></i><i></i><i></i></span>
+              <small>Trusted Client-Side Sandbox</small>
+              <svg class="icon" aria-hidden="true"><use href="#lock"/></svg>
+            </div>
+            <div class="boundary-group">
+              <p><span class="boundary-dot"></span> ALLOWED METADATA ONLY</p>
+              <div class="clue-chips">
+                <span class="scroll-pop">AWS Console · Infra</span>
+                <span class="scroll-pop">console.aws.amazon.com</span>
+                <span class="scroll-pop">Rotated 8mo ago</span>
+                <span class="scroll-pop">#production</span>
+              </div>
+            </div>
+            <div class="boundary-line">
+              <span></span>
+              <svg class="icon" aria-hidden="true"><use href="#lock"/></svg>
+              <span></span>
+            </div>
+            <div class="boundary-group secret-group">
+              <p>NEVER TRANSMITTED TO MODEL</p>
+              <div class="secret-demo scroll-pop">
+                <div>
+                  <small>Master Key / Secret Field</small>
+                  <strong aria-label="Password hidden">••••••••••••••••</strong>
+                </div>
+                <svg class="icon" aria-hidden="true"><use href="#shield"/></svg>
+              </div>
+              <small>Redacted in trusted code before model inference.</small>
+            </div>
+          </div>
+          <div class="privacy-sticker scroll-pop chat-bubble-pop">
+            <svg class="icon" aria-hidden="true"><use href="#star"/></svg> Strict Redaction Invariant
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section-cloud container" id="pricing" aria-labelledby="pricing-title">
+      <div class="section-heading center scroll-pop">
+        <div class="eyebrow">TRANSPARENT PRICING</div>
+        <h2 id="pricing-title">Included with Pro.<br><span>Only if you choose it.</span></h2>
+        <p>Verma is free and offline forever. You only pay if you want managed cloud relays, zero-knowledge browser access, and emergency continuity.</p>
+      </div>
+
+      <div class="pricing-grid-cloud">
+        <!-- Verma Local Plan -->
+        <article class="price-card scroll-pop">
+          <div class="price-card-header">
+            <h3 class="price-tier-name">Verma Local</h3>
+            <span class="price-badge">COMMUNITY · 100% OFFLINE</span>
+          </div>
+          <div class="price-number">₱0 · Free Forever</div>
+          <p class="price-desc">The free, self-hosted community edition for desktop and personal devices. Full offline password manager, zero telemetry, zero subscription.</p>
+          <ul class="price-features">
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>Unlimited logins, private notes, and API keys</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>On-device local AI assistant (llama.cpp) with Wi-Fi disabled</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>Direct peer-to-peer sync (QUIC) across local devices</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>Deterministic password health and reuse audits</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>24-word recovery phrase with client-side libsodium</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>100% private: no email, no cloud dependencies</span></li>
+          </ul>
+          <a class="button dark" href="/download">Download Free</a>
+        </article>
+
+        <!-- Verma Cloud Plan -->
+        <article class="price-card featured scroll-pop">
+          <div class="price-card-header">
+            <h3 class="price-tier-name">Verma Cloud</h3>
+            <span class="price-badge">RECOMMENDED FOR TEAMS &amp; TRAVEL</span>
+          </div>
+          <div class="price-number">₱199 / mo or ₱1,999 / yr</div>
+          <p class="price-desc">The optional convenience layer for remote synchronization, web vault access, and automated emergency continuity.</p>
+          <ul class="price-features">
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span><strong>Everything in Verma Local</strong></span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>Blind end-to-end encrypted remote relay (sync anywhere)</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>Zero-knowledge web vault access at web.verma.cloud</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>Automated Dead Man's Switch heartbeat &amp; package delivery</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>30-day revision history and conflict rollback</span></li>
+            <li><span class="check-pill"><svg class="icon"><use href="#check"/></svg></span><span>Optional cloud AI copilot with strict metadata redaction</span></li>
+          </ul>
+          <a class="button dark" href="/download">Add Cloud Continuity</a>
+        </article>
+      </div>
+    </section>
+
+    <!-- Feature Comparison Table -->
+    <section class="comparison-section-cloud container" aria-labelledby="comparison-title">
+      <div class="section-heading center scroll-pop">
+        <div class="eyebrow">AT A GLANCE</div>
+        <h2 id="comparison-title">Local Vault vs. Verma Cloud</h2>
+        <p>Everything you need is local by default. Cloud adds remote reach and automated continuity.</p>
+      </div>
+
+      <div class="comparison-table-wrapper scroll-pop">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th class="col-feature">CAPABILITY</th>
+              <th class="col-local">VERMA LOCAL</th>
+              <th class="col-cloud">VERMA CLOUD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Secret storage (passwords, notes, API keys)</td>
+              <td>Unlimited</td>
+              <td class="col-cloud">Unlimited</td>
+            </tr>
+            <tr>
+              <td>Master encryption &amp; 24-word recovery</td>
+              <td>libsodium / Ed25519</td>
+              <td class="col-cloud">libsodium / Ed25519</td>
+            </tr>
+            <tr>
+              <td>On-device local AI search (Wi-Fi disabled)</td>
+              <td><span class="table-check">✓</span></td>
+              <td class="col-cloud"><span class="table-check">✓</span></td>
+            </tr>
+            <tr>
+              <td>Direct device-to-device sync over local Wi-Fi (QUIC)</td>
+              <td><span class="table-check">✓</span></td>
+              <td class="col-cloud"><span class="table-check">✓</span></td>
+            </tr>
+            <tr>
+              <td>Remote sync across cellular / external networks</td>
+              <td>Self-hosted Docker</td>
+              <td class="col-cloud"><span class="table-check">✓</span> (Blind relay)</td>
+            </tr>
+            <tr>
+              <td>Zero-knowledge web vault (web.verma.cloud)</td>
+              <td><span class="table-cross">✕</span></td>
+              <td class="col-cloud"><span class="table-check">✓</span></td>
+            </tr>
+            <tr>
+              <td>Dead Man's Switch emergency heartbeat</td>
+              <td>Self-hosted Docker</td>
+              <td class="col-cloud"><span class="table-check">✓</span> (Automated)</td>
+            </tr>
+            <tr>
+              <td>30-day revision history &amp; conflict rollback</td>
+              <td>Local snapshots</td>
+              <td class="col-cloud"><span class="table-check">✓</span></td>
+            </tr>
+            <tr>
+              <td>Cloud AI assisted triage &amp; import</td>
+              <td><span class="table-cross">✕</span></td>
+              <td class="col-cloud"><span class="table-check">✓</span> (Redacted)</td>
+            </tr>
+            <tr>
+              <td>Fully functional with internet disconnected</td>
+              <td><span class="table-check">✓</span> 100% Core</td>
+              <td class="col-cloud"><span class="table-check">✓</span> Full local fallback</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Final Call to Action -->
+    <section class="final-section container" aria-labelledby="final-title">
+      <div class="final-card scroll-pop">
+        <div class="final-ring" aria-hidden="true"></div>
+        <span class="final-star" aria-hidden="true">✳</span>
+        <div class="eyebrow">LOCAL FIRST. ALWAYS.</div>
+        <h2 id="final-title">Start free on your device.<br>Add Cloud only if you need it.</h2>
+        <p>No credit card required. Your secrets stay completely end-to-end encrypted.</p>
+        <a class="button dark" href="/download">Download Verma <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+        <small>Available on macOS, Windows, Linux, and Web.</small>
+        <img src="assets/geometric.svg" width="240" height="240" alt="" loading="lazy">
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer container">
+    <div class="footer-top">
+      <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
+      <p>Your digital life. A little lighter.</p>
+      <nav aria-label="Footer navigation">
+        <a href="/#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/#how">Guide</a>
+        <a href="/cloud">Cloud</a>
+        <a href="/#privacy">Privacy</a>
+        <a href="/#questions">FAQs</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Verma. All rights reserved.</span>
+      <span>Made by Phasmadrosophilia for APPBuildersPH Hackathon 2026</span>
+    </div>
+  </footer>
+</body>
+</html>

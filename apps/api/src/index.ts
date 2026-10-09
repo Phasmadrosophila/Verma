@@ -3,9 +3,15 @@ import { createApp } from './app.js';
 import { SqliteVaultStorage } from './storage/sqlite-vault-storage.js';
 import { VaultRepository } from './repository/vault-repository.js';
 import { defaultLogger } from '@app/shared';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const DB_PATH = process.env.DB_PATH || 'vault.db';
+
+if (DB_PATH !== ':memory:') {
+  mkdirSync(dirname(DB_PATH), { recursive: true });
+}
 
 const storage = new SqliteVaultStorage(DB_PATH);
 const repository = new VaultRepository(storage, defaultLogger);

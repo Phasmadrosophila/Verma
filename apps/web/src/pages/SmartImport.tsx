@@ -15,12 +15,16 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 import {
-  SYNTHETIC_MESSY_BROWSER_CSV,
   type ImportProposal,
   type ImportResult,
   type TargetField,
 } from '@app/shared';
 import clsx from 'clsx';
+
+const SYNTHETIC_MESSY_BROWSER_CSV = `name,url,username,password,note,folder
+"GitHub (Work Account)","https://github.com/login","synth.developer@example.test","Synthetic-Import-Github-2026","Work dev account","Development"
+"Google Workspace","https://accounts.google.com","synth.developer@example.test","Synthetic-Import-Google-2026","Company mail","Productivity"
+"AWS Console","https://console.aws.amazon.com","synth.cloud-admin@example.test","Synthetic-Import-Aws-2026","Infra cloud","Cloud"`;
 
 type Step = 'upload' | 'analyzing' | 'preview' | 'complete';
 

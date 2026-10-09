@@ -71,7 +71,7 @@ Every new feature or non-trivial fix MUST have a GitHub Issue before coding begi
 Create and switch to a branch tied to the GitHub Issue number. Start from the current `main` after checking that the worktree is clean:
 
 ```bash
-git checkout -b lyraphasma/issue-<NUMBER>-<short-slug> main
+git checkout -b <username>/issue-<NUMBER>-<short-slug> main
 ```
 
 Examples:
@@ -94,11 +94,12 @@ Examples:
 
 Push the branch and open a **draft** PR targeting `main`. The PR must link the task issue and use the complete contents of `.github/pull_request_template.md`. Do not use a short custom summary in place of the template.
 
-Create a temporary PR body file, fill it completely, review it locally, and pass it with `--body-file`:
+Write the filled PR template to a fresh temporary file (never reuse a committed body file, which may contain a stale completed PR's content), review it locally, and pass that temp file with `--body-file`:
 
 ```bash
-git push -u origin lyraphasma/issue-<NUMBER>-<short-slug>
-gh pr create --draft --base main --title "<type>: <Short description> (#<NUMBER>)" --body-file .github/pull-request-body.md
+git push -u origin <username>/issue-<NUMBER>-<short-slug>
+# Fill the template into a fresh temp file first (copy from .github/pull_request_template.md).
+gh pr create --draft --base main --title "<type>: <Short description> (#<NUMBER>)" --body-file /tmp/pr-body.md
 ```
 
 The completed PR body must include the task metadata, goal, concrete changes, evidence for every acceptance criterion, test commands and results, commit structure, documentation and contract checks, security and privacy checks, definition-of-done checks, and reviewer notes.
@@ -127,7 +128,7 @@ When the draft PR is open, report:
 
 - **Upstream repository:** `Phasmadrosophila/Verma`
 - **Base branch:** `main`
-- **Branch naming:** `lyraphasma/issue-<NUMBER>-<short-slug>`
+- **Branch naming:** `<username>/issue-<NUMBER>-<short-slug>` (e.g. `lyraphasma/issue-12-ask-your-vault`)
 - **Issue tracker:** GitHub Issues (`gh issue`)
 - **PR tracker:** GitHub Pull Requests (`gh pr`)
 - **Project board:** Verma Delivery, repository-scoped Project #4

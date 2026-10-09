@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { VaultRepository } from './repository/vault-repository.js';
 import { createVaultRoutes } from './routes/vault.routes.js';
 import { createEntriesRoutes } from './routes/entries.routes.js';
@@ -21,6 +22,9 @@ export function createApp(options: AppOptions = {}): { app: Hono; repo: VaultRep
   const aiAdapter = options.aiAdapter ?? new AiAdapter();
 
   const app = new Hono();
+
+  // CORS middleware for web SPA and mobile client compatibility
+  app.use('*', cors());
 
   // Safe request logging middleware: zero payload contents logged
   app.use('*', async (c, next) => {
