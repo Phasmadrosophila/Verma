@@ -11,15 +11,23 @@
  * fetched lazily and only on explicit user reveal, via `getEntrySecret`.
  */
 
+import { localVault } from './localVault.js';
+
 export type MobileEntryType = 'login' | 'note' | 'api';
 
 /** The backend entry type. Mobile uses 'api'; the wire uses 'api_key'. */
 type WireEntryType = 'login' | 'note' | 'api_key';
 
-const BASE_URL = (
-  (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) ||
-  'http://localhost:3000'
-).replace(/\/$/, '');
+const API_URL = typeof process !== 'undefined' ? process.env?.EXPO_PUBLIC_API_URL : undefined;
+
+/**
+ * Offline mode: when EXPO_PUBLIC_API_URL is UNSET, the app runs with no backend
+ * and no network, backed by the in-process `localVault`. Setting the env var
+ * opts into the real HTTP path below.
+ */
+const OFFLINE = !API_URL;
+
+const BASE_URL = (API_URL || 'http://localhost:3000').replace(/\/$/, '');
 
 /** Typed error so callers can render an error state instead of crashing. */
 export class ApiError extends Error {
@@ -244,7 +252,8 @@ function secretFromEntry(entry: any): string {
 // public client
 // ---------------------------------------------------------------------------
 
-export const apiClient = {
+/** The real HTTP client (used when EXPO_PUBLIC_API_URL is set). */
+export const httpClient = {
   baseUrl: BASE_URL,
 
   async getVaultStatus(): Promise<VaultStatus> {
@@ -305,3 +314,20 @@ export const apiClient = {
     });
   },
 };
+
+/**
+ * The data seam. In offline mode (EXPO_PUBLIC_API_URL unset) it is the
+ * in-process `localVault`; otherwise it is the real HTTP client. Both expose an
+ * identical method surface, so App.tsx and the screens need no changes.
+ *
+ * Resolved lazily via a Proxy: `localVault` and `apiClient` import each other,
+ * so dereferencing `localVault` at module-eval time would hit its temporal dead
+ * zone. The Proxy defers the pick to first property access, after both modules
+ * have finished initializing.
+ */
+export const apiClient = new Proxy({} as typeof httpClient, {
+  get(_target, prop) {
+    const backend = OFFLINE ? localVault : httpClient;
+    return (backend as any)[prop];
+  },
+}) as typeof httpClient & { baseUrl: string };
