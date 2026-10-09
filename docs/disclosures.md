@@ -32,18 +32,18 @@ The loopback restriction is an application-layer control. The repository does no
 
 Verma targets the repetitive work around secrets and passwords: organizing entries, searching metadata, reviewing imports, and understanding deterministic password-health findings. Local AI can make that work more hands-off without requiring vault metadata or user questions to be sent to a cloud AI provider. It also keeps the core assistant path usable during network outages and avoids making a cloud AI account a prerequisite.
 
-The privacy benefit is bounded by the implementation evidence. Trusted application code redacts denied fields before the AI adapter receives data, and user confirmation is required before suggestions become mutations. The current loopback restriction is not an audited air gap or OS-level process sandbox, and the exact production model has not been selected.
+The privacy benefit is bounded by the implementation evidence. Trusted application code redacts denied fields before the AI adapter receives data, and user confirmation is required before suggestions become mutations. The current loopback restriction is not an audited air gap or OS-level process sandbox. Qwen3 0.6B is the application model, while the exact production GGUF artifact remains unpinned.
 
 ## Processing breakdown
 
-On-device today: local vault operations, SQLite storage, secret masking, password generation, CSV parsing, deterministic import fallback behavior, metadata projection, direct-sync cryptographic verification, and the desktop web/API loopback path. AI-enabled application requests are restricted to allowed loopback endpoints; AI is disabled by default in development.
+On-device today: local vault operations, SQLite storage, secret masking, password generation, CSV parsing, deterministic import fallback behavior, metadata projection, direct-sync cryptographic verification, and the desktop web/API loopback path. AI-enabled application requests use Qwen3 0.6B and are restricted to allowed loopback endpoints; the app degrades to deterministic behavior when Ollama or the model is unavailable.
 
 Internet or external transfer: installing uncached dependencies, obtaining a future model artifact, GitHub/CI/review workflows, deployment and hosted assets, optional P1 relay access, and some physical-device mobile development setups. No cloud AI service is required by the core desktop path.
 
 ## Models and AI frameworks
 
 - `models/manifest.json` is the authoritative inventory and remains `status: "tbd"` with model identity, artifact, hash, license, source, and redistribution fields set to `TBD`.
-- Qwen3 0.6B is a proposed candidate direction only. Its candidate metadata file must not be treated as proof that an exact artifact is present, selected, measured, or cleared for redistribution.
+- Qwen3 0.6B is the configured application model through the Ollama tag `qwen3:0.6b`. Its metadata file must not be treated as proof that an exact production artifact is present, measured, or cleared for redistribution.
 - The planned production runtime is `llama.cpp`; Ollama is documented for development only. The current repository does not contain a production `llama.cpp` launcher or a bundled model artifact.
 - Current application integration reaches a configured loopback HTTP model service and validates structured responses. AI-disabled and failure paths retain deterministic behavior where implemented.
 - No model benchmark is reported as measured in this submission. The device, exact artifact, inputs, run count, and measurement method required by the competition handbook are not all available.

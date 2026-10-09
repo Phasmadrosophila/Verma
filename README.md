@@ -23,7 +23,7 @@
 <p align="center">
   <img alt="Local-first" src="https://img.shields.io/badge/local--first-yes-6D5DFB?style=flat-square" />
   <img alt="Cloud AI required: no" src="https://img.shields.io/badge/cloud_AI_required-no-14866D?style=flat-square" />
-  <img alt="Model status: TBD" src="https://img.shields.io/badge/model_status-TBD-D97706?style=flat-square" />
+  <img alt="Local AI model: Qwen3 0.6B" src="https://img.shields.io/badge/local_AI-Qwen3%200.6B-7C3AED?style=flat-square" />
   <img alt="License direction: fair-code/source-available" src="https://img.shields.io/badge/license_direction-fair--code%20%2F%20source--available-334155?style=flat-square" />
 </p>
 
@@ -46,8 +46,8 @@ The desktop app combines an Hono API, a local SQLite vault, explicit secret mask
 > This repository is in feature freeze. The remaining work is documentation, verification, and release-blocking fixes only.
 
 - The real desktop web-to-Hono integration is available through the local integration runner.
-- The local AI model is not selected, bundled, or release-approved. `models/manifest.json` intentionally remains `tbd`.
-- Qwen3 0.6B is a proposed candidate, not a shipped model or measured benchmark result.
+- Qwen3 0.6B is the app's configured local AI model through Ollama (`qwen3:0.6b`). Ask Your Vault falls back to deterministic metadata ranking when Ollama or the model is unavailable.
+- The model is not bundled. `models/manifest.json` remains `tbd` for the exact production GGUF artifact, digest, provenance, and redistribution review; that release-artifact gate does not change the model used by the app.
 - The self-hosted relay, heartbeat, and Dead Man's Switch are P1 prototype/test-mode work, not part of the P0 core vault release.
 - No cloud AI service is used by the application path. The current adapter accepts loopback model endpoints only.
 
@@ -90,7 +90,7 @@ Password management is repetitive, sensitive, and easy to postpone. People accum
 Running the assistant locally benefits Verma because vault metadata and user questions do not need to be sent to a cloud AI provider for search, import suggestions, or explanations. Local execution supports privacy, works during network outages, avoids a required cloud AI account, and keeps response behavior tied to the user's device. Trusted application code redacts denied fields before inference, and the user must review and confirm suggestions before changes are applied.
 
 > [!NOTE]
-> This is an application-level local-AI path, not a claim that the current repository already provides an audited air gap or OS-level sandbox. The exact production model is not selected, and the current development adapter reaches only an allowed loopback endpoint.
+> This is an application-level local-AI path, not a claim that the current repository already provides an audited air gap or OS-level sandbox. The app uses Qwen3 0.6B through an allowed Ollama loopback endpoint; the exact production GGUF artifact is not yet pinned in the release manifest.
 
 ## On-device versus internet-required processing
 
@@ -130,19 +130,21 @@ The exact current boundary and its open gaps are documented in [`docs/release/lo
 
 ## AI model status
 
-Qwen3 0.6B is the documented candidate direction for a small local assistant, but it is not selected. The authoritative manifest keeps the model name, version, digest, license, source, artifact path, and redistribution review as `TBD` until an exact artifact is obtained and independently reviewed.
+Qwen3 0.6B is the app's local AI model. Both local AI paths default to the Ollama tag `qwen3:0.6b`: Ask Your Vault uses it over redacted metadata, and Smart Import uses it for schema-constrained suggestions after trusted-code redaction. The API accepts loopback endpoints only and falls back to deterministic behavior when Ollama is disabled, missing, malformed, or times out.
+
+The model is not bundled with the repository. `models/manifest.json` remains `tbd` only for the production artifact gate: the exact GGUF file, version, SHA-256, source, license evidence, and redistribution review still need to be pinned before a distributable release can claim a verified bundled artifact.
 
 Model/runtime documentation:
 
 - [`docs/runtime.md`](docs/runtime.md) — runtime boundary, manifest gate, and verification procedure.
-- [`docs/model-selection-qwen3-0.6b.md`](docs/model-selection-qwen3-0.6b.md) — candidate rationale and alternatives.
+- [`docs/model-selection-qwen3-0.6b.md`](docs/model-selection-qwen3-0.6b.md) — Qwen3 0.6B decision and alternatives.
 - [`docs/model-evaluation-qwen3-0.6b.md`](docs/model-evaluation-qwen3-0.6b.md) — evaluation evidence status; currently not measured.
 - [`docs/release/model-inventory.md`](docs/release/model-inventory.md) — release-facing artifact gate.
 - [`models/manifest.json`](models/manifest.json) — authoritative machine-readable inventory.
 
 ## Known limitations
 
-- The exact production model artifact, version, SHA-256, license review, and redistribution decision are open.
+- The exact production GGUF artifact, version, SHA-256, license review, and redistribution decision are open; the app model is Qwen3 0.6B.
 - No measured model latency, memory, throughput, accuracy, or quality result is available. Do not use the historical candidate numbers as release benchmarks.
 - The repository contains no production `llama.cpp` launcher and no verified OS-level model network/filesystem sandbox.
 - CSV redaction currently covers exact normalized headers `password`, `pass`, `pwd`, and `secret`; do not generalize this to every possible secret column.

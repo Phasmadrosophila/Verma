@@ -229,7 +229,7 @@ The assistant can identify missing critical-account categories and help assemble
 
 ### AI behavior requirements
 
-- The proposed small-device default is Qwen3 0.6B, delivered as a reviewed quantized GGUF artifact through `llama.cpp`; the exact artifact remains unselected until its hash, license, redistribution status, and target-device evaluation are recorded. Ollama is permitted for development only.
+- The proposed small-device default is Qwen3 0.6B, delivered as a reviewed quantized GGUF artifact through `llama.cpp`; the exact artifact remains unselected until its hash, license, redistribution status, and target-device evaluation are recorded (`models/manifest.json` is `tbd`). Ollama is permitted for development only (`qwen3:0.6b` is the intended dev model; the code currently defaults to `llama3.2`/`llama3`).
 - Current implementation: the API calls Ollama over HTTP on a loopback endpoint. The adapter accepts only `localhost`, `127.0.0.1`, or `::1` hostnames. This is an application-layer loopback restriction; the repository does not implement a production `llama.cpp` launcher or an OS-level network/filesystem sandbox (see `docs/disclosures.md`).
 - Use the proposed small-device Qwen3 0.6B model, or a measured replacement of comparable size, selected through the documented evaluation gate.
 - Use a small embedding model only if it improves measured retrieval quality enough to justify the additional complexity.

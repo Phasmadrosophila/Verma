@@ -39,7 +39,9 @@ API_PORT=3100 WEB_PORT=5174 pnpm dev:integration
 ```
 
 The runtime uses no external network service. API and web process communication
-stays on `127.0.0.1`; model inference is disabled by default in development.
+stays on `127.0.0.1`. Local AI defaults to Qwen3 0.6B through Ollama at
+`127.0.0.1:11434`; when Ollama or the model is unavailable, the application
+degrades to deterministic metadata search and import heuristics.
 
 Run the startup smoke test with:
 

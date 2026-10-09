@@ -98,7 +98,7 @@ displace the P0 desktop, offline, AI, or sync acceptance criteria.
 | **Local Storage** | SQLite (better-sqlite3) + AES-256-GCM payload encryption |
 | **Direct Sync** | Authenticated peer transport engine (in-memory today) |
 | **Cryptography** | Node `node:crypto` (AES-256-GCM, Ed25519, scrypt, HMAC) |
-| **AI Runtime** | Ollama HTTP adapter (127.0.0.1:11434, default llama3.2); llama.cpp harness used only for benchmark scripts; model artifact TBD |
+| **AI Runtime** | Ollama HTTP adapter (127.0.0.1:11434; code default `llama3.2`, `qwen3:0.6b` is the intended dev model but not the current default); llama.cpp harness used only for benchmark scripts; model artifact TBD |
 | **Containerization** | Docker multi-stage builds, non-root, pinned digests |
 | **Repository** | `Phasmadrosophila/Verma` (base branch: `main`) |
 

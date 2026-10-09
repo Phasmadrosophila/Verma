@@ -11,7 +11,11 @@ description: >-
 # Docker Best Practices (Verma)
 
 Use this when authoring or reviewing the `Dockerfile`, `.dockerignore`, or
-`compose.yaml` for Verma's self-hosted deployment and relay node.
+`compose.yaml` for Verma's self-hosted deployment and relay node. Note: the
+repository currently also contains a near-duplicate `docker-compose.yaml` (added
+by the Cloudflare/Komodo deploy tooling); `compose.yaml` is the canonical
+Compose file and the two should be reconciled. TODO(verify): confirm which
+Compose file the deploy pipeline actually consumes.
 
 ## Dockerfile checklist
 
