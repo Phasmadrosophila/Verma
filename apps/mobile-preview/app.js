@@ -477,7 +477,7 @@ function renderSetup() {
       render(true);
     };
   } else {
-    content.innerHTML = `<section class="setup-page slide-${setupDir}">${steps(3)}<div class="completion"><div class="completion-hero"><div class="completion-backdrop" aria-hidden="true"></div><div class="success-emblem" aria-hidden="true"><span class="emblem-logo"><img src="assets/verma-logo.png" alt="Verma"></span><span class="emblem-check">${icon('check')}</span></div><div class="floating-chip chip-left" aria-hidden="true">${icon('shield')} <span>Encrypted</span></div><div class="floating-chip chip-right" aria-hidden="true">${icon('spark')} <span>Local AI</span></div></div><h1 tabindex="-1">Your space.<br><span class="brand-highlight">Your fresh start.</span></h1><div class="completion-actions"><button class="button primary" data-tab="import">Import credentials ${icon('arrow')}</button><button class="button secondary" data-tab="vault">${icon('vault')} Open my vault</button></div><p class="completion-footnote">${icon('lock')} Hardware encrypted · Offline guaranteed</p></div></section>`;
+    content.innerHTML = `<section class="setup-page slide-${setupDir}">${steps(3)}<div class="completion"><div class="completion-hero"><div class="completion-backdrop" aria-hidden="true"></div><div class="success-emblem" aria-hidden="true"><span class="emblem-logo"><img src="assets/verma-logo.png" alt="Verma"></span><span class="emblem-check">${icon('check')}</span></div><div class="floating-chip chip-left" aria-hidden="true">${icon('shield')} <span>Encrypted</span></div><div class="floating-chip chip-right" aria-hidden="true">${icon('spark')} <span>Local AI</span></div></div><h1 tabindex="-1">Your space.<br><span class="brand-highlight">Your fresh start.</span></h1><div class="completion-actions"><button class="button primary" data-tab="import">Import credentials ${icon('arrow')}</button><button class="button secondary" data-tab="vault">${icon('vault')} Open my vault</button></div></div></section>`;
   }
 }
 
@@ -498,6 +498,9 @@ document.addEventListener('click', event => {
 document.addEventListener('visibilitychange', () => { if (document.hidden && !$('#sheet').hidden) closeSheet(false); });
 function readPreviewRoute() {
   if (location.hash === '#welcome') { state.screen = 'welcome'; state.intro = 0; }
+  else if (location.hash === '#setup') { state.screen = 'setup'; state.setup = 1; }
+  else if (location.hash === '#setup2') { state.screen = 'setup'; state.setup = 2; }
+  else if (location.hash === '#setup3') { state.screen = 'setup'; state.setup = 3; }
   else if (tabs.some(([name]) => location.hash === `#${name}`)) { state.tab = location.hash.slice(1); state.screen = 'main'; }
   else { state.screen = 'welcome'; state.intro = 0; }
 }

@@ -187,10 +187,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
               <Text style={styles.secondaryButtonText}>Open my vault</Text>
             </TouchableOpacity>
           </View>
-
-          <Text style={styles.completionFootnote}>
-            🔒 Hardware encrypted · Offline guaranteed
-          </Text>
         </View>
       )}
     </ScrollView>
@@ -435,11 +431,5 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: spacing.md,
     marginTop: spacing.md,
-  },
-  completionFootnote: {
-    fontSize: 12,
-    color: colors.muted,
-    textAlign: 'center',
-    marginTop: spacing.lg,
   },
 });
