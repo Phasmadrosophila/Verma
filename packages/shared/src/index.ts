@@ -5,3 +5,4 @@ export * from './fixtures/index.js';
 export * from './logging/index.js';
 export * from './import/index.js';
 export * from './sync/index.js';
+export * from './continuity/dead-mans-switch.js';
