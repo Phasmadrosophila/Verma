@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "models": [
+    {
+      "id": "local-assistant-primary",
+      "role": "text-generation",
+      "status": "tbd",
+      "model_name": "TBD",
+      "version": "TBD",
+      "sha256": "TBD",
+      "license": "TBD",
+      "source_url": "TBD",
+      "artifact_path": "TBD",
+      "runtime": {
+        "production": "llama.cpp",
+        "development": "Ollama"
+      },
+      "redistribution_review": "TBD"
+    }
+  ]
+}
