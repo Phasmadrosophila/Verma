@@ -52,6 +52,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared package
+        run: pnpm --filter @app/shared run build
+
       - name: Workspace typecheck
         run: pnpm run check
 
@@ -96,7 +99,7 @@ jobs:
 
       # Safe secret isolation: PRs from forks / untrusted environments cannot access repository secrets
       - name: Deploy preview to Cloudflare Pages
-        if: env.CLOUDFLARE_API_TOKEN != ''
+        if: secrets.CLOUDFLARE_API_TOKEN != ''
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -107,7 +110,7 @@ jobs:
             --branch="${BRANCH_NAME}"
 
       - name: Skip preview deploy when secrets unavailable
-        if: env.CLOUDFLARE_API_TOKEN == ''
+        if: secrets.CLOUDFLARE_API_TOKEN == ''
         run: |
           echo "Preview deployment skipped: Cloudflare credentials are isolated and omitted on untrusted forks."
 
