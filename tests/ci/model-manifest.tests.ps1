@@ -67,7 +67,10 @@ try {
     }
 
     foreach ($failingFixture in $invalidHashPath, $invalidLicensePath) {
-        & $powerShell -NoProfile -File $checkerPath -ManifestPath $failingFixture
+        $oldErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        $failureOutput = & $powerShell -NoProfile -File $checkerPath -ManifestPath $failingFixture 2>&1
+        $ErrorActionPreference = $oldErrorActionPreference
         if ($LASTEXITCODE -eq 0) {
             throw "Expected invalid model manifest fixture '$failingFixture' to fail."
         }
