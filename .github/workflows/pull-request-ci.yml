@@ -24,10 +24,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-      - run: corepack enable
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run check
+      # This repository currently has no package manifest or lockfile. Keep
+      # the baseline executable without downloading an untracked dependency graph.
+      - run: node --check relay/server.mjs
 
   lint:
     name: Lint
@@ -40,10 +39,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-      - run: corepack enable
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run lint
+      - run: node --check relay/server.mjs
+      - run: node --check tests/relay/deployment.test.mjs
+      - run: node --check tests/relay/relay.test.mjs
 
   test:
     name: Test
@@ -56,10 +54,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-      - run: corepack enable
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run test
+      - run: node --test tests/relay/*.test.mjs
 
   docker-smoke:
     name: Docker smoke
@@ -96,3 +91,5 @@ jobs:
         run: ./scripts/ci/check-workflow-safety.ps1 -WorkflowPath .github/workflows/pull-request-ci.yml -RequireCiJobs
       - shell: pwsh
         run: ./tests/ci/workflow-safety.tests.ps1
+      - shell: pwsh
+        run: ./tests/ci/ci-baseline.tests.ps1
