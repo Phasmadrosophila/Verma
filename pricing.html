@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F7EDE3">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Verma Pricing: Free Basic User, Free Open Source Verma Local, and optional Verma Cloud relay. Simple, honest, local-first secrets manager.">
+  <title>Verma Pricing — Free to start. Open source & Local-first.</title>
+  <link rel="icon" href="assets/verma-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Parkinsans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="pricing.css">
+  <script src="landing.js" defer></script>
+</head>
+<body class="pricing-page">
+  <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="star" viewBox="0 0 24 24"><path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/></symbol>
+    <symbol id="shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L20 6"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    <symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+    <symbol id="cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+    <symbol id="menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  </defs></svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header container">
+    <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="/#features">Features</a>
+      <a class="active" href="/pricing">Pricing</a>
+      <a href="/#how">Guide</a>
+      <a class="nav-cloud" href="/cloud"><svg class="icon cloud-icon" aria-hidden="true"><use href="#cloud"/></svg>Cloud</a>
+    </nav>
+    <a class="button dark header-cta" href="/download">Download Verma</a>
+    <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu"><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
+    <nav id="mobile-menu" aria-label="Mobile navigation" hidden>
+      <a href="/#features">Features</a>
+      <a class="active" href="/pricing">Pricing</a>
+      <a href="/#how">Guide</a>
+      <a href="/cloud">Cloud</a>
+    </nav>
+  </header>
+
+  <main id="main" class="pricing-main container">
+    <!-- Pricing Header / Intro -->
+    <section class="pricing-intro scroll-pop" aria-labelledby="pricing-title">
+      <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#star"/></svg> PRICING</div>
+      <h1 id="pricing-title">Free to start. Pro when you<br><span>want all of it.</span></h1>
+      <p>Verma is free to download and use, with no account and no trial timer. Verma Local unlocks full unlimited on-device AI and direct P2P sync for free because localhost is open source. Verma Cloud adds optional zero-knowledge remote relay and emergency continuity.</p>
+    </section>
+
+    <!-- Pricing 3-Card Grid -->
+    <section class="pricing-grid" aria-label="Verma pricing options">
+      <!-- Card 1: Basic User (Free) -->
+      <article class="pricing-card scroll-pop">
+        <div class="card-header-row">
+          <h2 class="tier-title">Basic User</h2>
+          <span class="tier-badge badge-neutral">1 ACCOUNT PER USER</span>
+        </div>
+        <div class="tier-subtitle">₱0, for as long as you like</div>
+        <p class="tier-desc">The basics of personal secret management, on your device.</p>
+        
+        <div class="price-box">
+          <div class="price-row">
+            <span class="amount">₱0</span>
+            <span class="freq">forever free</span>
+          </div>
+          <div class="sub-rates">
+            <div class="sub-rate-item"><strong>1 account</strong> per user on your device</div>
+            <div class="sub-rate-item">Zero cloud server dependency</div>
+          </div>
+        </div>
+
+        <ul class="feature-checklist">
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Logins, private notes &amp; API keys</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>1 vault account per user</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Encrypted local SQLite (SQLCipher)</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Deterministic password generator</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Cryptographic password health audit</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>24-word master recovery phrase</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>No account or credit card required</span>
+          </li>
+        </ul>
+
+        <a class="tier-action-btn btn-dark" href="/download">Get Started Free <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+      </article>
+
+      <!-- Card 2: Verma Local (Open Source & Self-Hosted) — Featured -->
+      <article class="pricing-card featured scroll-pop">
+        <div class="card-header-row">
+          <h2 class="tier-title">Verma Local</h2>
+          <span class="tier-badge">MOST POPULAR</span>
+        </div>
+        <div class="tier-subtitle">Free forever · Localhost is open source</div>
+        <p class="tier-desc">Full-featured digital secrets manager with on-device AI and direct peer-to-peer sync.</p>
+        
+        <div class="price-box">
+          <div class="price-row">
+            <span class="amount">₱0</span>
+            <span class="freq">free forever, community edition</span>
+          </div>
+          <div class="sub-rates">
+            <div class="sub-rate-item"><strong>₱0</strong> on desktop &amp; personal devices</div>
+            <div class="sub-rate-item"><strong>₱0</strong> self-hosted Docker relay for homelabs</div>
+            <div class="sub-rate-item"><strong>100% Free</strong> fair-code &amp; open source</div>
+          </div>
+        </div>
+
+        <ul class="feature-checklist">
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span><strong>Unlimited accounts, vaults &amp; entries</strong></span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Sandboxed on-device AI (llama.cpp) with Wi-Fi disabled</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Direct device-to-device sync over authenticated QUIC</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Smart CSV import with duplicate resolution &amp; auto-tagging</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Ask Your Vault natural language search (metadata only)</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Zero telemetry, zero cloud accounts, zero tracking</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Full open source code available on GitHub</span>
+          </li>
+        </ul>
+
+        <a class="tier-action-btn btn-featured" href="/download">Download Verma Local <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+      </article>
+
+      <!-- Card 3: Verma Cloud (Optional Remote Relay & Continuity) -->
+      <article class="pricing-card scroll-pop">
+        <div class="card-header-row">
+          <h2 class="tier-title">Verma Cloud</h2>
+          <span class="tier-badge badge-cloud">CONTINUITY ADD-ON</span>
+        </div>
+        <div class="tier-subtitle">Optional zero-knowledge relay &amp; continuity</div>
+        <p class="tier-desc">For multi-device sync across remote networks and automated emergency continuity.</p>
+        
+        <div class="price-box">
+          <div class="price-row">
+            <span class="amount">₱199</span>
+            <span class="freq">a month, with Cloud</span>
+          </div>
+          <div class="price-row">
+            <span class="amount">₱1,999</span>
+            <span class="freq">a year, with Cloud</span>
+            <span class="discount-pill">Save 16%</span>
+          </div>
+          <div class="sub-rates" style="margin-top: 4px;">
+            <div class="sub-rate-item"><strong>₱1,999</strong> once, for life, without Cloud</div>
+          </div>
+        </div>
+
+        <ul class="feature-checklist">
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span><strong>Everything in Verma Local included</strong></span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Blind encrypted remote relay (sync anywhere over cellular)</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Zero-knowledge browser web vault at web.verma.cloud</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Automated Dead Man's Switch heartbeat &amp; package delivery</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>30-day revision history and conflict rollback</span>
+          </li>
+          <li>
+            <span class="check-dot"><svg class="icon"><use href="#check"/></svg></span>
+            <span>Client-side encryption: zero plaintext secrets on servers</span>
+          </li>
+        </ul>
+
+        <a class="tier-action-btn btn-outline" href="/cloud">Explore Verma Cloud <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+      </article>
+    </section>
+
+    <!-- Pricing FAQs / Transparency Section -->
+    <section class="pricing-faq scroll-pop" aria-labelledby="faq-heading">
+      <div class="pricing-faq-heading">
+        <h2 id="faq-heading">Honest questions, transparent answers</h2>
+        <p>No fine print. We build software the way it should be built.</p>
+      </div>
+
+      <div class="pricing-faq-list">
+        <div class="faq-card scroll-pop">
+          <h3>Why is Verma Local completely free?</h3>
+          <p>Localhost belongs to you. Verma Local runs 100% on your own machines and syncs directly between your devices over local Wi-Fi. Because there are no centralized servers hosting your database, there are no ongoing cloud infrastructure costs for us to pass onto you. We believe digital privacy is a fundamental standard.</p>
+        </div>
+
+        <div class="faq-card scroll-pop">
+          <h3>What is the difference between Basic User and Verma Local?</h3>
+          <p>Basic User is a lightweight starter tier with 1 vault account on a single personal device. Verma Local is our full open-source community edition that unlocks unlimited accounts, on-device sandboxed AI assistance, direct peer-to-peer QUIC device sync, and self-hosted Docker relay containers.</p>
+        </div>
+
+        <div class="faq-card scroll-pop">
+          <h3>Can Verma Cloud ever read my passwords?</h3>
+          <p>Never. Verma Cloud is an opaque, blind relay. All entries and metadata are encrypted client-side on your device using libsodium before transmission. Our relay only handles blind encrypted packets and cannot decrypt your data.</p>
+        </div>
+
+        <div class="faq-card scroll-pop">
+          <h3>Do I need to provide a credit card or email to get started?</h3>
+          <p>No. Both Basic User and Verma Local require no email, no registration, and no payment information. Just install and your vault is ready.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pricing-footer container">
+    <div class="pricing-footer-credits">
+      <span>© 2026 Verma. All rights reserved.</span>
+      <span>Made by Phasmadrosophilia for APPBuildersPH Hackathon 2026</span>
+    </div>
+  </footer>
+</body>
+</html>

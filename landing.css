@@ -354,7 +354,7 @@ h3{font-weight:600;letter-spacing:-.035em;line-height:1.25}
   .hero-actions{flex-direction:column;align-items:stretch;gap:10px;width:100%}
   .hero-actions .button{width:100%;justify-content:center}
   .hero-actions .text-link{width:100%;justify-content:center;min-height:40px}
-  .header-cta{display:none}
+  .header-cta{display:none!important}
   .menu-toggle{margin-left:auto}
 }
 @media(max-width:360px){

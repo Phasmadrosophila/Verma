@@ -12,7 +12,7 @@ const types = {
   '.png': 'image/png',
   '.woff2': 'font/woff2'
 };
-const allowed = new Set(['/index.html', '/landing.css', '/landing.js', '/cloud.html', '/cloud.css', '/download.html', '/download.css']);
+const allowed = new Set(['/index.html', '/landing.css', '/landing.js', '/cloud.html', '/cloud.css', '/download.html', '/download.css', '/pricing.html', '/pricing.css']);
 const port = Number(process.env.PORT || 3000);
 
 createServer(async (req, res) => {
@@ -26,6 +26,7 @@ createServer(async (req, res) => {
     if (pathname === '/') route = '/index.html';
     else if (pathname === '/cloud' || pathname === '/cloud/') route = '/cloud.html';
     else if (pathname === '/download' || pathname === '/download/') route = '/download.html';
+    else if (pathname === '/pricing' || pathname === '/pricing/') route = '/pricing.html';
     const path = resolve(root, '.' + route);
     if ((!allowed.has(route) && !route.startsWith('/assets/')) || !path.startsWith(root + sep)) {
       res.writeHead(404).end('Not found');
