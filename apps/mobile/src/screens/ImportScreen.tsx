@@ -9,6 +9,7 @@ import {
 import {
   ImportCandidate,
   MobileVaultEntry,
+  generatePassword,
   sampleImportRows,
 } from '../state/vaultStore';
 import { colors, radii, spacing, typography } from '../theme/tokens';
@@ -44,7 +45,7 @@ export const ImportScreen: React.FC<ImportScreenProps> = ({ onCommitImport }) =>
       tags: [c.tag],
       favorite: false,
       brand: c.brand,
-      secret: 'demo-imported-secret-9941',
+      secret: c.type === 'api' ? `sk_live_${generatePassword(24)}` : generatePassword(20),
       updated: 'Just imported',
     }));
 

@@ -1,10 +1,10 @@
 export const seedEntries = [
-  { id: 1, type: 'login', title: 'Google', subtitle: 'Work account', user: 'sam@companyx.example', domain: 'accounts.google.com', tags: ['Work', 'Company X'], favorite: true, brand: 'google', secret: 'demo-only-work-lantern-4821', updated: 'Today' },
-  { id: 2, type: 'login', title: 'GitHub', subtitle: 'A home for your ideas', user: 'sam-dev', domain: 'github.com', tags: ['Development'], favorite: true, brand: 'github', secret: 'demo-only-github-cobalt-7294', updated: 'Yesterday' },
-  { id: 3, type: 'login', title: 'Netflix', subtitle: 'Family account', user: 'family@example.com', domain: 'netflix.com', tags: ['Personal', 'Streaming'], favorite: true, brand: 'netflix', secret: 'demo-only-netflix-maple-6153', updated: '3 days ago' },
-  { id: 4, type: 'login', title: 'Google', subtitle: 'Personal account', user: 'sam.demo@example.com', domain: 'accounts.google.com', tags: ['Personal'], favorite: false, brand: 'google', secret: 'demo-only-personal-meadow-2381', updated: '3 days ago' },
-  { id: 5, type: 'api', title: 'DigitalOcean', subtitle: 'Side project token', user: 'Side project', domain: 'cloud.digitalocean.com', tags: ['Development', 'Cloud'], favorite: false, brand: 'ocean', secret: 'demo-only-api-ocean-9152', updated: '2 weeks ago' },
-  { id: 6, type: 'note', title: 'Home Wi-Fi', subtitle: 'The good connection', user: 'Home network', domain: '192.168.1.1', tags: ['Home', 'Network'], favorite: false, brand: 'wifi', secret: 'Demo network: Verma Home\nDemo password: little-universe-4821', updated: '1 month ago' }
+  { id: 1, type: 'login', title: 'Google', subtitle: 'Work account', user: 'sam@companyx.example', domain: 'accounts.google.com', tags: ['Work', 'Company X'], favorite: true, brand: 'google', secret: 'vL9$kQ2#mX7!pR5@wZ4^', updated: 'Today' },
+  { id: 2, type: 'login', title: 'GitHub', subtitle: 'A home for your ideas', user: 'sam-dev', domain: 'github.com', tags: ['Development'], favorite: true, brand: 'github', secret: 'ghp_88Fj3kLa91mZ0xVq74bN2pTs56yR1u', updated: 'Yesterday' },
+  { id: 3, type: 'login', title: 'Netflix', subtitle: 'Family account', user: 'family@example.com', domain: 'netflix.com', tags: ['Personal', 'Streaming'], favorite: true, brand: 'netflix', secret: 'nP3!wK6$mS8@uM2%xT9#', updated: '3 days ago' },
+  { id: 4, type: 'login', title: 'Google', subtitle: 'Personal account', user: 'sam.personal@example.com', domain: 'accounts.google.com', tags: ['Personal'], favorite: false, brand: 'google', secret: 'mD5#rQ9*tL2!jX7$aB4^', updated: '3 days ago' },
+  { id: 5, type: 'api', title: 'DigitalOcean', subtitle: 'Side project token', user: 'Side project', domain: 'cloud.digitalocean.com', tags: ['Development', 'Cloud'], favorite: false, brand: 'ocean', secret: 'dop_v1_9c84e612f0a1738d82b4516e902c347f881a', updated: '2 weeks ago' },
+  { id: 6, type: 'note', title: 'Home Wi-Fi', subtitle: 'The good connection', user: 'Home network', domain: '192.168.1.1', tags: ['Home', 'Network'], favorite: false, brand: 'wifi', secret: 'SSID: Verma Home\nWPA3 Security Key: little-universe-4821', updated: '1 month ago' }
 ];
 export const typeLabels = { login: 'Login', note: 'Secure note', api: 'API key' };
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -41,7 +41,7 @@ export function generatePassword(length = 20) {
 export const sampleImport = [
   { title: 'Slack', subtitle: 'Company X workspace', domain: 'companyx.slack.com', user: 'sam@companyx.example', tag: 'Work', brand: 'slack', type: 'login' },
   { title: 'Spotify', subtitle: 'Family plan', domain: 'spotify.com', user: 'family@example.com', tag: 'Personal', brand: 'spotify', type: 'login' },
-  { title: 'Notion', subtitle: 'Your second brain', domain: 'notion.so', user: 'sam.demo@example.com', tag: 'Productivity', brand: 'notion', type: 'login' },
+  { title: 'Notion', subtitle: 'Your second brain', domain: 'notion.so', user: 'sam.personal@example.com', tag: 'Productivity', brand: 'notion', type: 'login' },
   { title: 'Figma', subtitle: 'A little creative space', domain: 'figma.com', user: 'sam@companyx.example', tag: 'Design', brand: 'figma', type: 'login' },
   { title: 'Linear', subtitle: 'Work projects', domain: 'linear.app', user: 'sam@companyx.example', tag: 'Work', brand: 'linear', type: 'login' },
   { title: 'DigitalOcean', subtitle: 'New project token', domain: 'cloud.digitalocean.com', user: 'New project', tag: 'Development', brand: 'ocean', type: 'api' },
@@ -53,6 +53,6 @@ export function prepareImport(rows, duplicateChoice, nextId) {
   return rows.filter(row => !row.duplicate || duplicateChoice === 'keep').map((row, index) => ({
     id: nextId + index, title: row.title, subtitle: row.subtitle, domain: row.domain, user: row.user,
     type: row.type, brand: row.brand, tags: row.accepted && row.tag.trim() ? [row.tag.trim()] : [],
-    favorite: false, secret: `demo-only-import-${nextId + index}`, updated: 'Just now'
+    favorite: false, secret: generatePassword(20), updated: 'Just now'
   }));
 }

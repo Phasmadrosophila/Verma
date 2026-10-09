@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verma — 10-Slide Presentation Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Parkinsans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-orange: #FE820E;
+      --brand-blue: #607FF3;
+      --ink: #292621;
+      --ink-muted: #716A61;
+      --paper: #FFFCF8;
+      --paper-cream: #F7EDE3;
+      --lavender: #E8EAFE;
+      --peach: #FFE0BF;
+      --card-bg: #FFFFFF;
+      --border-subtle: rgba(41, 38, 33, 0.08);
+      --font-headline: 'Fredoka', cursive, sans-serif;
+      --font-body: 'Parkinsans', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #1A1816;
+      font-family: var(--font-body);
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Deck Viewport */
+    .deck-container {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      max-width: 95vw;
+      max-height: 95vh;
+      aspect-ratio: 16 / 9;
+      background: var(--paper-cream);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: 48px 56px;
+      flex-direction: column;
+      justify-content: space-between;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: var(--paper-cream);
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    /* Headers */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      height: 40px;
+    }
+
+    .wordmark {
+      font-family: var(--font-headline);
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--brand-blue) 0%, var(--brand-orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .category-badge {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .pill-badge {
+      background: var(--peach);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    /* Title Block */
+    .title-block {
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    .headline {
+      font-family: var(--font-headline);
+      font-size: 44px;
+      line-height: 1.1;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+    }
+
+    .subhead {
+      font-size: 18px;
+      color: var(--ink-muted);
+      margin-top: 8px;
+      font-weight: 400;
+    }
+
+    /* Footers */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      font-size: 13px;
+      color: var(--ink-muted);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* Cards & Grids */
+    .cards-row {
+      display: grid;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .col-3 { grid-template-columns: repeat(3, 1fr); }
+    .col-4 { grid-template-columns: repeat(4, 1fr); }
+    .col-2 { grid-template-columns: repeat(2, 1fr); }
+    .col-5 { grid-template-columns: repeat(5, 1fr); }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(41, 38, 33, 0.04);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .card.peach { background: var(--peach); }
+    .card.lavender { background: var(--lavender); }
+
+    .card-title {
+      font-family: var(--font-headline);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--ink-muted);
+      line-height: 1.45;
+    }
+
+    .metric-value {
+      font-family: var(--font-headline);
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--brand-orange);
+      margin-bottom: 4px;
+    }
+
+    .banner-warning {
+      background: var(--peach);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* Steps list */
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-item {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid var(--border-subtle);
+      font-size: 12.5px;
+    }
+
+    .step-num {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--peach);
+      color: var(--ink);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+
+    /* Table */
+    table.matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: var(--card-bg);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+
+    table.matrix th, table.matrix td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    table.matrix th {
+      background: #F1ECE6;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    table.matrix tr.highlight {
+      background: rgba(254, 130, 14, 0.08);
+      font-weight: 600;
+    }
+
+    /* Controls */
+    .controls {
+      position: fixed;
+      bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 10px 20px;
+      border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .btn {
+      background: var(--brand-orange);
+      color: #FFF;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #E57205;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #EBE6E0;
+      color: var(--ink);
+    }
+
+    .btn-secondary:hover {
+      background: #DDD7D0;
+    }
+
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #FFF;
+        overflow: visible;
+      }
+      .controls { display: none; }
+      .deck-container {
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+        border-radius: 0;
+      }
+      .slide {
+        display: flex !important;
+        position: relative;
+        page-break-after: always;
+        height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-container">
+
+    <!-- SLIDE 1 -->
+    <div class="slide active" id="slide-1">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="pill-badge">Business / hackathon concept</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline" style="font-size: 52px;">From scattered passwords to a vault you can actually use.</h1>
+        <p class="subhead">A local-first password and secrets vault with on-device AI for organizing imports and searching metadata.</p>
+      </div>
+      <div class="cards-row col-3">
+        <div class="card">
+          <div class="card-title">Local-First Vault</div>
+          <div class="card-desc">Encrypted local SQLite storage. Operates seamlessly offline without requiring accounts, clouds, or servers.</div>
+        </div>
+        <div class="card lavender">
+          <div class="card-title">Sandboxed Local AI</div>
+          <div class="card-desc">On-device <code>llama.cpp</code> process runs in a zero-network sandbox. Tools and mutations are disabled.</div>
+        </div>
+        <div class="card peach">
+          <div class="card-title">Zero Secret Exposure</div>
+          <div class="card-desc">Passwords, private keys, notes, and TOTP seeds are never passed to the AI model. Redaction is enforced in trusted native code.</div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Concept, not a shipped or audited product</span>
+        <span>01 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" id="slide-2">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">THE PROBLEM / SCATTERED STORAGE</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">Passwords are everywhere. The right one is hard to find.</h1>
+        <p class="subhead">Credentials live across browser autofills, desktop notes, spreadsheets, and memory.</p>
+      </div>
+      <div class="cards-row col-4">
+        <div class="card">
+          <div class="card-title">Browser Autofill</div>
+          <div class="card-desc">Convenient but siloed; accumulates duplicate and outdated logins across different devices.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Notes & Text Files</div>
+          <div class="card-desc">Completely unencrypted, lacks structure, and offers no auto-fill or search categorization.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Spreadsheets</div>
+          <div class="card-desc">High security risk, manually updated, frequently desynchronized across machines.</div>
+        </div>
+        <div class="card peach">
+          <div class="card-title">Human Memory</div>
+          <div class="card-desc">Forces dangerous password reuse and identical variations to survive login friction.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 14px; background: #FFF9F2;">
+        <strong>The Daily Friction:</strong> When users need a credential, retrieval is painful. Reverting to the familiar shortcut is always faster than learning complex password management rules.
+      </div>
+      <div class="slide-footer">
+        <span>Scattered storage is a rational reaction to high-friction tools</span>
+        <span>02 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" id="slide-3">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">THE PROBLEM / MIGRATION EFFORT</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">Importing is not the same as getting organized.</h1>
+        <p class="subhead">A messy CSV export can quickly become a second cleanup project.</p>
+      </div>
+      <div class="cards-row col-4">
+        <div class="card">
+          <div class="step-num">STEP 1</div>
+          <div class="card-title">Messy CSVs</div>
+          <div class="card-desc">Mangled column headers, empty titles, raw URLs, and inconsistent field structures.</div>
+        </div>
+        <div class="card">
+          <div class="step-num">STEP 2</div>
+          <div class="card-title">Manual Mapping</div>
+          <div class="card-desc">Traditional managers force users to manually match confusing dropdown menus.</div>
+        </div>
+        <div class="card">
+          <div class="step-num">STEP 3</div>
+          <div class="card-title">Duplicate Sprawl</div>
+          <div class="card-desc">Imports dump multiple entries for identical domains with zero deduplication guidance.</div>
+        </div>
+        <div class="card peach">
+          <div class="step-num">STEP 4</div>
+          <div class="card-title">Cleanup Homework</div>
+          <div class="card-desc">Users are confronted with a wall of red security warnings without an actionable resolution.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 14px; background: #FFF9F2;">
+        <strong>The Credential-Hygiene Paradox:</strong> People understand password reuse is unsafe, but they abandon password managers within weeks because migration feels like homework.
+      </div>
+      <div class="slide-footer">
+        <span>Migration friction drives immediate trial abandonment</span>
+        <span>03 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide" id="slide-4">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">THE PROBLEM / DIRECTIONAL RESEARCH</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">The burden is real. The evidence still needs checking.</h1>
+        <p class="subhead">Rigorous engineering demands distinguishing hypotheses from measured truth.</p>
+      </div>
+      <div class="banner-warning">
+        ⚠️ <strong>Notice:</strong> Figures below are unverified directional research from secondary sources, NOT Verma's internal measurements. Primary studies and samples must be verified.
+      </div>
+      <div class="cards-row col-4">
+        <div class="card">
+          <div class="metric-value">168</div>
+          <div class="card-title">Accounts / User</div>
+          <div class="card-desc">Directional estimate of online accounts managed by an average individual.</div>
+        </div>
+        <div class="card">
+          <div class="metric-value">85</div>
+          <div class="card-title">Work Credentials</div>
+          <div class="card-desc">Estimated operational logins handled by small business personnel.</div>
+        </div>
+        <div class="card">
+          <div class="metric-value">94%</div>
+          <div class="card-title">Duplicate Breaches</div>
+          <div class="card-desc">Reported duplicate credential rate across 19.03B breached records.</div>
+        </div>
+        <div class="card peach">
+          <div class="metric-value">42.4%</div>
+          <div class="card-title">4-Wk Abandonment</div>
+          <div class="card-desc">Usability study drop-off rate for traditional password managers.</div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Directional research provides hypotheses; product testing provides verification</span>
+        <span>04 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide" id="slide-5">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">THE SOLUTION / CONCEPTUAL WORKFLOW</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">A little help. Your final say.</h1>
+        <p class="subhead">AI assists with organization and retrieval. You remain completely in control.</p>
+      </div>
+      <div class="cards-row col-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--brand-orange);">Smart Import Preview</div>
+          <div class="card-desc" style="font-size: 14.5px;">
+            • <strong>Automated Field Mapping:</strong> Detects usernames, URLs, and labels without sending data to servers.<br>
+            • <strong>Duplicate Grouping:</strong> Proposes merging identical service accounts into single records.<br>
+            • <strong>Tag Proposals:</strong> Suggests intuitive tags (<code>#finance</code>, <code>#work</code>, <code>#streaming</code>).<br>
+            • <strong>Explicit Approval:</strong> No database mutation occurs until you confirm.
+          </div>
+        </div>
+        <div class="card lavender">
+          <div class="card-title" style="color: var(--brand-blue);">Ask Your Vault</div>
+          <div class="card-desc" style="font-size: 14.5px;">
+            • <strong>Natural Language Queries:</strong> <em>"What's my work Google account?"</em><br>
+            • <strong>Redacted Metadata Search:</strong> AI queries titles and tags only; secrets are never indexed.<br>
+            • <strong>Masked Presentation:</strong> Results appear with hidden secrets (<code>••••••••</code>).<br>
+            • <strong>Explicit Unlock:</strong> Passwords unmask only upon deliberate user authentication.
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>AI as copilot: suggestions require user confirmation</span>
+        <span>05 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide" id="slide-6">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">THE DEMO / PROVING THE WINNING P0 LOOP</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">One useful loop. Offline.</h1>
+        <p class="subhead">A 10-step verified sequence with Wi-Fi disabled and zero server dependence.</p>
+      </div>
+      <div class="step-grid">
+        <div class="step-item"><span class="step-num">01</span><br><strong>Wi-Fi Disabled</strong><br>Airplane mode verified.</div>
+        <div class="step-item"><span class="step-num">02</span><br><strong>Messy CSV</strong><br>Sanitized export loaded.</div>
+        <div class="step-item"><span class="step-num">03</span><br><strong>Local AI Suggestion</strong><br>Mappings & tags proposed.</div>
+        <div class="step-item"><span class="step-num">04</span><br><strong>User Confirm</strong><br>Preview approved by user.</div>
+        <div class="step-item"><span class="step-num">05</span><br><strong>Ask Your Vault</strong><br>Vague query entered.</div>
+      </div>
+      <div class="step-grid">
+        <div class="step-item"><span class="step-num">06</span><br><strong>Masked Result</strong><br>Password stays hidden.</div>
+        <div class="step-item"><span class="step-num">07</span><br><strong>Explicit Unlock</strong><br>User unmasks secret.</div>
+        <div class="step-item"><span class="step-num">08</span><br><strong>Local Edit</strong><br>Tag or label modified.</div>
+        <div class="step-item"><span class="step-num">09</span><br><strong>QUIC Direct Sync</strong><br>Encrypted diff sent P2P.</div>
+        <div class="step-item"><span class="step-num">10</span><br><strong>Socket Audit</strong><br>AI proven toolless & offline.</div>
+      </div>
+      <div class="slide-footer">
+        <span>The core hackathon P0 loop works repeatedly without internet</span>
+        <span>06 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide" id="slide-7">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">TECHNICAL ARCHITECTURE / SECURITY INVARIANTS</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">A strict boundary between secrets and intelligence.</h1>
+        <p class="subhead">Redaction is enforced in trusted native code before model inference.</p>
+      </div>
+      <div class="cards-row col-3">
+        <div class="card">
+          <div class="card-title">Encrypted Storage</div>
+          <div class="card-desc">SQLite encrypted via SQLCipher / libsodium. Locking the vault immediately revokes AI metadata access. Search indexes are encrypted at rest.</div>
+        </div>
+        <div class="card peach">
+          <div class="card-title">Trusted Redaction</div>
+          <div class="card-desc">Redaction is code, not prompt text. Denied: passwords, TOTP seeds, notes, recovery keys, wallet info. Allowed: domains, titles, tags, timestamps.</div>
+        </div>
+        <div class="card lavender">
+          <div class="card-title">Sandboxed Runtime</div>
+          <div class="card-desc">Local <code>llama.cpp</code> process runs in an OS sandbox with no network and read-only filesystem. Zero tools. Outputs validated as strict JSON.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 14px; background: #FFF9F2;">
+        <strong>Direct QUIC Sync:</strong> Authenticated Syncthing-style transport over UDP. Device ID is the hash of its Ed25519 public key. Pairing via SPAKE2 PAKE.
+      </div>
+      <div class="slide-footer">
+        <span>Disabling AI leaves a completely functional encrypted vault</span>
+        <span>07 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide" id="slide-8">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">DIFFERENTIATION / AN INTENDED COMBINATION</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">Less cleanup. More control.</h1>
+        <p class="subhead">How Verma compares with traditional password managers and generic AI wrappers.</p>
+      </div>
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Cloud Vaults (1Pass, Bitwarden)</th>
+            <th>Offline Vaults (KeePassXC)</th>
+            <th>Generic AI Wrappers</th>
+            <th style="color: var(--brand-orange);">Verma</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Import & Setup</strong></td>
+            <td>Manual CSV mapping; high drop-off</td>
+            <td>Complex manual organization</td>
+            <td>Full text sent to cloud LLM</td>
+            <td style="color: var(--brand-orange);"><strong>On-device AI Smart Preview</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Search & Retrieval</strong></td>
+            <td>Exact substring match only</td>
+            <td>Exact title / regex search</td>
+            <td>Natural language via cloud API</td>
+            <td style="color: var(--brand-orange);"><strong>Ask Your Vault (Redacted)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>AI Privacy</strong></td>
+            <td>Cloud AI features / partnerships</td>
+            <td>No AI capabilities</td>
+            <td>Secrets exposed to external APIs</td>
+            <td style="color: var(--brand-orange);"><strong>100% On-device (`llama.cpp`)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Device Sync</strong></td>
+            <td>Central proprietary servers</td>
+            <td>Manual file sync / cloud drive</td>
+            <td>Centralized cloud database</td>
+            <td style="color: var(--brand-orange);"><strong>Direct P2P QUIC Transport</strong></td>
+          </tr>
+          <tr class="highlight">
+            <td><strong>Offline Resilience</strong></td>
+            <td>Limited offline cache</td>
+            <td>Fully offline</td>
+            <td>Breaks without internet</td>
+            <td style="color: var(--brand-orange);"><strong>Complete offline demo loop</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="slide-footer">
+        <span>Combining modern AI usability with zero-cloud cryptographic privacy</span>
+        <span>08 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide" id="slide-9">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">BUSINESS MODEL / HYPOTHESES & MONETIZATION</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">Local value first. Monetize infrastructure.</h1>
+        <p class="subhead">A sustainable, privacy-respecting product model built for local-first users.</p>
+      </div>
+      <div class="cards-row col-3">
+        <div class="card">
+          <div class="card-title">1. Core Vault (Free / FOSS)</div>
+          <div class="card-desc">
+            • Full local vault encryption.<br>
+            • Smart Import preview & deduplication.<br>
+            • Ask Your Vault on-device search.<br>
+            • Local network QUIC direct sync.<br>
+            <em>Free forever on user hardware.</em>
+          </div>
+        </div>
+        <div class="card peach">
+          <div class="card-title">2. Pro Continuity (Self-Hosted)</div>
+          <div class="card-desc">
+            • Self-hosted Docker relay node.<br>
+            • Automated heartbeat & sync relay.<br>
+            • Dead Man's Switch emergency recovery package orchestration.<br>
+            <em>For homelabbers & power users.</em>
+          </div>
+        </div>
+        <div class="card lavender">
+          <div class="card-title">3. Managed Relay (Subscription)</div>
+          <div class="card-desc">
+            • Hosted zero-knowledge QUIC relay.<br>
+            • Seamless cross-NAT sync without port forwarding or configuration.<br>
+            • Multi-device encrypted backup relay.<br>
+            <em>For non-technical families.</em>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>Monetize convenience and continuity, never access to personal secrets</span>
+        <span>09 / 10</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide" id="slide-10">
+      <div class="slide-header">
+        <div class="wordmark">VERMA</div>
+        <div class="category-badge">SCOPE / READINESS / NEXT VALIDATION</div>
+      </div>
+      <div class="title-block">
+        <h1 class="headline">Prove the loop. Earn the trust.</h1>
+        <p class="subhead">Clear milestone boundaries and next verification targets.</p>
+      </div>
+      <div class="cards-row col-3">
+        <div class="card" style="border: 2px solid var(--brand-orange);">
+          <div class="card-title" style="color: var(--brand-orange);">Hackathon P0 (Locked)</div>
+          <div class="card-desc">
+            ✓ Encrypted local SQLite vault.<br>
+            ✓ Redaction boundary in native code.<br>
+            ✓ Sandboxed <code>llama.cpp</code> inference.<br>
+            ✓ Direct desktop QUIC sync.<br>
+            ✓ Offline loop with Wi-Fi disabled.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">P1 Continuity (Prototype)</div>
+          <div class="card-desc">
+            • Self-hosted Docker relay container.<br>
+            • Heartbeat monitoring endpoint.<br>
+            • Dead Man's Switch test mode with grace period cancellation.
+          </div>
+        </div>
+        <div class="card lavender">
+          <div class="card-title">Next Validation Priorities</div>
+          <div class="card-desc">
+            • Benchmark Qwen3 0.6B on commodity laptop CPUs.<br>
+            • Conduct user trials measuring import completion times.<br>
+            • Third-party cryptographic audit of redaction boundary.
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>A password manager you do not have to learn</span>
+        <span>10 / 10</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Interactive Navigation Controls -->
+  <div class="controls">
+    <button class="btn btn-secondary" onclick="prevSlide()">‹ Prev</button>
+    <span class="slide-counter" id="counter">01 / 10</span>
+    <button class="btn" onclick="nextSlide()">Next ›</button>
+    <button class="btn btn-secondary" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+    <button class="btn btn-secondary" onclick="window.print()">⎙ Print / PDF</button>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 10;
+
+    function showSlide(n) {
+      if (n < 1) n = 1;
+      if (n > totalSlides) n = totalSlides;
+      currentSlide = n;
+
+      document.querySelectorAll('.slide').forEach((slide, idx) => {
+        slide.classList.toggle('active', (idx + 1) === currentSlide);
+      });
+
+      document.getElementById('counter').innerText = 
+        String(currentSlide).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) showSlide(currentSlide - 1);
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      } else if (e.key.toLowerCase() === 'p') {
+        window.print();
+      }
+    });
+  </script>
+</body>
+</html>
