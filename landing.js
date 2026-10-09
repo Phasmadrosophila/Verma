@@ -30,125 +30,127 @@ const next = document.querySelector('#gallery-next');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const dots = [...document.querySelectorAll('.gallery-dot')];
 
-function updateGalleryControls() {
-  previous.disabled = gallery.scrollLeft <= 2;
-  next.disabled = gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 2;
-  updateActiveDot();
-}
+if (gallery && previous && next) {
+  function updateGalleryControls() {
+    previous.disabled = gallery.scrollLeft <= 2;
+    next.disabled = gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 2;
+    updateActiveDot();
+  }
 
-function updateActiveDot() {
-  if (!dots.length) return;
-  const cards = [...gallery.querySelectorAll('.showcase-card')];
-  if (!cards.length) return;
-  const scrollLeft = gallery.scrollLeft;
-  let activeIndex = 0;
-  cards.forEach((card, idx) => {
-    if (card.offsetLeft - gallery.offsetLeft <= scrollLeft + 60) {
-      activeIndex = idx;
-    }
-  });
-  dots.forEach((dot, idx) => {
-    dot.classList.toggle('active', idx === activeIndex);
-  });
-}
-
-function moveGallery(direction) {
-  const card = gallery.querySelector('.showcase-card');
-  const distance = card.getBoundingClientRect().width + parseFloat(getComputedStyle(gallery).gap);
-  gallery.scrollBy({ left: direction * distance, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
-}
-
-previous.addEventListener('click', () => {
-  pauseAutoSlide(6000);
-  moveGallery(-1);
-});
-next.addEventListener('click', () => {
-  pauseAutoSlide(6000);
-  moveGallery(1);
-});
-
-dots.forEach((dot, idx) => {
-  dot.addEventListener('click', () => {
-    pauseAutoSlide(6000);
+  function updateActiveDot() {
+    if (!dots.length) return;
     const cards = [...gallery.querySelectorAll('.showcase-card')];
-    if (cards[idx]) {
-      cards[idx].scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'nearest', inline: 'start' });
-    }
+    if (!cards.length) return;
+    const scrollLeft = gallery.scrollLeft;
+    let activeIndex = 0;
+    cards.forEach((card, idx) => {
+      if (card.offsetLeft - gallery.offsetLeft <= scrollLeft + 60) {
+        activeIndex = idx;
+      }
+    });
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === activeIndex);
+    });
+  }
+
+  function moveGallery(direction) {
+    const card = gallery.querySelector('.showcase-card');
+    const distance = card.getBoundingClientRect().width + parseFloat(getComputedStyle(gallery).gap);
+    gallery.scrollBy({ left: direction * distance, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+  }
+
+  previous.addEventListener('click', () => {
+    pauseAutoSlide(6000);
+    moveGallery(-1);
   });
-});
+  next.addEventListener('click', () => {
+    pauseAutoSlide(6000);
+    moveGallery(1);
+  });
 
-gallery.addEventListener('scroll', updateGalleryControls, { passive: true });
-new ResizeObserver(updateGalleryControls).observe(gallery);
-updateGalleryControls();
+  dots.forEach((dot, idx) => {
+    dot.addEventListener('click', () => {
+      pauseAutoSlide(6000);
+      const cards = [...gallery.querySelectorAll('.showcase-card')];
+      if (cards[idx]) {
+        cards[idx].scrollIntoView({ behavior: reducedMotion.matches ? 'instant' : 'smooth', block: 'nearest', inline: 'start' });
+      }
+    });
+  });
 
-// --- Mobile Auto-Slide Sideward ---
-let autoSlideTimer = null;
-let isInteracting = false;
-let interactionTimeout = null;
+  gallery.addEventListener('scroll', updateGalleryControls, { passive: true });
+  new ResizeObserver(updateGalleryControls).observe(gallery);
+  updateGalleryControls();
 
-function isMobileView() {
-  return window.innerWidth <= 680;
-}
+  // --- Mobile Auto-Slide Sideward ---
+  let autoSlideTimer = null;
+  let isInteracting = false;
+  let interactionTimeout = null;
 
-function startAutoSlide() {
-  stopAutoSlide();
-  if (!isMobileView() || reducedMotion.matches) return;
-  autoSlideTimer = setInterval(() => {
-    if (isInteracting) return;
-    const maxScroll = gallery.scrollWidth - gallery.clientWidth;
-    if (gallery.scrollLeft >= maxScroll - 15) {
-      gallery.scrollTo({ left: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
-    } else {
-      moveGallery(1);
+  function isMobileView() {
+    return window.innerWidth <= 680;
+  }
+
+  function startAutoSlide() {
+    stopAutoSlide();
+    if (!isMobileView() || reducedMotion.matches) return;
+    autoSlideTimer = setInterval(() => {
+      if (isInteracting) return;
+      const maxScroll = gallery.scrollWidth - gallery.clientWidth;
+      if (gallery.scrollLeft >= maxScroll - 15) {
+        gallery.scrollTo({ left: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+      } else {
+        moveGallery(1);
+      }
+    }, 3200);
+  }
+
+  function stopAutoSlide() {
+    if (autoSlideTimer) {
+      clearInterval(autoSlideTimer);
+      autoSlideTimer = null;
     }
-  }, 3200);
-}
-
-function stopAutoSlide() {
-  if (autoSlideTimer) {
-    clearInterval(autoSlideTimer);
-    autoSlideTimer = null;
   }
-}
 
-function pauseAutoSlide(ms = 4500) {
-  isInteracting = true;
-  clearTimeout(interactionTimeout);
-  interactionTimeout = setTimeout(() => {
-    isInteracting = false;
-  }, ms);
-}
-
-gallery.addEventListener('touchstart', () => pauseAutoSlide(6000), { passive: true });
-gallery.addEventListener('touchmove', () => pauseAutoSlide(6000), { passive: true });
-gallery.addEventListener('touchend', () => pauseAutoSlide(4000), { passive: true });
-
-if ('IntersectionObserver' in window) {
-  const insideSection = document.querySelector('#inside');
-  if (insideSection) {
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          startAutoSlide();
-        } else {
-          stopAutoSlide();
-        }
-      });
-    }, { threshold: 0.15 });
-    observer.observe(insideSection);
+  function pauseAutoSlide(ms = 4500) {
+    isInteracting = true;
+    clearTimeout(interactionTimeout);
+    interactionTimeout = setTimeout(() => {
+      isInteracting = false;
+    }, ms);
   }
-} else {
-  startAutoSlide();
-}
 
-window.addEventListener('resize', () => {
-  if (isMobileView()) startAutoSlide();
-  else stopAutoSlide();
-});
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) stopAutoSlide();
-  else if (isMobileView()) startAutoSlide();
-});
+  gallery.addEventListener('touchstart', () => pauseAutoSlide(6000), { passive: true });
+  gallery.addEventListener('touchmove', () => pauseAutoSlide(6000), { passive: true });
+  gallery.addEventListener('touchend', () => pauseAutoSlide(4000), { passive: true });
+
+  if ('IntersectionObserver' in window) {
+    const insideSection = document.querySelector('#inside');
+    if (insideSection) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            startAutoSlide();
+          } else {
+            stopAutoSlide();
+          }
+        });
+      }, { threshold: 0.15 });
+      observer.observe(insideSection);
+    }
+  } else {
+    startAutoSlide();
+  }
+
+  window.addEventListener('resize', () => {
+    if (isMobileView()) startAutoSlide();
+    else stopAutoSlide();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopAutoSlide();
+    else if (isMobileView()) startAutoSlide();
+  });
+}
 
 // --- Hero Phone Live Flow Demo ---
 const heroPhone = document.querySelector('#hero-demo-phone');

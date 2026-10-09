@@ -432,6 +432,14 @@ h3{font-weight:600;letter-spacing:-.035em;line-height:1.25}
 .faq-list details.scroll-pop:nth-child(3){transition-delay:180ms}
 .faq-list details.scroll-pop:nth-child(4){transition-delay:250ms}
 .faq-list details.scroll-pop:nth-child(5){transition-delay:320ms}
+.cloud-feature-card.scroll-pop:nth-child(1){transition-delay:40ms}
+.cloud-feature-card.scroll-pop:nth-child(2){transition-delay:140ms}
+.cloud-feature-card.scroll-pop:nth-child(3){transition-delay:240ms}
+.price-card.scroll-pop:nth-child(1){transition-delay:50ms}
+.price-card.scroll-pop:nth-child(2){transition-delay:150ms}
+.deployment-card.scroll-pop:nth-child(1){transition-delay:50ms}
+.deployment-card.scroll-pop:nth-child(2){transition-delay:150ms}
+.deployment-card.scroll-pop:nth-child(3){transition-delay:250ms}
 
 @supports(animation-timeline:view()){
   @keyframes scrollFloatOrbit{0%{transform:rotate(-35deg) translateY(0)}100%{transform:rotate(-25deg) translateY(-25px)}}
