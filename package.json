@@ -7,7 +7,11 @@
     "build": "pnpm --recursive run build",
     "check": "pnpm --recursive run check",
     "test": "pnpm --recursive run test",
-    "dev": "pnpm --filter @app/api dev"
+    "dev": "pnpm --filter @app/api dev",
+    "start": "node server.mjs",
+    "preview:ui": "node server.mjs",
+    "check:ui": "node --check app.js && node --check vault.js && node --check server.mjs",
+    "test:ui": "node --test tests/vault.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
