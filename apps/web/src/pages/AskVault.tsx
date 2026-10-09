@@ -24,20 +24,41 @@ export const AskVault: React.FC = () => {
   const [revealingEntryId, setRevealingEntryId] = useState<string | null>(null);
   const [revealedSecret, setRevealedSecret] = useState<string | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
+  const revealDialogRef = useRef<HTMLDivElement>(null);
   const revealCloseButtonRef = useRef<HTMLButtonElement>(null);
 
   // Escape key closes reveal modal
   useEffect(() => {
     if (!revealingEntryId) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
     revealCloseButtonRef.current?.focus();
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         setRevealingEntryId(null);
+        return;
+      }
+      if (e.key === 'Tab') {
+        const focusable = Array.from(
+          revealDialogRef.current?.querySelectorAll<HTMLElement>('button, [tabindex="0"]') ?? []
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus();
+    };
   }, [revealingEntryId]);
 
   const sampleQueries = [
@@ -293,7 +314,7 @@ export const AskVault: React.FC = () => {
           aria-labelledby="reveal-modal-title"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
         >
-          <div className="w-full max-w-md rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] p-6 shadow-2xl flex flex-col gap-4">
+          <div ref={revealDialogRef} className="w-full max-w-md rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] p-6 shadow-2xl flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h3 id="reveal-modal-title" className="text-base font-semibold flex items-center gap-2">
                 <Lock className="w-4 h-4 text-[var(--color-brand-orange)]" aria-hidden="true" />
