@@ -19,6 +19,7 @@
 
 @layer base {
   :root {
+    /* Color tokens */
     --color-brand-orange: #FE820E;
     --color-brand-periwinkle: #607FF3;
     --color-canvas: #F7EDE3;
@@ -29,6 +30,38 @@
     --color-surface: #FFFFFF;
     --color-assist-surface: #E8EAFE;
     --color-warm-surface: #FFE0BF;
+
+    /* Spacing tokens (8px rhythm with 4px half-steps) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* Radius tokens */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --radius-2xl: 40px;
+    --radius-pill: 999px;
+
+    /* Border & Elevation tokens */
+    --border-subtle: 1px solid #DED4CA;
+    --shadow-demo: 0 12px 32px rgba(41, 38, 33, 0.07);
+
+    /* Motion tokens */
+    --motion-press: 120ms;
+    --motion-small: 160ms;
+    --motion-standard: 220ms;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   }
 
   body {
@@ -37,6 +70,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 }
 
@@ -76,5 +110,14 @@
     font-weight: 400;
     font-size: 12px;
     line-height: 16px;
+  }
+
+  /* Accessible focus ring utility */
+  .focus-ring {
+    outline: none;
+    transition: box-shadow var(--motion-small) var(--ease-out);
+  }
+  .focus-ring:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-brand-orange);
   }
 }

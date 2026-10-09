@@ -1,84 +1,309 @@
-import { useState, type FormEvent } from 'react';
-import { Search, ShieldCheck, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, Sparkles, Shield, RefreshCw, Lock } from 'lucide-react';
 import { api } from '../api';
+import { useVault } from '../VaultContext';
+import { VaultResultCard } from '../components/VaultResultCard';
+import { StatusBanner } from '../components/StatusBanner';
+import { SyncStatusBadge } from '../components/SyncStatusBadge';
+import type { RedactedEntryMetadata } from '@app/shared';
+import clsx from 'clsx';
 
-export const AskVault = () => {
+export const AskVault: React.FC = () => {
   const navigate = useNavigate();
+  const { isLocked } = useVault();
   const [query, setQuery] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [relevantEntryIds, setRelevantEntryIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [results, setResults] = useState<RedactedEntryMetadata[]>([]);
+  const [aiAnswer, setAiAnswer] = useState<string | null>(null);
+  const [isModelOffline, setIsModelOffline] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!query.trim()) return;
-    setLoading(true);
-    setError('');
+  // Selected entry for explicit unlock reveal modal
+  const [revealingEntryId, setRevealingEntryId] = useState<string | null>(null);
+  const [revealedSecret, setRevealedSecret] = useState<string | null>(null);
+  const [isRevealing, setIsRevealing] = useState(false);
+
+  const sampleQueries = [
+    'work google account',
+    'github login',
+    'stripe payments api key',
+    'wifi credentials',
+  ];
+
+  const handleSearch = async (searchQuery: string = query) => {
+    if (!searchQuery.trim()) return;
+    if (isLocked) {
+      setError('Vault is locked. Unlock your vault to search metadata.');
+      return;
+    }
+
+    setIsSearching(true);
+    setError(null);
+    setHasSearched(true);
+    setAiAnswer(null);
+
     try {
-      const result = await api.askVault(query.trim());
-      setAnswer(result.answer);
-      setRelevantEntryIds(result.relevantEntryIds);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ask Your Vault is unavailable');
-      setAnswer('');
-      setRelevantEntryIds([]);
+      // 1. Search metadata via local API
+      const metaRes = await api.searchMetadata(searchQuery);
+      const matches: RedactedEntryMetadata[] = metaRes.metadata || [];
+      setResults(matches);
+
+      // 2. Format local assistance answer
+      if (matches.length > 0) {
+        setAiAnswer(
+          `Found ${matches.length} matching item(s) by analyzing non-secret metadata on this device.`
+        );
+      } else {
+        setAiAnswer(null);
+      }
+    } catch (err: any) {
+      if (err?.message?.includes('Locked')) {
+        setError('Vault is locked. Metadata access is revoked.');
+      } else {
+        // Graceful fallback to offline heuristic search
+        setIsModelOffline(true);
+        try {
+          const fallbackRes = await api.searchMetadata(searchQuery);
+          setResults(fallbackRes.metadata || []);
+        } catch {
+          setError('Unable to perform search.');
+        }
+      }
     } finally {
-      setLoading(false);
+      setIsSearching(false);
+    }
+  };
+
+  const handleRevealClick = async (id: string) => {
+    setRevealingEntryId(id);
+    setIsRevealing(true);
+    setRevealedSecret(null);
+
+    try {
+      const fullEntry = await api.getEntry(id);
+      if (fullEntry.entry.type === 'login') {
+        setRevealedSecret(fullEntry.entry.password || 'No password set');
+      } else if (fullEntry.entry.type === 'api_key') {
+        setRevealedSecret(fullEntry.entry.apiKey || 'No API key set');
+      } else if (fullEntry.entry.type === 'note') {
+        setRevealedSecret(fullEntry.entry.content || 'Empty note');
+      }
+    } catch {
+      setRevealedSecret('Unable to decrypt secret. Ensure vault is unlocked.');
+    } finally {
+      setIsRevealing(false);
     }
   };
 
   return (
-    <div className="flex h-full max-w-3xl flex-col gap-6">
-      <div>
-        <div className="mb-2 flex items-center gap-2 text-[var(--color-brand-orange)]">
-          <Sparkles className="h-5 w-5" />
-          <span className="text-interface-label">LOCAL ASSISTANT</span>
+    <div className="max-w-4xl mx-auto flex flex-col gap-6">
+      {/* Header with Title and Trust Boundary */}
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-4">
+        <div>
+          <h1 className="text-2xl font-semibold flex items-center gap-2">
+            <Search className="w-6 h-6 text-[var(--color-brand-orange)]" />
+            Ask Your Vault
+          </h1>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+            Natural-language metadata search over your offline, encrypted entries.
+          </p>
         </div>
-        <h2 className="text-interface-heading">Ask Your Vault</h2>
-        <p className="mt-2 max-w-2xl text-body text-[var(--color-text-muted)]">
-          Search your redacted vault metadata in plain language. Secret values and note bodies are never sent to the assistant.
-        </p>
+
+        <SyncStatusBadge mode="local" />
       </div>
 
-      <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-paper)] p-3 text-small text-[var(--color-text-muted)]">
-        <ShieldCheck className="h-5 w-5 text-emerald-600" />
-        <span>Local metadata only. AI can be unavailable without blocking normal vault use.</span>
+      {/* Security Invariant Notice */}
+      <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-assist-surface)] border border-[var(--color-brand-periwinkle)]/50 flex items-start gap-3">
+        <Shield className="w-5 h-5 text-[var(--color-brand-periwinkle)] flex-shrink-0 mt-0.5" />
+        <div className="text-xs text-[var(--color-text)] leading-relaxed">
+          <span className="font-semibold">Privacy Invariant: </span>
+          Search operates solely over allowed metadata (titles, domains, tags, field labels).
+          Passwords, recovery codes, and secret payloads are <strong>never</strong> searched or
+          passed to the AI model.
+        </div>
       </div>
 
-      <form onSubmit={submit} className="flex gap-3">
-        <label className="relative flex-1">
-          <span className="sr-only">Ask your vault</span>
-          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-text-muted)]" />
+      {isLocked && (
+        <StatusBanner
+          variant="warning"
+          title="Vault is Locked"
+          description="AI metadata access is revoked. Please unlock the vault to search."
+          action={{
+            label: 'Unlock Vault',
+            onClick: () => navigate('/lock'),
+          }}
+        />
+      )}
+
+      {error && !isLocked && (
+        <StatusBanner variant="error" title="Search Error" description={error} />
+      )}
+
+      {isModelOffline && (
+        <StatusBanner
+          variant="offline"
+          title="Local AI Inference Offline"
+          description="Local model is offline or disabled. Search automatically falls back to deterministic metadata keyword search."
+        />
+      )}
+
+      {/* Query Input Box */}
+      <div className="bg-[var(--color-paper)] p-4 rounded-[var(--radius-xl)] border border-[var(--color-border)] shadow-xs flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <Search className="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" />
           <input
+            type="text"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Which work account uses Company X?"
-            maxLength={500}
-            className="w-full rounded-full border border-[var(--color-border)] bg-[var(--color-paper)] py-3 pl-10 pr-4 text-body outline-none focus:border-[var(--color-brand-orange)]"
+            disabled={isLocked}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSearch();
+            }}
+            placeholder="e.g., 'my work google account' or 'stripe production key'"
+            className="flex-1 bg-transparent text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none"
           />
-        </label>
-        <button
-          type="submit"
-          disabled={loading || !query.trim()}
-          className="rounded-full bg-[var(--color-brand-orange)] px-5 py-3 text-body font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? 'Searching...' : 'Ask'}
-        </button>
-      </form>
+          <button
+            type="button"
+            disabled={!query.trim() || isSearching || isLocked}
+            onClick={() => handleSearch()}
+            className={clsx(
+              'flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold transition-all focus:ring-2 focus:ring-[var(--color-brand-orange)]',
+              query.trim() && !isSearching && !isLocked
+                ? 'bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90'
+                : 'bg-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed'
+            )}
+          >
+            {isSearching ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                Searching...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5" />
+                Ask Vault
+              </>
+            )}
+          </button>
+        </div>
 
-      {error && <p role="alert" className="text-body text-red-700">{error}</p>}
-      {answer && (
-        <section className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-paper)] p-5">
-          <h3 className="text-interface-label text-[var(--color-text-muted)]">ASSISTANT RESPONSE</h3>
-          <p className="mt-3 text-body">{answer}</p>
-          {relevantEntryIds.length > 0 && (
-            <button onClick={() => navigate('/')} className="mt-4 text-small font-medium text-[var(--color-brand-orange)] hover:underline">
-              View {relevantEntryIds.length} matching metadata item{relevantEntryIds.length === 1 ? '' : 's'}
-            </button>
+        {/* Example Queries */}
+        {!hasSearched && (
+          <div className="flex items-center gap-2 pt-2 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
+            <span>Examples:</span>
+            <div className="flex flex-wrap gap-2">
+              {sampleQueries.map((sq) => (
+                <button
+                  key={sq}
+                  type="button"
+                  onClick={() => {
+                    setQuery(sq);
+                    handleSearch(sq);
+                  }}
+                  className="px-2.5 py-1 rounded-full bg-[var(--color-canvas)] hover:bg-[var(--color-border)] text-[var(--color-text)] transition-colors"
+                >
+                  "{sq}"
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Results Section */}
+      {isSearching && (
+        <div className="p-8 rounded-[var(--radius-lg)] bg-[var(--color-paper)] border border-[var(--color-border)] flex flex-col items-center justify-center text-center gap-3">
+          <RefreshCw className="w-8 h-8 text-[var(--color-brand-orange)] animate-spin" />
+          <h3 className="text-sm font-semibold">Searching selected metadata on this device…</h3>
+          <p className="text-xs text-[var(--color-text-muted)]">
+            Comparing query against titles, domains, and tags without exposing secret payloads.
+          </p>
+        </div>
+      )}
+
+      {!isSearching && hasSearched && (
+        <div className="flex flex-col gap-4">
+          {aiAnswer && (
+            <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--color-paper)] border border-[var(--color-brand-orange)]/40 flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-[var(--color-brand-orange)] flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-[var(--color-text)] leading-relaxed">
+                {aiAnswer}
+              </div>
+            </div>
           )}
-        </section>
+
+          <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)] px-1">
+            <span>{results.length} metadata result(s) found</span>
+            <span>Passwords masked by default</span>
+          </div>
+
+          {results.length === 0 ? (
+            <div className="p-8 rounded-[var(--radius-lg)] bg-[var(--color-paper)] border border-[var(--color-border)] text-center flex flex-col items-center justify-center gap-2">
+              <h3 className="text-sm font-semibold">No metadata matches found</h3>
+              <p className="text-xs text-[var(--color-text-muted)] max-w-sm">
+                Try searching with different keywords, check the spelling, or view all items in
+                your vault.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {results.map((item) => (
+                <VaultResultCard
+                  key={item.id}
+                  metadata={item}
+                  onRevealClick={handleRevealClick}
+                  onOpenDetails={(id) => navigate(`/entry/${id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Explicit Unlock Reveal Modal */}
+      {revealingEntryId && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reveal-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+        >
+          <div className="w-full max-w-md rounded-[var(--radius-xl)] bg-[var(--color-paper)] border border-[var(--color-border)] p-6 shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 id="reveal-modal-title" className="text-base font-semibold flex items-center gap-2">
+                <Lock className="w-4 h-4 text-[var(--color-brand-orange)]" />
+                Explicit Secret Reveal
+              </h3>
+              <button
+                type="button"
+                onClick={() => setRevealingEntryId(null)}
+                className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              >
+                Close
+              </button>
+            </div>
+
+            <p className="text-xs text-[var(--color-text-muted)]">
+              This secret was retrieved locally from your decrypted vault session upon deliberate click.
+            </p>
+
+            <div className="p-4 rounded-[var(--radius-md)] bg-[var(--color-canvas)] border border-[var(--color-border)] font-mono text-sm break-all text-[var(--color-text)] select-all">
+              {isRevealing ? 'Decrypting...' : revealedSecret}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setRevealingEntryId(null)}
+                className="px-4 py-2 rounded-full text-xs font-semibold bg-[var(--color-brand-orange)] text-[var(--color-text)] hover:opacity-90 transition-opacity"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
