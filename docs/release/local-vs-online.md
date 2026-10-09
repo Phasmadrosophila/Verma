@@ -21,7 +21,7 @@ Sources: [`apps/api/src/ai/adapter.ts`](../../apps/api/src/ai/adapter.ts), [`app
 | Model process has no network access | No process launcher, firewall/namespace policy, or network-denial sandbox is implemented. The adapter’s remote-URL rejection is narrower. | “The app rejects configured non-loopback AI HTTP endpoints.” |
 | Read-only model filesystem | No sandbox profile, read-only mount, or process invocation is present. | Do not claim a read-only filesystem sandbox. |
 | Toolless runtime | The prompts instruct the model that it has no tools, but no runtime capability policy is implemented. | Do not claim enforced tool denial. |
-| Production `llama.cpp` | Docs propose `llama.cpp`, but the concrete adapter defaults to HTTP on Ollama’s port (`127.0.0.1:11434`) with model `llama3.2`. | “Current development adapter targets a loopback HTTP model service.” |
+| Production `llama.cpp` | Docs target `llama.cpp`, while the concrete development adapters use Qwen3 0.6B through HTTP on Ollama's loopback port (`127.0.0.1:11434`). | “Qwen3 0.6B runs through the development Ollama loopback adapter; the production GGUF and launcher remain unpinned.” |
 | Redaction for imported samples | Only exact normalized header names `password`, `pass`, `pwd`, and `secret` have their values replaced before the import prompt. | Do not claim all CSV secret fields or note bodies are redacted. |
 | Trusted redaction before Ask Your Vault | The route obtains `getMetadataList()` output, which excludes secret values and note bodies. The separately tested `TrustedRedactionBoundary` is not invoked by this route. | Do not claim the standalone trusted-redaction boundary is proven end to end for Ask Your Vault. |
 

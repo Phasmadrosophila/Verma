@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { RedactedEntryMetadata } from '@app/shared';
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:0.6b';
 
 const searchResponseSchema = z.object({
   ids: z.array(z.string()).max(3)

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { AiAdapter } from '../src/ai/adapter.js';
+import { AiAdapter, defaultConfig } from '../src/ai/adapter.js';
 
 describe('AI Adapter (B-M1-02)', () => {
   const mockMetadata = [
@@ -17,6 +17,11 @@ describe('AI Adapter (B-M1-02)', () => {
       isWeak: false,
     }
   ];
+
+  it('uses Qwen3 0.6B as the default local model', () => {
+    assert.strictEqual(defaultConfig.model, 'qwen3:0.6b');
+    assert.strictEqual(defaultConfig.apiUrl, 'http://127.0.0.1:11434');
+  });
 
   it('AC-B-M1-02-01: Returns fallback when disabled', async () => {
     const adapter = new AiAdapter({ enabled: false, apiUrl: 'http://127.0.0.1:11434', model: 'TBD', timeoutMs: 1000 });

@@ -14,9 +14,9 @@ export interface AiAdapterConfig {
 
 export const defaultConfig: AiAdapterConfig = {
   enabled: true,
-  apiUrl: 'http://127.0.0.1:11434', // Ollama default
-  model: 'llama3.2', // generic dev default, can be TBD
-  timeoutMs: 10000,
+  apiUrl: process.env.OLLAMA_URL || 'http://127.0.0.1:11434',
+  model: process.env.OLLAMA_MODEL || 'qwen3:0.6b',
+  timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS) || 1500,
 };
 
 export class AiAdapter {
