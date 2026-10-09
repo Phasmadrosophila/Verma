@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -17,6 +17,7 @@ import { LockedScreen } from './screens/LockedScreen';
 import { SetupScreen } from './screens/SetupScreen';
 import { VaultScreen } from './screens/VaultScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
+import { mobileApi } from './state/apiClient';
 import {
   MobileVaultEntry,
   seedEntries,
@@ -29,6 +30,7 @@ export function App() {
   const [isLocked, setIsLocked] = useState(false);
   const [currentTab, setCurrentTab] = useState<NavTab>('vault');
   const [entries, setEntries] = useState<MobileVaultEntry[]>(seedEntries);
+  const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false);
 
   // Modals state
   const [selectedEntry, setSelectedEntry] = useState<MobileVaultEntry | null>(null);
@@ -45,14 +47,130 @@ export function App() {
     }, 2800);
   };
 
+  // Sync with backend API on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    async function syncBackendState() {
+      const isHealthy = await mobileApi.checkHealth();
+      if (!isMounted) return;
+
+      if (isHealthy) {
+        setIsBackendConnected(true);
+        const statusRes = await mobileApi.getVaultStatus();
+        if (!isMounted) return;
+
+        if (statusRes.success && statusRes.data) {
+          if (!statusRes.data.isInitialized) {
+            setHasSetup(false);
+            setHasOnboarded(true);
+          } else if (statusRes.data.isLocked) {
+            setIsLocked(true);
+            setHasSetup(true);
+            setHasOnboarded(true);
+          } else {
+            setIsLocked(false);
+            setHasSetup(true);
+            setHasOnboarded(true);
+            // Fetch metadata list (strictly zero secrets)
+            const listRes = await mobileApi.listEntries();
+            if (isMounted && listRes.success && listRes.data && listRes.data.length > 0) {
+              setEntries(listRes.data);
+            }
+          }
+        }
+      } else {
+        setIsBackendConnected(false);
+      }
+    }
+
+    syncBackendState();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleCopy = (label: string, text: string) => {
     showToast(`Copied ${label} to clipboard`);
   };
 
-  const handleSaveEntry = (
-    data: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: number }
+  const handleSetupComplete = async (password?: string, action?: 'import' | 'open') => {
+    if (isBackendConnected && password) {
+      const res = await mobileApi.initVault(password);
+      if (!res.success && res.error) {
+        showToast(res.error);
+      }
+    }
+    setHasSetup(true);
+    if (action === 'import') {
+      setCurrentTab('import');
+    } else {
+      setCurrentTab('vault');
+    }
+  };
+
+  const handleUnlock = async (passphrase?: string) => {
+    if (isBackendConnected && passphrase) {
+      const res = await mobileApi.unlockVault(passphrase);
+      if (!res.success) {
+        return { success: false, error: res.error || 'Invalid master credentials' };
+      }
+      // Populate entries upon successful unlock
+      const listRes = await mobileApi.listEntries();
+      if (listRes.success && listRes.data) {
+        setEntries(listRes.data);
+      }
+      setIsLocked(false);
+      return { success: true };
+    }
+    // Offline local fallback
+    setIsLocked(false);
+    return { success: true };
+  };
+
+  const handleLock = async () => {
+    if (isBackendConnected) {
+      await mobileApi.lockVault();
+    }
+    setIsLocked(true);
+  };
+
+  const handleRevealSecret = async (entry: MobileVaultEntry): Promise<string> => {
+    if (isBackendConnected) {
+      const res = await mobileApi.getEntry(entry.id);
+      if (res.success && res.data?.secret) {
+        // Update local secret in state cache
+        setEntries((prev) =>
+          prev.map((e) => (e.id === entry.id ? { ...e, secret: res.data!.secret } : e))
+        );
+        return res.data.secret;
+      }
+    }
+    return entry.secret || '••••••••';
+  };
+
+  const handleAskLocalAi = async (query: string) => {
+    if (isBackendConnected) {
+      const res = await mobileApi.askVault(query);
+      if (res.success && res.data) {
+        return res.data;
+      }
+    }
+    return null;
+  };
+
+  const handleSaveEntry = async (
+    data: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: string | number }
   ) => {
-    if (data.id) {
+    if (data.id !== undefined) {
+      if (isBackendConnected) {
+        const res = await mobileApi.updateEntry(data.id, data);
+        if (res.success && res.data) {
+          setEntries((prev) => prev.map((e) => (e.id === data.id ? res.data! : e)));
+          showToast(`Updated "${data.title}"`);
+          return;
+        }
+      }
       setEntries((prev) =>
         prev.map((e) =>
           e.id === data.id
@@ -62,6 +180,14 @@ export function App() {
       );
       showToast(`Updated "${data.title}"`);
     } else {
+      if (isBackendConnected) {
+        const res = await mobileApi.createEntry(data);
+        if (res.success && res.data) {
+          setEntries((prev) => [res.data!, ...prev]);
+          showToast(`Added "${data.title}" to vault`);
+          return;
+        }
+      }
       const newEntry: MobileVaultEntry = {
         ...data,
         id: Date.now(),
@@ -72,8 +198,11 @@ export function App() {
     }
   };
 
-  const handleDeleteEntry = (id: number) => {
+  const handleDeleteEntry = async (id: string | number) => {
     const item = entries.find((e) => e.id === id);
+    if (isBackendConnected) {
+      await mobileApi.deleteEntry(id);
+    }
     setEntries((prev) => prev.filter((e) => e.id !== id));
     showToast(`Deleted ${item?.title || 'item'}`);
   };
@@ -99,7 +228,7 @@ export function App() {
     return (
       <SafeAreaView style={styles.safeContainer}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
-        <SetupScreen onSetupComplete={() => setHasSetup(true)} />
+        <SetupScreen onSetupComplete={handleSetupComplete} />
       </SafeAreaView>
     );
   }
@@ -109,7 +238,7 @@ export function App() {
     return (
       <SafeAreaView style={styles.safeContainer}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
-        <LockedScreen onUnlock={() => setIsLocked(false)} />
+        <LockedScreen onUnlock={handleUnlock} />
       </SafeAreaView>
     );
   }
@@ -120,7 +249,11 @@ export function App() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.brandOrange} />
 
       {/* Top Header */}
-      <Header onLock={() => setIsLocked(true)} syncActive={true} />
+      <Header
+        onLock={handleLock}
+        syncActive={true}
+        backendConnected={isBackendConnected}
+      />
 
       {/* Main Content Area */}
       <View style={styles.mainContent}>
@@ -136,6 +269,7 @@ export function App() {
           <AskScreen
             entries={entries}
             onSelectEntry={(entry) => setSelectedEntry(entry)}
+            onAskLocalAi={handleAskLocalAi}
           />
         )}
 
@@ -170,6 +304,7 @@ export function App() {
         }}
         onDelete={handleDeleteEntry}
         onCopy={handleCopy}
+        onReveal={handleRevealSecret}
       />
 
       {/* Add / Edit Sheet */}

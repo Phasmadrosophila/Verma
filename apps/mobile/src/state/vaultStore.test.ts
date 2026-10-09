@@ -5,7 +5,7 @@ import {
   findMetadata,
   generatePassword,
   seedEntries,
-} from './vaultStore.ts';
+} from './vaultStore';
 
 test('Mobile vaultStore: filterEntries filters by type and query', () => {
   const allLogins = filterEntries(seedEntries, '', 'login');

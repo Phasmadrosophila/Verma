@@ -19,7 +19,7 @@ interface AddEditModalProps {
   visible: boolean;
   entryToEdit: MobileVaultEntry | null;
   onClose: () => void;
-  onSave: (entry: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: number }) => void;
+  onSave: (entry: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: string | number }) => void;
 }
 
 export const AddEditModal: React.FC<AddEditModalProps> = ({

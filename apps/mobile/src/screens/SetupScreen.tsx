@@ -12,7 +12,7 @@ import { recoveryWordList } from '../state/vaultStore';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface SetupScreenProps {
-  onSetupComplete: () => void;
+  onSetupComplete: (password?: string, action?: 'import' | 'open') => void;
 }
 
 export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => {
@@ -173,7 +173,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
           <View style={styles.completionActions}>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={onSetupComplete}
+              onPress={() => onSetupComplete(passphrase, 'import')}
               activeOpacity={0.8}
             >
               <Text style={styles.primaryButtonText}>Import credentials →</Text>
@@ -181,7 +181,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
 
             <TouchableOpacity
               style={styles.secondaryButton}
-              onPress={onSetupComplete}
+              onPress={() => onSetupComplete(passphrase, 'open')}
               activeOpacity={0.8}
             >
               <Text style={styles.secondaryButtonText}>Open my vault</Text>

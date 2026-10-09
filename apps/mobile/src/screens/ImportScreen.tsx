@@ -22,7 +22,7 @@ export const ImportScreen: React.FC<ImportScreenProps> = ({ onCommitImport }) =>
   const [candidates, setCandidates] = useState<ImportCandidate[]>(sampleImportRows);
   const [source, setSource] = useState('Google Chrome');
 
-  const toggleAccepted = (id: number) => {
+  const toggleAccepted = (id: string | number) => {
     setCandidates((prev) =>
       prev.map((c) => (c.id === id ? { ...c, accepted: !c.accepted } : c))
     );
@@ -36,7 +36,7 @@ export const ImportScreen: React.FC<ImportScreenProps> = ({ onCommitImport }) =>
   const handleCommit = () => {
     const acceptedItems = candidates.filter((c) => c.accepted);
     const converted: MobileVaultEntry[] = acceptedItems.map((c) => ({
-      id: Date.now() + c.id,
+      id: typeof c.id === 'number' ? Date.now() + c.id : `import-${Date.now()}-${c.id}`,
       type: c.type,
       title: c.title,
       subtitle: c.subtitle,

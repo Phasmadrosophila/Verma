@@ -1,7 +1,7 @@
 export type EntryType = 'login' | 'note' | 'api';
 
 export interface MobileVaultEntry {
-  id: number;
+  id: string | number;
   type: EntryType;
   title: string;
   subtitle: string;
@@ -15,7 +15,7 @@ export interface MobileVaultEntry {
 }
 
 export interface ImportCandidate {
-  id: number;
+  id: string | number;
   title: string;
   subtitle: string;
   domain: string;
@@ -241,3 +241,13 @@ export function generatePassword(length: number = 20): string {
 
   return result;
 }
+
+export {
+  mobileApi,
+  toMobileEntry,
+  toWireEntryInput,
+  getApiBaseUrl,
+  setApiBaseUrl,
+} from './apiClient';
+export type { ApiClientResult } from './apiClient';
+

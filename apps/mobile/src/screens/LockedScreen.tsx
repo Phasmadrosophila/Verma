@@ -9,26 +9,47 @@ import {
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface LockedScreenProps {
-  onUnlock: () => void;
+  onUnlock: (passphrase?: string) => Promise<{ success: boolean; error?: string } | boolean | void> | void;
 }
 
 export const LockedScreen: React.FC<LockedScreenProps> = ({ onUnlock }) => {
   const [passphrase, setPassphrase] = useState('');
   const [error, setError] = useState('');
+  const [isUnlocking, setIsUnlocking] = useState(false);
 
-  const handleUnlock = () => {
+  const handleUnlock = async () => {
     if (!passphrase.trim()) {
       setError('Please enter your master passphrase.');
       return;
     }
     setError('');
-    setPassphrase('');
-    onUnlock();
+    setIsUnlocking(true);
+    try {
+      const result = await onUnlock(passphrase.trim());
+      if (result && typeof result === 'object' && 'success' in result && !result.success) {
+        setError(result.error || 'Invalid master credentials.');
+      } else {
+        setPassphrase('');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to unlock vault.');
+    } finally {
+      setIsUnlocking(false);
+    }
   };
 
-  const handleBiometric = () => {
+  const handleBiometric = async () => {
     // Biometric authentication trigger simulation (LocalAuthentication)
-    onUnlock();
+    setError('');
+    setIsUnlocking(true);
+    try {
+      await onUnlock();
+      setPassphrase('');
+    } catch (err: any) {
+      setError(err?.message || 'Biometric authentication failed.');
+    } finally {
+      setIsUnlocking(false);
+    }
   };
 
   return (
