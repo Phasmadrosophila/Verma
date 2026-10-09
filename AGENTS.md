@@ -130,6 +130,76 @@ Every implementation task must have one accountable GitHub assignee, one milesto
 6. Only `HitsukiMok` coordinates milestone changes, scope cuts, release readiness, and project-board administration.
 7. Agents must work from the assigned issue, follow the relevant `.agents/skills/` guidance, and report blockers in the issue rather than silently changing scope.
 
+### 7.1 Canonical task format
+
+Every implementation issue and project card must use the canonical task format below. Do not create free-form implementation issues.
+
+```text
+Task ID
+<LANE>-<MILESTONE>-<NN>
+
+Lane
+<lane name> (lane:<label>)
+
+Milestone
+<milestone name>
+
+Size
+XS | S | M | L | XL
+
+Features
+<feature IDs, or None>
+
+Goal
+<one concrete outcome>
+
+Spec references
+<docs/path.md §section>
+
+Acceptance criteria (AC IDs)
+- <AC-ID>: <testable behavior>
+
+Done when
+<observable completion statement>
+
+Test plan (write these first — red → green → commit)
+- <test or verification>
+
+Dependencies
+Blocked by [<Task ID>] <issue title> #<number>
+None
+
+Definition of done (AGENTS.md §9)
+- Referenced acceptance criteria pass end to end.
+- Every test-plan line exists as a test or recorded verification.
+- Typecheck, lint, and tests pass.
+- Affected docs are updated in the same PR.
+- The change is exercised locally or in CI.
+- Privacy rules are respected: no logs with entry content, no secrets, synthetic fixtures only.
+
+Workflow
+docs/development-workflow.md · Backlog: docs/workplan.md
+```
+
+Task IDs use these lanes:
+
+- `A` Platform: storage, backend, infrastructure, and security boundary
+- `B` AI: local inference, redaction, import intelligence, and evaluation
+- `C` Experience: frontend and UI/UX
+- `D` Sync: pairing, QUIC transport, and device synchronization
+- `E` Release: QA, documentation, DevOps, and submission
+
+Milestone codes are `M0` Foundation, `M1` AI Demo, `M2` Direct Sync, `M3` Continuity, and `MR` Release. Size is an implementation estimate, not a promise.
+
+### 7.2 Project board synchronization
+
+- New implementation issues start in `Backlog` unless all dependencies are resolved and the issue is explicitly marked `status:ready`.
+- When an owner begins work, the issue label must change to `status:in-progress`; the Project Automation workflow moves the card to `In Progress`.
+- When an issue is blocked, add `status:blocked` and write every dependency as `blocked by #N`; the workflow moves the card to `Blocked`.
+- When all blockers close, automation changes the issue to `status:ready` and moves the card to `Ready`.
+- When the issue closes, automation changes it to `status:done` and moves the card to `Done`.
+- Pull requests must reference the task issue, use the PR template, and keep the linked issue's workflow state accurate.
+
 ### Delivery cadence
 
 - `P0 Foundation`: encrypted vault, account lifecycle, and application shell
@@ -139,3 +209,19 @@ Every implementation task must have one accountable GitHub assignee, one milesto
 - `Release`: integration, E2E testing, demo rehearsal, documentation, and submission
 
 The P1 continuity milestone starts only after the P0 demo loop passes repeated offline and sync tests.
+
+---
+
+## 8. Required Definition of Done
+
+Every issue is complete only when all of the following are true:
+
+1. Referenced acceptance criteria pass end to end.
+2. Each test-plan line exists as a named test or recorded verification tied to the task ID and AC ID.
+3. Typecheck, lint, and relevant unit, integration, and E2E tests pass.
+4. API or schema changes have matching generated types and documentation.
+5. AI-affecting changes pass the redaction and local evaluation checks.
+6. Affected docs are updated in the same PR.
+7. The feature was exercised locally, in CI, or through a reproducible script.
+8. Privacy rules are respected: no logged entry content, no secrets, and synthetic fixtures only.
+9. The PR links the task issue, reports verification evidence, and has a reviewer assigned.
