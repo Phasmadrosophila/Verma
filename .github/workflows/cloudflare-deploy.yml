@@ -1,0 +1,147 @@
+name: Cloudflare Deployment Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - 'lyraphasma/**'
+      - 'feat/**'
+      - 'fix/**'
+      - 'dev/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (Typecheck, Lint, Test, Build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - name: Verify relay & worker syntax
+        run: |
+          node --check relay/server.mjs
+          node --check relay/cloudflare-relay.mjs
+          node --check relay/worker.mjs
+          node --check apps/web/functions/[[route]].js
+          node --check tests/relay/deployment.test.mjs
+          node --check tests/relay/relay.test.mjs
+          node --check tests/relay/cloudflare-relay.test.mjs
+
+      - name: Run relay & serverless KV tests
+        run: node --test tests/relay/*.test.mjs
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Workspace typecheck
+        run: pnpm run check
+
+      - name: Workspace lint
+        run: pnpm --filter @app/web run lint
+
+      - name: Workspace test suite
+        run: pnpm run test
+
+      - name: Build packages & web assets
+        run: pnpm run build
+
+      - name: Upload web distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+          retention-days: 1
+
+  preview-deploy:
+    name: Deploy Preview (Cloudflare Pages)
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.ref != 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download web build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      # Safe secret isolation: PRs from forks / untrusted environments cannot access repository secrets
+      - name: Deploy preview to Cloudflare Pages
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler pages deploy apps/web/dist \
+            --project-name="${{ secrets.CLOUDFLARE_PROJECT_NAME || 'verma-web' }}" \
+            --branch="${{ github.head_ref || github.ref_name }}"
+
+      - name: Skip preview deploy when secrets unavailable
+        if: env.CLOUDFLARE_API_TOKEN == ''
+        run: echo "Preview deployment skipped: Cloudflare credentials are isolated and omitted on untrusted forks."
+
+  production-deploy:
+    name: Deploy Production (Cloudflare Pages)
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download web build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - name: Deploy production to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler pages deploy apps/web/dist \
+            --project-name="${{ secrets.CLOUDFLARE_PROJECT_NAME || 'verma-web' }}" \
+            --branch=main \
+            --commit-dirty=true
