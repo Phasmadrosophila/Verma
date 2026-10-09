@@ -56,7 +56,7 @@ function brand(e) {
 
 const $ = s => document.querySelector(s);
 const content = $('#content');
-const state = { tab: 'vault', screen: 'welcome', query: '', filter: 'all', sorted: false, assistant: true, locked: false, passphrase: 'verma-demo', askQuery: '', importStep: 0, importRows: [], duplicate: '', importedIds: [], source: 'browser', intro: 0, setup: 1, paused: false, devices: [] };
+const state = { tab: 'vault', screen: 'main', query: '', filter: 'all', sorted: false, assistant: true, locked: false, passphrase: 'verma-demo', askQuery: '', importStep: 0, importRows: [], duplicate: '', importedIds: [], source: 'browser', intro: 0, setup: 1, paused: false, devices: [] };
 let entries = structuredClone(seedEntries);
 let nextId = 100;
 let sheetTrigger;
