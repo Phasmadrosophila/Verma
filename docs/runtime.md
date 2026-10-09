@@ -49,3 +49,10 @@ Artifact verification fails if the selection remains `TBD`, a model file is abse
 Before changing an entry from `tbd` to `selected`, record the model's upstream source, exact version, artifact SHA-256, license, and redistribution conclusion. Run a measured evaluation on the demo hardware and document the device, inputs, number of runs, measurement method, latency, and quality result. Do not publish claims until they are measured, and verify license compatibility with Verma's final fair-code/source-available license direction.
 
 For the hackathon disclosure, state separately that model inference and input/output processing run locally, while model acquisition (when a human deliberately chooses to do so) requires internet access. Do not claim that a model is bundled, offline ready, or license-cleared until the manifest contains an approved selected entry.
+
+## AI Adapter Integration
+
+The `AiAdapter` provides a secure, sandboxed interface for the local model runtime. It enforces:
+- **Network Denial**: Rejecting non-local `apiUrl` destinations to guarantee that inference happens entirely locally without exposing metadata to the internet.
+- **Graceful Fallback**: Providing sensible defaults (e.g., empty suggestions or generic search results) if the model is disabled, times out, or fails to respond.
+- **Constrained Output**: Validating the LLM response against a rigorous JSON schema before any other system component processes it, preventing malformed outputs from breaking the core vault.
