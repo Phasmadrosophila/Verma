@@ -23,8 +23,8 @@ h3{font-weight:600;letter-spacing:-.035em;line-height:1.25}
 .site-header{position:relative;display:flex;align-items:center;gap:32px;min-height:106px;padding-block:20px;z-index:5}
 .brand{display:inline-flex;align-items:center;gap:11px;flex:none;font:500 35px/1 var(--brand);letter-spacing:-.8px}
 .brand-dot{color:var(--orange)}
-.brand-mark{width:43px;height:47px;border-radius:13px;background:#1e1e1e;position:relative;overflow:hidden;flex:none}
-.brand-mark img{position:absolute;width:48px;max-width:none;height:auto;left:-2px;top:-2px}
+.brand-mark{width:43px;height:47px;border-radius:13px;background:#1e1e1e;display:grid;place-items:center;position:relative;overflow:hidden;flex:none}
+.brand-mark img{width:36px;height:36px;object-fit:contain}
 .desktop-nav{margin-left:auto;display:flex;align-items:center;gap:28px;font-size:12px;font-weight:500}
 .desktop-nav a{padding-block:12px;white-space:nowrap}
 .button{display:inline-flex;align-items:center;justify-content:center;gap:22px;min-height:56px;padding:15px 24px;border-radius:999px;font-size:13px;font-weight:500;white-space:nowrap;transition:transform 130ms ease-out,background 130ms ease-out}
