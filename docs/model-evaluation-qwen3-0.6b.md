@@ -1,6 +1,8 @@
-# Verma Model Evaluation Report: Qwen3 0.6B (Task B-M1-05)
+# Verma Model Evaluation Evidence: Qwen3 0.6B
 
-## 1. Candidate Artifact & Provenance
+## 1. Application Model and Artifact Provenance
+
+**Application model: Qwen3 0.6B. Model benchmark: not measured. Production artifact: not pinned.** The metadata below is a production-artifact proposal record, not verified release evidence. The authoritative `models/manifest.json` remains `tbd` and keeps all artifact identity, hash, license, source, and redistribution fields as `TBD`.
 
 | Property | Value |
 | --- | --- |
@@ -8,18 +10,18 @@
 | **Version** | `v0.6.0-instruct` |
 | **Quantization** | `Q4_K_M` |
 | **Parameters** | 752M |
-| **License** | `Apache-2.0` (Permissive upstream, commercial & offline redistribution approved) |
+| **License** | Reported by candidate metadata as `Apache-2.0`; exact artifact and redistribution review are not verified. |
 | **Source URL** | `https://huggingface.co/Qwen/Qwen3-0.6B-Instruct-GGUF/resolve/main/qwen3-0_6b-instruct-q4_k_m.gguf` |
 | **Artifact Path** | `qwen3-0_6b-instruct-q4_k_m.gguf` |
 | **File Size** | ~523 MB (548,405,248 bytes) |
-| **SHA-256** | `8d3f761d198528aa115eb375176b669f33b1e7c569f12d264e1d53e70b7936a2` |
+| **SHA-256** | Candidate metadata value only; not independently verified against an artifact in this repository. |
 | **Runtime Target** | Production: `llama.cpp` · Development: `Ollama` |
 
 ---
 
 ## 2. Evaluation Workloads & Synthetic Fixtures
 
-Synthetic redacted metadata fixtures (`models/evaluation_fixtures.json` and `packages/shared/src/redaction/evaluation-fixtures.ts`) were evaluated across all four P0 local AI capabilities with **strict zero secret field exposure**:
+Application-level tests exercise synthetic redacted metadata fixtures (`models/evaluation_fixtures.json` and `packages/shared/src/redaction/evaluation-fixtures.ts`) across four P0 local AI capability areas with **strict zero secret field exposure**. This is redaction and schema-path evidence, not a benchmark of the Qwen3 model, because no model artifact was run:
 
 1. **Ask Your Vault (Natural Language Search):**
    - Natural language queries over redacted title, domain, tags, and timestamps.
@@ -36,22 +38,21 @@ Synthetic redacted metadata fixtures (`models/evaluation_fixtures.json` and `pac
 
 ## 3. Hardware Benchmarks & Performance Profile
 
-Evaluations were executed across two representative hardware profiles:
+No qualifying benchmark is available. The earlier candidate table contained unsupported performance claims and must not be used as release evidence. A valid future result must name the device, exact model artifact, inputs, number of runs, warmups, timing/memory method, and output-quality criteria.
 
-| Metric | Target 1: Low-End ARM64 Baseline (Raspberry Pi 4 / 4GB RAM) | Target 2: Development Desktop (x86_64 8-Core / 16GB RAM) |
-| --- | --- | --- |
-| **Cold Start (Load to Memory)** | 1,450 ms | 380 ms |
-| **Resident Memory (RSS)** | 595.4 MB | 612.0 MB |
-| **Time to First Token (TTFT)** | 185.2 ms | 42.5 ms |
-| **Generation Throughput** | 9.6 tokens/sec | 38.4 tokens/sec |
-| **JSON Schema Adherence** | 100.0% (validated against Zod schemas) | 100.0% (validated against Zod schemas) |
-| **Context Window Tested** | 4,096 tokens | 4,096 tokens |
+| Metric | Current evidence |
+| --- | --- |
+| Device | Not measured |
+| Exact artifact | Not available/verified |
+| Inputs and runs | Not measured |
+| Latency, memory, throughput | Not measured |
+| Output quality/schema rate | Not measured as a model benchmark |
 
 ---
 
 ## 4. Offline Resilience & Failure Modes
 
-1. **Network Denial:** Verified that the runtime operates with zero network connectivity. External API calls are strictly rejected by the adapter boundary.
+1. **Loopback restriction:** The application rejects configured external AI endpoints. This does not verify zero network connectivity for a model process.
 2. **Model Timeout / Unavailable Fallback:** When the local model process is uninitialized, killed, or exceeds the timeout threshold (e.g. 10s), the system gracefully returns deterministic fallback search/mapping results without crashing or leaking state.
 3. **Malformed JSON Handling:** Responses failing schema validation trigger immediate safe fallbacks.
 
@@ -59,8 +60,8 @@ Evaluations were executed across two representative hardware profiles:
 
 ## 5. Acceptance Criteria Traceability
 
-- `AC-B-M1-05-01`: Candidate metadata and SHA-256 recorded in `models/qwen3_0_6b_candidate.json`.
-- `AC-B-M1-05-02`: Synthetic redacted fixtures evaluated across 4 task domains with zero secrets.
-- `AC-B-M1-05-03`: Device evaluation metrics recorded for low-end device and dev desktop.
-- `AC-B-M1-05-04`: Offline runtime and failure mode resilience verified.
-- `AC-B-M1-05-05`: Selection gates and manifest verifier validated.
+- Candidate metadata exists in `models/qwen3_0_6b_candidate.json`, but it does not select or approve an artifact.
+- Synthetic fixtures and redaction tests exist, but they do not constitute a measured model-quality benchmark.
+- Device evaluation metrics: **not measured**.
+- Application fallback and endpoint-rejection tests exist; OS-level offline runtime isolation: **not verified**.
+- Manifest verifier and selection gates are implemented; the manifest remains intentionally unresolved.

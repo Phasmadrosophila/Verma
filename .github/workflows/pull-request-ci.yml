@@ -24,9 +24,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # This repository currently has no package manifest or lockfile. Keep
-      # the baseline executable without downloading an untracked dependency graph.
-      - run: node --check relay/server.mjs
+      - run: corepack enable pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
 
   lint:
     name: Lint
@@ -39,9 +39,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --check relay/server.mjs
-      - run: node --check tests/relay/deployment.test.mjs
-      - run: node --check tests/relay/relay.test.mjs
+      - run: corepack enable pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - run: pnpm --filter @app/web run lint
+      - run: node --check scripts/verify.ts
 
   test:
     name: Test
@@ -54,7 +56,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test tests/relay/*.test.mjs
+      - run: corepack enable pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check:verification
+      - run: pnpm run test:offline
+      - run: pnpm run test:redaction
+      - run: pnpm run test:sync
+      - run: pnpm run test:privacy
+      - run: pnpm run test:rehearsal
+      - run: pnpm --filter @app/shared test -- --test-name-pattern=Dead
 
   docker-smoke:
     name: Docker smoke

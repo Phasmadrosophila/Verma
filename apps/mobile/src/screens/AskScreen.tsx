@@ -11,6 +11,7 @@ import {
   MobileVaultEntry,
   findMetadata,
 } from '../state/vaultStore';
+import { apiClient } from '../state/apiClient';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface AskScreenProps {
@@ -27,14 +28,35 @@ export const AskScreen: React.FC<AskScreenProps> = ({
     { entry: MobileVaultEntry; matched: string[]; score: number }[]
   >([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [offlineFallback, setOfflineFallback] = useState(false);
 
-  const handleAsk = (queryText: string) => {
+  /** Local, zero-secret metadata search — used as the offline fallback. */
+  const localSearch = (queryText: string) => findMetadata(entries, queryText);
+
+  const handleAsk = async (queryText: string) => {
     if (!queryText.trim()) return;
     setQuery(queryText);
-    // Strict zero-secret search over metadata only
-    const matched = findMetadata(entries, queryText);
-    setResults(matched);
-    setHasSearched(true);
+    setBusy(true);
+    setOfflineFallback(false);
+    try {
+      // Ask the sandboxed on-device model via the backend (metadata only).
+      const { relevantEntryIds } = await apiClient.askVault(queryText);
+      const byId = new Map(entries.map((e) => [String(e.id), e]));
+      const matched = relevantEntryIds
+        .map((id) => byId.get(String(id)))
+        .filter((e): e is MobileVaultEntry => e !== undefined)
+        .map((entry) => ({ entry, matched: [] as string[], score: 1 }));
+      // If the model matched nothing resolvable, fall back to local search.
+      setResults(matched.length > 0 ? matched : localSearch(queryText));
+    } catch {
+      // Offline / server unavailable: degrade to local metadata search.
+      setResults(localSearch(queryText));
+      setOfflineFallback(true);
+    } finally {
+      setBusy(false);
+      setHasSearched(true);
+    }
   };
 
   const suggestions = [
@@ -72,17 +94,18 @@ export const AskScreen: React.FC<AskScreenProps> = ({
           placeholderTextColor="#8D847B"
           value={query}
           onChangeText={setQuery}
-          onSubmitEditing={() => handleAsk(query)}
+          onSubmitEditing={() => void handleAsk(query)}
           returnKeyType="search"
+          editable={!busy}
         />
 
         <TouchableOpacity
-          style={[styles.askBtn, !query.trim() && styles.askBtnDisabled]}
-          onPress={() => handleAsk(query)}
-          disabled={!query.trim()}
+          style={[styles.askBtn, (!query.trim() || busy) && styles.askBtnDisabled]}
+          onPress={() => void handleAsk(query)}
+          disabled={!query.trim() || busy}
           activeOpacity={0.8}
         >
-          <Text style={styles.askBtnText}>Ask Local AI</Text>
+          <Text style={styles.askBtnText}>{busy ? 'Asking…' : 'Ask Local AI'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -94,7 +117,7 @@ export const AskScreen: React.FC<AskScreenProps> = ({
             <TouchableOpacity
               key={idx}
               style={styles.chip}
-              onPress={() => handleAsk(item)}
+              onPress={() => void handleAsk(item)}
               activeOpacity={0.7}
             >
               <Text style={styles.chipText}>{item}</Text>
@@ -110,6 +133,7 @@ export const AskScreen: React.FC<AskScreenProps> = ({
             {results.length > 0
               ? `MATCHED ENTRIES (${results.length})`
               : 'NO MATCHES FOUND'}
+            {offlineFallback ? ' · OFFLINE SEARCH' : ''}
           </Text>
 
           {results.length > 0 ? (

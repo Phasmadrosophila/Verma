@@ -39,7 +39,9 @@ API_PORT=3100 WEB_PORT=5174 pnpm dev:integration
 ```
 
 The runtime uses no external network service. API and web process communication
-stays on `127.0.0.1`; model inference is disabled by default in development.
+stays on `127.0.0.1`. Local AI defaults to Qwen3 0.6B through Ollama at
+`127.0.0.1:11434`; when Ollama or the model is unavailable, the application
+degrades to deterministic metadata search and import heuristics.
 
 Run the startup smoke test with:
 
@@ -51,6 +53,7 @@ pnpm test:integration
 
 The desktop web application is now wired for the real local Hono API through the
 loopback Vite `/api` proxy. Use `pnpm dev:integration` for the browser path and
-the synthetic fixture database described above. The separate Expo mobile client
-has a tracked integration task in issue #55 and must use a configurable LAN API
-base URL rather than assuming `localhost` on a physical device.
+the synthetic fixture database described above. Issue #55 (Expo mobile backend integration) was merged via PR #65. The Expo
+client uses `EXPO_PUBLIC_API_URL` as its configurable API base URL (default
+`http://localhost:3000`) and must point at a reachable LAN address when running
+on a physical device.

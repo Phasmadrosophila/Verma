@@ -15,7 +15,7 @@ export function createVaultRoutes(repo: VaultRepository): Hono {
     return c.json(status);
   });
 
-  router.post('/init', async (c) => {
+  const handleInit = async (c: any) => {
     try {
       const body = await c.req.json().catch(() => ({}));
       const password = body.password;
@@ -34,7 +34,10 @@ export function createVaultRoutes(repo: VaultRepository): Hono {
       }
       return c.json({ error: 'Failed to initialize vault' }, 500);
     }
-  });
+  };
+
+  router.post('/init', handleInit);
+  router.post('/create', handleInit);
 
   router.post('/unlock', async (c) => {
     try {

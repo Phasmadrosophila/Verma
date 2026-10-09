@@ -15,22 +15,22 @@ export const EntryList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchEntries = async () => {
-    try {
-      setLoading(true);
-      const data = query 
-        ? await api.searchMetadata(query) 
-        : await api.searchMetadata('');
-      setEntries(data.metadata || []);
-      setError('');
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch entries');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        setLoading(true);
+        const data = query
+          ? await api.searchMetadata(query)
+          : await api.searchMetadata('');
+        setEntries(data.metadata || []);
+        setError('');
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch entries');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const timer = setTimeout(() => {
       fetchEntries();
     }, 300);

@@ -63,6 +63,37 @@ test('AC-A-M0-05-01..05: integration runtime starts both apps and exposes P0 rou
   assert.equal(status.status, 200);
   const metadata = await fetch(`http://127.0.0.1:${apiPort}/api/metadata/search?q=synthetic`);
   assert.equal(metadata.status, 200);
+
+  // AC-B-M1-04: Verify Ask Your Vault endpoint accepts natural query and returns safe response
+  const askRes = await fetch(`http://127.0.0.1:${apiPort}/api/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: 'work google account' }),
+  });
+  assert.equal(askRes.status, 200);
+  const askData = await askRes.json() as { answer: string; relevantEntryIds: string[] };
+  assert.ok(typeof askData.answer === 'string');
+
+  // Verify natural language token search returns matching metadata with zero secrets
+  const nlSearch = await fetch(`http://127.0.0.1:${apiPort}/api/metadata/search?q=work%20google%20account`);
+  assert.equal(nlSearch.status, 200);
+  const nlSearchData = await nlSearch.json() as { metadata: any[] };
+  assert.ok(nlSearchData.metadata.length > 0);
+  assert.equal(nlSearchData.metadata[0].password, undefined);
+
+  // AC-B-M1-03: Verify Smart Import Analyze endpoint processes CSV without leaking secrets
+  const importRes = await fetch(`http://127.0.0.1:${apiPort}/api/import/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      csvContent: 'name,url,username,password\nGoogle,https://google.com,user@test,secretpass123\n',
+    }),
+  });
+  assert.equal(importRes.status, 200);
+  const importData = await importRes.json() as { stagingId: string; proposal: any };
+  assert.ok(importData.stagingId);
+  assert.ok(importData.proposal.mappings.length >= 4);
+
   const web = await fetch(`http://127.0.0.1:${webPort}`);
   assert.equal(web.status, 200);
 });

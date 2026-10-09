@@ -2,9 +2,9 @@
 
 ## Decision status
 
-**Proposed default; not yet selected for release.**
+**Selected application model; production artifact review remains open.**
 
-Verma should target `Qwen3 0.6B` (`qwen3:0.6b` in Ollama during development) as the default small-device language model for the P0 Local AI features. The production artifact must be a pinned, reviewed GGUF build run through `llama.cpp`. This document records the recommendation and its tradeoffs; it does not approve downloading, bundling, or redistributing an artifact.
+Verma uses `Qwen3 0.6B` (`qwen3:0.6b` in Ollama during development) as the application model for P0 Local AI features. The production artifact must still be a pinned, reviewed GGUF build run through `llama.cpp`. This application-model decision does not approve bundling or redistributing an artifact.
 
 ## Why this model
 
@@ -15,7 +15,7 @@ Verma needs a constrained local copilot, not a general-purpose chatbot. Its init
 - Explaining deterministic password-health findings.
 - Returning short, schema-constrained JSON without tools or mutation access.
 
-`qwen3:0.6b` is a practical baseline because the Ollama listing reports a 523 MB Q4_K_M artifact, 752M parameters, and an Apache 2.0 license. Its size is substantially lighter than the 1B--4B model range originally described in the PRD while remaining more suitable for instruction following and structured extraction than the smallest general-purpose alternatives.
+`qwen3:0.6b` is the configured application baseline. An earlier Ollama listing reported a 523 MB Q4_K_M artifact with 752M parameters and an Apache 2.0 license. Those reported characteristics are not independent release-artifact evidence: the exact GGUF is not present or verified, the manifest remains `tbd`, and no model benchmark has been measured in this repository. Its size is lighter than the 1B--4B model range originally described in the PRD; target-device performance still requires measured validation.
 
 The Ollama package size is not the final mobile package size. The implementation must evaluate the exact GGUF quantization and platform build that Verma intends to ship.
 
@@ -23,7 +23,7 @@ The Ollama package size is not the final mobile package size. The implementation
 
 | Candidate | Reported Ollama artifact | Strength | Reason not the default |
 | --- | ---: | --- | --- |
-| `qwen3:0.6b` | 523 MB, Q4_K_M | Small, multilingual, structured-task capable, Apache 2.0 | Requires measured validation on target phones |
+| `qwen3:0.6b` | Reported 523 MB, Q4_K_M | Selected app model; small, multilingual, structured-task baseline | Exact production artifact, provenance, license, and target-device behavior are unverified |
 | `qwen2.5:0.5b` | 398 MB, Q4_K_M | Smallest practical fallback and Apache 2.0 | Older generation; lower expected instruction quality |
 | `granite4:350m` | 708 MB, BF16 | Very small parameter count and instruction-following focus | Listed artifact is larger than Qwen3 0.6B and BF16 is not a mobile-oriented quantization |
 | `smollm2:135m` / `360m` / `1.7b` | Compact family | Useful research fallback | Less attractive for reliable JSON extraction and import mapping without evaluation |
@@ -40,6 +40,8 @@ The Ollama package size is not the final mobile package size. The implementation
 | No-AI fallback | Deterministic search and import rules | Application code | Every device when AI is unavailable or disabled |
 
 Development may use `ollama run qwen3:0.6b`; Ollama is not the production runtime.
+
+> **Note:** `qwen3:0.6b` is the intended selection, not the current code default. The AI adapter (`apps/api/src/ai/adapter.ts`) currently defaults to `llama3.2`, and the metadata-search Ollama client (`apps/api/src/ai/ollama.ts`) defaults to `llama3`. These defaults are not a model selection; the authoritative `models/manifest.json` remains `tbd` until the selection gate below is complete.
 
 Recommended starting inference settings are a 2K--4K context window, low temperature around `0.1`, and a 128--256 token output limit. These are starting points, not benchmark claims. The adapter must use the model's supported structured-output mechanism and validate every response against a schema.
 

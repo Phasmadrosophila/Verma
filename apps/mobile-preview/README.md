@@ -38,10 +38,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```bash
 # Run syntax checks
-npm run check:ui
+npm run check
 
 # Run vault unit tests
-npm run test:ui
+npm test
 ```
 
 Interactive browser checks can be executed in the browser console using `qa/browser-smoke.js`.
