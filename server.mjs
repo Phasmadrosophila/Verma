@@ -12,7 +12,7 @@ const types = {
   '.png': 'image/png',
   '.woff2': 'font/woff2'
 };
-const allowed = new Set(['/index.html', '/landing.css', '/landing.js']);
+const allowed = new Set(['/index.html', '/landing.css', '/landing.js', '/download.html', '/download.css']);
 const port = Number(process.env.PORT || 3000);
 
 createServer(async (req, res) => {
@@ -22,7 +22,9 @@ createServer(async (req, res) => {
       res.writeHead(302, { Location: '/#inside' }).end();
       return;
     }
-    const route = pathname === '/' ? '/index.html' : pathname;
+    let route = pathname;
+    if (pathname === '/') route = '/index.html';
+    else if (pathname === '/download' || pathname === '/download/') route = '/download.html';
     const path = resolve(root, '.' + route);
     if ((!allowed.has(route) && !route.startsWith('/assets/')) || !path.startsWith(root + sep)) {
       res.writeHead(404).end('Not found');
