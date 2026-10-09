@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-ARG NODE_IMAGE=node:22-bookworm-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392
+ARG NODE_IMAGE=mirror.gcr.io/library/node:22-bookworm-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392
 
 FROM ${NODE_IMAGE} AS build
 WORKDIR /app
