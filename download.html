@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#F7EDE3">
+  <meta name="theme-color" content="#EEF4FE">
   <meta name="description" content="Choose the Verma deployment that fits you: Local, Self-hosted, or future Enterprise.">
   <title>Choose your Verma — Local, Self-hosted, or Enterprise</title>
   <link rel="icon" href="assets/verma-logo.png">
@@ -12,20 +12,36 @@
   <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Parkinsans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="landing.css">
   <link rel="stylesheet" href="download.css">
+  <script src="landing.js" defer></script>
 </head>
-<body>
+<body class="download-page">
   <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
     <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
     <symbol id="home" viewBox="0 0 24 24"><path d="m3 11 9-7 9 7v9H3Z"/><path d="M9 20v-6h6v6"/></symbol>
     <symbol id="server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></symbol>
     <symbol id="building" viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M2 21h20M8 7h2m4 0h2M8 11h2m4 0h2M8 15h2m4 0h2"/></symbol>
     <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L20 6"/></symbol>
+    <symbol id="cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+    <symbol id="menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   </defs></svg>
 
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header container">
     <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
-    <nav class="download-nav" aria-label="Download page navigation"><a href="/#features">Features</a><a href="/cloud">Cloud</a><a href="/">Back to home</a></nav>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="/#features">Features</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/#how">Guide</a>
+      <a class="nav-cloud" href="/cloud"><svg class="icon cloud-icon" aria-hidden="true"><use href="#cloud"/></svg>Cloud</a>
+    </nav>
+    <a class="button dark header-cta" href="/download">Download Verma</a>
+    <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu"><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
+    <nav id="mobile-menu" aria-label="Mobile navigation" hidden>
+      <a href="/#features">Features</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/#how">Guide</a>
+      <a href="/cloud">Cloud</a>
+    </nav>
   </header>
 
   <main id="main" class="download-main container">
