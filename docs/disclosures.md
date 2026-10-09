@@ -1,6 +1,6 @@
 # Verma Disclosures
 
-This page records the current repository, asset, dependency, service, model, and development-tool disclosures for the AppBuildersPH submission. It describes what is present or documented in this checkout; it does not grant a license or make a security audit conclusion.
+This page records the current repository, asset, dependency, service, model, and development-tool disclosures for the AppBuildersPH submission. Verma is framed as an offline AI, local-first password manager with a desktop app: the product goal is more hands-off management of secrets and passwords without giving an assistant silent mutation or unrestricted secret access. This page describes what is present or documented in this checkout; it does not grant a license or make a security audit conclusion.
 
 ## Existing code and history
 

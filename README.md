@@ -1,5 +1,7 @@
 # Verma
 
+An offline AI, local-first password manager with a desktop app for more hands-off management of secrets and passwords.
+
 ## Navigation
 
 - [What Verma is](#what-verma-is)
@@ -14,7 +16,9 @@
 
 ## What Verma is
 
-Verma is a local-first password manager for logins, notes, and API keys. Its desktop web path combines an Hono API, a local SQLite vault, explicit secret masking, deterministic password generation, Smart Import, Ask Your Vault metadata search, and direct device-sync workflows.
+Verma is an offline AI, local-first password manager with a desktop app for people who want less manual work managing logins, notes, API keys, and password health. The goal is not to hand control of secrets to an assistant. It is to make routine organization, search, import, and health review more hands-off while keeping confirmation and secret access with the user.
+
+The desktop app combines an Hono API, a local SQLite vault, explicit secret masking, deterministic password generation, Smart Import, Ask Your Vault metadata search, and direct device-sync workflows. AI assistance is designed around trusted-code redaction and local execution; the vault remains usable when AI is disabled or unavailable.
 
 The primary hackathon release path is the desktop web application. The repository also contains mobile and mobile-preview work; mobile backend integration is tracked separately in issue [#55](https://github.com/Phasmadrosophila/Verma/issues/55) and is not the primary hackathon acceptance path.
 
