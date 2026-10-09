@@ -43,33 +43,69 @@ export const AskVault: React.FC = () => {
     setError(null);
     setHasSearched(true);
     setAiAnswer(null);
+    setIsModelOffline(false);
 
     try {
-      // 1. Search metadata via local API
-      const metaRes = await api.searchMetadata(searchQuery);
-      const matches: RedactedEntryMetadata[] = metaRes.metadata || [];
-      setResults(matches);
+      // 1. Fetch full metadata list so we can resolve entries by ID
+      const metaRes = await api.searchMetadata('');
+      const allMetadata: RedactedEntryMetadata[] = metaRes.metadata || [];
+      const metaById = new Map(allMetadata.map((m) => [m.id, m]));
 
-      // 2. Format local assistance answer
-      if (matches.length > 0) {
-        setAiAnswer(
-          `Found ${matches.length} matching item(s) by analyzing non-secret metadata on this device.`
-        );
-      } else {
-        setAiAnswer(null);
-      }
-    } catch (err: any) {
-      if (err?.message?.includes('Locked')) {
-        setError('Vault is locked. Metadata access is revoked.');
-      } else {
-        // Graceful fallback to offline heuristic search
-        setIsModelOffline(true);
-        try {
-          const fallbackRes = await api.searchMetadata(searchQuery);
-          setResults(fallbackRes.metadata || []);
-        } catch {
-          setError('Unable to perform search.');
+      // 2. Query Ask Your Vault endpoint
+      let askResult: { answer: string; relevantEntryIds: string[] } | null = null;
+      try {
+        askResult = await api.askVault(searchQuery);
+      } catch (err: any) {
+        if (err?.message?.includes('Locked') || err?.message?.includes('423')) {
+          throw err;
         }
+        // AI service unavailable or network denied - fall back to local search
+        setIsModelOffline(true);
+      }
+
+      // Check if AI model indicated fallback or offline status
+      if (
+        !askResult ||
+        askResult.answer?.includes('unavailable or disabled') ||
+        askResult.answer?.includes('offline ranking')
+      ) {
+        setIsModelOffline(true);
+      }
+
+      // 3. Resolve matched entries
+      let matched: RedactedEntryMetadata[] = [];
+      if (askResult && askResult.relevantEntryIds && askResult.relevantEntryIds.length > 0) {
+        matched = askResult.relevantEntryIds
+          .map((id) => metaById.get(id))
+          .filter((item): item is RedactedEntryMetadata => item !== undefined);
+      }
+
+      // 4. If AI returned no matches, fall back to token-based metadata search
+      if (matched.length === 0) {
+        const fallbackRes = await api.searchMetadata(searchQuery);
+        matched = fallbackRes.metadata || [];
+        if (matched.length > 0) {
+          setIsModelOffline(true);
+          setAiAnswer(
+            `Found ${matched.length} matching item(s) by analyzing non-secret metadata on this device. Values remain masked.`
+          );
+        } else {
+          setAiAnswer(
+            askResult?.answer || `No matching entries found in your vault for "${searchQuery}". Passwords and secret values are never searched.`
+          );
+        }
+      } else {
+        setAiAnswer(askResult!.answer);
+      }
+
+      setResults(matched);
+    } catch (err: any) {
+      if (err?.message?.includes('Locked') || err?.message?.includes('423')) {
+        setError('Vault is locked. Metadata access is revoked.');
+      } else if (err?.message?.includes('network denial') || err?.message?.includes('403')) {
+        setError('AI process network access denied: only local execution is permitted.');
+      } else {
+        setError(err?.message || 'Unable to perform search.');
       }
     } finally {
       setIsSearching(false);
