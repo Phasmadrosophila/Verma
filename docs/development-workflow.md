@@ -66,7 +66,7 @@ Do not use a generic “Scope” section in place of Goal, do not use vague acce
 
 ## Board automation
 
-The `Project Automation` workflow synchronizes workflow labels and the Verma Delivery board:
+The `Project Automation` workflow synchronizes workflow labels and the repository-scoped Verma Delivery board at `https://github.com/orgs/Phasmadrosophila/projects/4`:
 
 - `status:backlog` -> Backlog
 - `status:ready` -> Ready

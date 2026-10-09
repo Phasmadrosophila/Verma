@@ -32,15 +32,15 @@ jobs:
               'status:done',
             ];
 
-            const projectId = 'PVT_kwDOFC88vM4BmVfw';
-            const workflowFieldId = 'PVTSSF_lADOFC88vM4BmVfwzhk-88I';
+            const projectId = 'PVT_kwDOFC88vM4BmVxq';
+            const workflowFieldId = 'PVTSSF_lADOFC88vM4BmVxqzhk_NtU';
             const workflowOptions = {
-              'status:backlog': '22b314ed',
-              'status:ready': 'bc57bda2',
-              'status:in-progress': '3f49c95a',
-              'status:in-review': 'db8a0deb',
-              'status:blocked': 'c32f7964',
-              'status:done': 'f4412c5f',
+              'status:backlog': '38437962',
+              'status:ready': 'e58bab61',
+              'status:in-progress': 'abacd132',
+              'status:in-review': 'b32cd763',
+              'status:blocked': '4b83a7ab',
+              'status:done': '54582935',
             };
 
             const issue = context.payload.issue;
