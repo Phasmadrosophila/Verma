@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVault } from '../VaultContext';
 import { api } from '../api';
-import { Shield } from 'lucide-react';
+import { Shield, AlertTriangle } from 'lucide-react';
 
 import { Button } from '../components/primitives/Button';
 import { InputField } from '../components/primitives/InputField';
@@ -14,18 +14,40 @@ export const LockScreen = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Vault creation flow states
+  const [creationStep, setCreationStep] = useState<'password' | 'recovery' | 'confirm'>('password');
+  const [recoveryPhrase, setRecoveryPhrase] = useState<string[]>([]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const DUMMY_PHRASE = "abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act action actor actress actual".split(" ");
+
+  const handleInitSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRecoveryPhrase(DUMMY_PHRASE);
+    setCreationStep('recovery');
+  };
+
+  const confirmRecovery = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await api.initVault(password);
+      await checkStatus();
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Initialization failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnlockSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      if (!isInitialized) {
-        await api.initVault(password);
-      } else {
-        await api.unlockVault(password);
-      }
+      await api.unlockVault(password);
       await checkStatus();
       navigate('/');
     } catch (err: any) {
@@ -45,6 +67,71 @@ export const LockScreen = () => {
     );
   }
 
+  // RECOVERY PHRASE FLOW
+  if (!isInitialized && creationStep === 'recovery') {
+    return (
+      <div className="flex flex-col h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
+        <div className="w-full max-w-2xl bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-8 shadow-xs">
+          <h1 className="text-section-title text-center text-[var(--color-brand-orange)] mb-4">Your Recovery Phrase</h1>
+          
+          <div className="flex items-start gap-3 p-4 mb-6 rounded-md bg-orange-50/10 border border-[var(--color-brand-orange)]">
+            <AlertTriangle className="text-[var(--color-brand-orange)] shrink-0" />
+            <p className="text-sm">
+              Write down these 24 words in exact order. <strong>We cannot recover your vault if you lose this phrase.</strong> Do not screenshot this.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3 mb-8">
+            {recoveryPhrase.map((word, idx) => (
+              <div key={idx} className="flex gap-2 p-2 bg-[var(--color-assist-surface)] rounded border border-[var(--color-border)]">
+                <span className="text-[var(--color-text-muted)] select-none w-5 text-right">{idx + 1}.</span>
+                <span className="font-mono font-medium">{word}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-4">
+            <Button variant="secondary" onClick={() => setCreationStep('password')}>Back</Button>
+            <Button onClick={() => setCreationStep('confirm')}>I have saved these words</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isInitialized && creationStep === 'confirm') {
+    return (
+      <div className="flex flex-col h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
+        <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-8 shadow-xs">
+          <h1 className="text-section-title text-center mb-6">Confirm Recovery</h1>
+          <p className="text-sm text-[var(--color-text-muted)] text-center mb-6">
+            Are you sure you have securely stored your recovery phrase?
+          </p>
+          
+          {error && (
+            <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-[var(--radius-sm)] mb-4">
+              {error}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <Button 
+              onClick={confirmRecovery} 
+              disabled={isLoading}
+              isLoading={isLoading}
+            >
+              Confirm and Create Vault
+            </Button>
+            <Button variant="secondary" onClick={() => setCreationStep('recovery')} disabled={isLoading}>
+              Back to Phrase
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // STANDARD PASSWORD PROMPT
   return (
     <div className="flex flex-col h-screen items-center justify-center bg-[var(--color-canvas)] text-[var(--color-text)] p-4">
       <div className="w-full max-w-md bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-xl)] p-8 shadow-xs">
@@ -56,7 +143,7 @@ export const LockScreen = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={!isInitialized ? handleInitSubmit : handleUnlockSubmit} className="flex flex-col gap-4">
           <InputField
             label={!isInitialized ? 'Set Master Password' : 'Enter Master Password'}
             type="password"
