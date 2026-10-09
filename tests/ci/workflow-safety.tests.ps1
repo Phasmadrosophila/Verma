@@ -19,10 +19,7 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Expected the safe workflow fixture to pass.'
 }
 
-$oldErrorActionPreference = $ErrorActionPreference
-$ErrorActionPreference = 'Continue'
-$unsafeOutput = & $powerShell -NoProfile -File $checkerPath -WorkflowPath $unsafeFixture 2>&1
-$ErrorActionPreference = $oldErrorActionPreference
+& $powerShell -NoProfile -File $checkerPath -WorkflowPath $unsafeFixture 2>$null
 if ($LASTEXITCODE -eq 0) {
     throw 'Expected the unsafe workflow fixture to fail.'
 }
