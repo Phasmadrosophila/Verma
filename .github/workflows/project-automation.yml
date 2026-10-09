@@ -51,7 +51,7 @@ jobs:
               const current = response.data;
               const labels = current.labels.map((label) => typeof label === 'string' ? label : label.name);
               const body = current.body || '';
-              const blockers = [...body.matchAll(/blocked by (?:\[[^\]]+\] [^\r\n]+ )?#(\d+)/gi)].map((match) => Number(match[1]));
+              const blockers = [...body.matchAll(/blocked by[^\r\n]*#(\d+)/gi)].map((match) => Number(match[1]));
 
               let desired = overrideStatus;
               if (!desired && current.state === 'closed') {
@@ -153,7 +153,7 @@ jobs:
                 per_page: 100,
               });
               for (const dependent of dependentIssues) {
-                if (dependent.body && new RegExp(`blocked by (?:\\[[^\\]]+\\] [^\\r\\n]+ )?#${current.number}(\\D|$)`, 'i').test(dependent.body)) {
+                if (dependent.body && new RegExp(`blocked by[^\\r\\n]*#${current.number}(\\D|$)`, 'i').test(dependent.body)) {
                   core.info(`Re-evaluating dependent issue #${dependent.number}.`);
                   await syncIssue(dependent.number);
                 }
