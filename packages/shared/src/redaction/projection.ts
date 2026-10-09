@@ -1,21 +1,15 @@
 import type { VaultEntry, LoginEntry, NoteEntry, ApiKeyEntry } from '../types/entry.js';
-import type { RedactedEntryMetadata } from '../types/metadata.js';
+import type { RedactedEntryMetadata, ConflictMetadata } from '../types/metadata.js';
 import { checkPasswordStrength, checkPasswordReuse } from '../crypto/deterministic-checks.js';
+import { DENIED_SECRET_FIELD_KEYS, EXCLUDED_AI_ENTRY_TYPES } from './constants.js';
 
-export const DENIED_SECRET_FIELD_KEYS = [
-  'password',
-  'totpSecret',
-  'recoveryCodes',
-  'seedPhrase',
-  'privateKey',
-  'secret',
-  'apiKey',
-  'apiSecret',
-  'content',
-  'fileContent',
-  'masterKey',
-  'recoveryPhrase',
-] as const;
+export { DENIED_SECRET_FIELD_KEYS, EXCLUDED_AI_ENTRY_TYPES };
+
+export function isExcludedFromAi(entry: VaultEntry | { type: string }): boolean {
+  if (!entry || !entry.type) return false;
+  const normalizedType = entry.type.toLowerCase();
+  return (EXCLUDED_AI_ENTRY_TYPES as readonly string[]).includes(normalizedType);
+}
 
 export function extractFieldLabels(entry: VaultEntry): string[] {
   switch (entry.type) {
@@ -70,10 +64,22 @@ export function extractDomain(entry: VaultEntry): string | undefined {
   return undefined;
 }
 
+export interface ProjectionOptions {
+  isWeak?: boolean;
+  isReused?: boolean;
+  importSource?: string;
+  conflictMetadata?: ConflictMetadata;
+}
+
 export function toRedactedMetadata(
   entry: VaultEntry,
-  options: { isWeak?: boolean; isReused?: boolean } = {}
-): RedactedEntryMetadata {
+  options: ProjectionOptions = {}
+): RedactedEntryMetadata | null {
+  // Completely exclude crypto wallet entries from AI metadata projection
+  if (isExcludedFromAi(entry)) {
+    return null;
+  }
+
   let isWeak = options.isWeak;
   if (isWeak === undefined && entry.type === 'login') {
     const login = entry as LoginEntry;
@@ -105,17 +111,40 @@ export function toRedactedMetadata(
     metadata.isReused = options.isReused;
   }
 
+  if (options.importSource) {
+    metadata.importSource = options.importSource;
+  }
+
+  if (options.conflictMetadata) {
+    metadata.conflictMetadata = { ...options.conflictMetadata };
+  }
+
   return metadata;
 }
 
-export function projectEntriesMetadata(entries: VaultEntry[]): RedactedEntryMetadata[] {
-  const reuseMap = checkPasswordReuse(entries);
+export function projectEntriesMetadata(
+  entries: VaultEntry[],
+  optionsMap?: Map<string, ProjectionOptions>
+): RedactedEntryMetadata[] {
+  // Filter out excluded entries (crypto wallets)
+  const eligibleEntries = entries.filter((e) => !isExcludedFromAi(e));
+  const reuseMap = checkPasswordReuse(eligibleEntries);
 
-  return entries.map((entry) =>
-    toRedactedMetadata(entry, {
-      isReused: reuseMap.get(entry.id) ?? false,
-    })
-  );
+  const results: RedactedEntryMetadata[] = [];
+  for (const entry of eligibleEntries) {
+    const opts = optionsMap?.get(entry.id) ?? {};
+    const metadata = toRedactedMetadata(entry, {
+      isReused: opts.isReused !== undefined ? opts.isReused : (reuseMap.get(entry.id) ?? false),
+      isWeak: opts.isWeak,
+      importSource: opts.importSource,
+      conflictMetadata: opts.conflictMetadata,
+    });
+    if (metadata) {
+      results.push(metadata);
+    }
+  }
+
+  return results;
 }
 
 export function assertSafeMetadata(

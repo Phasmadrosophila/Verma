@@ -397,6 +397,9 @@ export class VaultRepository {
 
     const entry = await this.getEntry(id);
     const metadata = toRedactedMetadata(entry);
+    if (!metadata) {
+      throw new Error(`Entry ${id} of type ${entry.type} is excluded from metadata projection`);
+    }
 
     const check = assertSafeMetadata(metadata, entry);
     if (!check.isSafe) {
