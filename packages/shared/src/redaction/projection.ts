@@ -122,6 +122,8 @@ export function toRedactedMetadata(
   return metadata;
 }
 
+export const projectMetadata = toRedactedMetadata;
+
 export function projectEntriesMetadata(
   entries: VaultEntry[],
   optionsMap?: Map<string, ProjectionOptions>
