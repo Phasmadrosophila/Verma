@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "check": "tsc -b",
-    "test": "echo \"no tests\"",
+    "test": "node --test --import tsx test/**/*.test.tsx",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
@@ -28,6 +28,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.19.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   }

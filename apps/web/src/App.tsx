@@ -5,6 +5,7 @@ import { LockScreen } from './pages/LockScreen';
 import { EntryList } from './pages/EntryList';
 import { EntryDetail } from './pages/EntryDetail';
 import { EntryForm } from './pages/EntryForm';
+import { AskVault } from './pages/AskVault';
 import { SmartImport } from './pages/SmartImport';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -26,7 +27,7 @@ function App() {
             <Route path="/entry/new" element={<EntryForm />} />
             <Route path="/entry/:id" element={<EntryDetail />} />
             <Route path="/entry/:id/edit" element={<EntryForm />} />
-            <Route path="/ask" element={<div className="p-4">Ask Your Vault (Coming soon)</div>} />
+            <Route path="/ask" element={<AskVault />} />
             <Route path="/import" element={<SmartImport />} />
           </Route>
         </Routes>
