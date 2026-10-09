@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-The issue is the unit of work. The issue body defines the goal, acceptance criteria, test plan, dependencies, and definition of done. The pull request proves that the issue is complete. Every issue and card uses the same plain-label format so an agent can work from GitHub without guessing which document is authoritative.
+The issue is the unit of work. The issue body defines the goal, acceptance criteria, test plan, dependencies, and definition of done. The pull request proves that the issue is complete. Every issue and card uses the same Markdown format so an agent can work from GitHub without guessing which document is authoritative. Daily execution happens on the repository-scoped [Verma Delivery board](https://github.com/orgs/Phasmadrosophila/projects/4).
 
 ## Canonical issue shape
 
@@ -75,6 +75,8 @@ The `Project Automation` workflow synchronizes workflow labels and the repositor
 - `status:done` -> Done
 
 When a blocker closes, automation rechecks all dependent issues. An issue is Blocked while any referenced issue remains open and is promoted to Ready only when every blocker is closed.
+
+The agent does not merge pull requests or enable auto-merge. A human teammate reviews and merges the PR after CI, acceptance-criteria evidence, and the definition of done are satisfied.
 
 ## Branch and PR rules
 
