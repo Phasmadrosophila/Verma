@@ -27,6 +27,7 @@ jobs:
               'status:backlog',
               'status:ready',
               'status:in-progress',
+              'status:in-review',
               'status:blocked',
               'status:done',
             ];
@@ -34,11 +35,12 @@ jobs:
             const projectId = 'PVT_kwDOFC88vM4BmVfw';
             const workflowFieldId = 'PVTSSF_lADOFC88vM4BmVfwzhk-88I';
             const workflowOptions = {
-              'status:backlog': 'e4b00ffa',
-              'status:ready': 'e1973b89',
-              'status:in-progress': 'a41f0de0',
-              'status:blocked': 'afc506f5',
-              'status:done': 'ab8355a4',
+              'status:backlog': '22b314ed',
+              'status:ready': 'bc57bda2',
+              'status:in-progress': '3f49c95a',
+              'status:in-review': 'db8a0deb',
+              'status:blocked': 'c32f7964',
+              'status:done': 'f4412c5f',
             };
 
             const issue = context.payload.issue;
@@ -49,7 +51,7 @@ jobs:
               const current = response.data;
               const labels = current.labels.map((label) => typeof label === 'string' ? label : label.name);
               const body = current.body || '';
-              const blockers = [...body.matchAll(/blocked by #(\d+)/gi)].map((match) => Number(match[1]));
+              const blockers = [...body.matchAll(/blocked by (?:\[[^\]]+\] [^\r\n]+ )?#(\d+)/gi)].map((match) => Number(match[1]));
 
               let desired = overrideStatus;
               if (!desired && current.state === 'closed') {
@@ -60,6 +62,8 @@ jobs:
                   return blocker.data.state;
                 }));
                 desired = blockerStates.every((state) => state === 'closed') ? 'status:ready' : 'status:blocked';
+              } else if (!desired && labels.includes('status:in-review')) {
+                desired = 'status:in-review';
               } else if (!desired && labels.includes('status:in-progress')) {
                 desired = 'status:in-progress';
               } else if (!desired && labels.includes('status:ready')) {
@@ -117,7 +121,7 @@ jobs:
               }
               const desired = context.payload.action === 'closed'
                 ? (pullRequest.merged ? 'status:done' : 'status:ready')
-                : (pullRequest.draft ? 'status:in-progress' : 'status:in-progress');
+                 : (pullRequest.draft ? 'status:in-progress' : 'status:in-review');
               for (const issueNumber of linkedIssues) {
                 await syncIssue(issueNumber, desired);
               }
@@ -140,7 +144,7 @@ jobs:
                 per_page: 100,
               });
               for (const dependent of dependentIssues) {
-                if (dependent.body && new RegExp(`blocked by #${current.number}(\\D|$)`, 'i').test(dependent.body)) {
+                if (dependent.body && new RegExp(`blocked by (?:\\[[^\\]]+\\] [^\\r\\n]+ )?#${current.number}(\\D|$)`, 'i').test(dependent.body)) {
                   await github.rest.issues.addLabels({
                     owner,
                     repo,
@@ -149,7 +153,7 @@ jobs:
                   });
                   core.info(`Re-evaluating dependent issue #${dependent.number}.`);
                   const response = await github.rest.issues.get({ owner, repo, issue_number: dependent.number });
-                  const dependentBlockers = [...(response.data.body || '').matchAll(/blocked by #(\d+)/gi)].map((match) => Number(match[1]));
+                  const dependentBlockers = [...(response.data.body || '').matchAll(/blocked by (?:\[[^\]]+\] [^\r\n]+ )?#(\d+)/gi)].map((match) => Number(match[1]));
                   const states = await Promise.all(dependentBlockers.map(async (number) => {
                     const blocker = await github.rest.issues.get({ owner, repo, issue_number: number });
                     return blocker.data.state;

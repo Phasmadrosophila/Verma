@@ -57,10 +57,10 @@ Do not use a generic “Scope” section in place of Goal, do not use vague acce
 1. Create an issue from the Engineering Task template.
 2. Assign exactly one accountable owner and one milestone.
 3. Add a task ID, lane, size, feature IDs, references, acceptance criteria, and test plan.
-4. Add `blocked by #N` for every unresolved dependency.
+4. Add `blocked by [<TASK-ID>] <issue title> #N` for every unresolved dependency.
 5. Start in Backlog unless the issue is fully specified and unblocked.
 6. Move to In Progress when the assigned owner begins work.
-7. Open a PR using the required template and link the issue.
+7. Open a draft PR using the required template and link the issue. A ready-for-review PR moves the linked issue to In Review; merging moves it to Done.
 8. Address review feedback and attach test evidence.
 9. Close the issue only after the definition of done is satisfied.
 
@@ -71,10 +71,11 @@ The `Project Automation` workflow synchronizes workflow labels and the Verma Del
 - `status:backlog` -> Backlog
 - `status:ready` -> Ready
 - `status:in-progress` -> In Progress
+- `status:in-review` -> In Review
 - `status:blocked` -> Blocked
 - `status:done` -> Done
 
-When a blocker closes, automation rechecks all dependent issues. An issue is promoted to Ready only when every `blocked by #N` issue is closed.
+When a blocker closes, automation rechecks all dependent issues. An issue is Blocked while any referenced issue remains open and is promoted to Ready only when every blocker is closed.
 
 ## Branch and PR rules
 

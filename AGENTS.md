@@ -123,10 +123,10 @@ Every implementation task must have one accountable GitHub assignee, one milesto
 ### Operating rules
 
 1. Every issue must be assigned to exactly one directly accountable owner. Collaborators may be named in the issue body.
-2. Every issue must belong to a milestone and use one workflow label: `status:backlog`, `status:ready`, `status:in-progress`, `status:blocked`, or `status:done`.
+2. Every issue must belong to a milestone and use one workflow label: `status:backlog`, `status:ready`, `status:in-progress`, `status:in-review`, `status:blocked`, or `status:done`.
 3. Issues with unresolved dependencies stay in `status:blocked` and must list their blocker using `blocked by #N`.
 4. When a blocking issue closes, the repository automation removes `status:blocked` and applies `status:ready` when all listed blockers are closed.
-5. Work moves to `status:in-progress` only when the assignee starts it. Pull requests reference the issue and must pass CI before review.
+5. Work moves to `status:in-progress` when the assignee starts it. A non-draft pull request moves the linked issue to `status:in-review`; merging moves it to `status:done`.
 6. Only `HitsukiMok` coordinates milestone changes, scope cuts, release readiness, and project-board administration.
 7. Agents must work from the assigned issue, follow the relevant `.agents/skills/` guidance, and report blockers in the issue rather than silently changing scope.
 
