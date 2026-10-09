@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-The issue is the unit of work. The issue body defines the goal, acceptance criteria, test plan, dependencies, and definition of done. The pull request proves that the issue is complete. Every issue and card uses the same plain-label format so an agent can work from GitHub without guessing which document is authoritative.
+The issue is the unit of work. The issue body defines the goal, acceptance criteria, test plan, dependencies, and definition of done. The pull request proves that the issue is complete. Every issue and card uses the same Markdown format so an agent can work from GitHub without guessing which document is authoritative. Daily execution happens on the repository-scoped [Verma Delivery board](https://github.com/orgs/Phasmadrosophila/projects/4).
 
 ## Canonical issue shape
 
@@ -59,9 +59,18 @@ Do not use a generic “Scope” section in place of Goal, do not use vague acce
 4. Add `blocked by [<TASK-ID>] <issue title> #N` for every unresolved dependency.
 5. Start in Backlog unless the issue is fully specified and unblocked.
 6. Move to In Progress when the assigned owner begins work.
-7. Open a draft PR using the required template and link the issue. A ready-for-review PR moves the linked issue to In Review; merging moves it to Done.
+7. Open a draft PR using the fully completed `.github/pull_request_template.md` and link the issue. A ready-for-review PR moves the linked issue to In Review; merging moves it to Done.
 8. Address review feedback and attach test evidence.
 9. Close the issue only after the definition of done is satisfied.
+
+## Commit rules
+
+- Use Conventional Commits for every commit: `feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`, or another valid type, with an optional scope.
+- Commit each major solution checkpoint separately when it advances an acceptance criterion or definition-of-done item.
+- A substantive PR must contain multiple meaningful commits. Do not submit a one-commit PR for non-trivial work.
+- A single commit is reserved for genuinely trivial changes such as a typo, isolated documentation correction, or equivalent maintenance fix.
+- Every PR must use and fully complete `.github/pull_request_template.md`. Replace all placeholders, document acceptance-criteria evidence and command results, complete the security/privacy and definition-of-done checklists, and explain any `N/A` items.
+- Do not mark a draft PR ready for review while the template is incomplete or contains placeholder text.
 
 ## Board automation
 
@@ -75,6 +84,8 @@ The `Project Automation` workflow synchronizes workflow labels and the repositor
 - `status:done` -> Done
 
 When a blocker closes, automation rechecks all dependent issues. An issue is Blocked while any referenced issue remains open and is promoted to Ready only when every blocker is closed.
+
+The agent does not merge pull requests or enable auto-merge. A human teammate reviews and merges the PR after CI, acceptance-criteria evidence, and the definition of done are satisfied.
 
 ## Branch and PR rules
 

@@ -51,7 +51,7 @@ Document the boundary between local and online functionality before submission.
 
 ### Runs locally
 
-- Model name and version
+- Model name and version: proposed Qwen3 0.6B; exact production artifact and version remain TBD until the selection gate passes
 - Model type: language, vision, speech, or other
 - Runtime used, such as Ollama, LM Studio, llama.cpp, MLX, ONNX, PyTorch, TensorFlow, or WebGPU
 - Input processing performed on-device

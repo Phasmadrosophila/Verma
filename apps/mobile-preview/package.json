@@ -1,0 +1,12 @@
+{
+  "name": "@app/mobile-preview",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check app.js && node --check vault.js && node --check server.mjs"
+  }
+}

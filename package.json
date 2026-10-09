@@ -4,16 +4,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test --experimental-strip-types tests/verification/**/*.test.ts",
+    "build": "pnpm --recursive run build",
+    "check": "pnpm --recursive run check",
+    "test": "node --test --experimental-strip-types tests/verification/**/*.test.ts && pnpm --recursive run test",
     "test:offline": "node --test --experimental-strip-types tests/verification/offline-ai.test.ts",
     "test:redaction": "node --test --experimental-strip-types tests/verification/redaction-boundary.test.ts",
     "test:sync": "node --test --experimental-strip-types tests/verification/direct-sync.test.ts",
     "test:privacy": "node --test --experimental-strip-types tests/verification/privacy-scanner.test.ts",
     "test:rehearsal": "node --test --experimental-strip-types tests/verification/release-rehearsal.test.ts",
     "verify": "node --experimental-strip-types scripts/verify.ts",
-    "check": "node --test --experimental-strip-types tests/verification/**/*.test.ts"
+    "check:verification": "node --test --experimental-strip-types tests/verification/**/*.test.ts",
+    "dev": "pnpm --filter @app/api dev",
+    "mobile:start": "pnpm --filter @app/mobile start",
+    "preview:web": "pnpm --filter @app/mobile-preview dev",
+    "test:mobile": "pnpm --filter @app/mobile test",
+    "test:preview": "pnpm --filter @app/mobile-preview test"
   },
   "engines": {
     "node": ">=22.0.0"
-  }
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "packageManager": "pnpm@12.8.1"
 }

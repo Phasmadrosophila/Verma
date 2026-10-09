@@ -77,7 +77,7 @@ Work strictly within the defined scope tiers from `docs/prd.md`:
 
 ### P2: Out of Scope for Hackathon (Do Not Build)
 - Cloudflare managed cloud relay / billing / multi-tenant SaaS.
-- Android WebView wrapper.
+- Android mobile app via Expo (`https://expo.dev/`).
 - Enterprise roles, ACLs, and organization recovery.
 - Crypto wallet entry workflows (excluded from AI).
 - Arbitrary file attachments and general import formats.
@@ -93,7 +93,7 @@ Work strictly within the defined scope tiers from `docs/prd.md`:
 | **Local Storage** | Encrypted SQLite (e.g., SQLCipher / libsodium-backed store) |
 | **Direct Sync** | QUIC-based Syncthing-style protocol |
 | **Cryptography** | `libsodium`, `Ed25519`, `SPAKE2` |
-| **AI Runtime** | `llama.cpp` (local quantized 1B–4B model), Ollama (dev only) |
+| **AI Runtime** | `llama.cpp` (proposed Qwen3 0.6B reviewed GGUF default; exact artifact TBD), Ollama (dev only) |
 | **Containerization** | Docker multi-stage builds, non-root, pinned digests |
 | **Repository** | `Phasmadrosophila/Verma` (base branch: `main`) |
 
@@ -207,7 +207,7 @@ Use the task ID as the stable identifier. The issue title should be a concise ou
 - When an issue is blocked, add `status:blocked` and write every dependency as `blocked by #N`; the workflow moves the card to `Blocked`.
 - When all blockers close, automation changes the issue to `status:ready` and moves the card to `Ready`.
 - When the issue closes, automation changes it to `status:done` and moves the card to `Done`.
-- Pull requests must reference the task issue, use the PR template, and keep the linked issue's workflow state accurate.
+- Pull requests must reference the task issue, use and fully complete `.github/pull_request_template.md`, and keep the linked issue's workflow state accurate. No placeholder text or unexplained unchecked checklist items may remain when a PR is marked ready for review.
 
 ### Delivery cadence
 

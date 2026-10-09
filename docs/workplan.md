@@ -38,6 +38,8 @@ This is the task registry for the Verma Delivery project. GitHub issues are the 
 | E-MR-01 | #11 | whinee | Release | C-M0-03, B-M1-04, D-M2-01 |
 | A-M3-01 | #13 | HitsukiMok | P1 Continuity | A-M0-04, E-MR-01 |
 | E-MR-02 | #14 | HitsukiMok | Release | E-MR-01, A-M3-01 |
+| B-M1-05 | #27 | whinee | P0 AI Demo | None |
+| E-MR-03 | #28 | HitsukiMok | Release | B-M1-05 |
 
 ## Order of execution
 
@@ -48,5 +50,6 @@ This is the task registry for the Verma Delivery project. GitHub issues are the 
 5. Complete `D-M2-01` and `E-MR-01` before considering continuity work.
 6. Start `A-M3-01` only after the P0 offline AI and direct-sync loop passes repeatedly.
 7. Finish `E-MR-02` as the final release gate.
+8. Evaluate and document the Qwen3 0.6B candidate before selecting any production artifact or claiming mobile performance.
 
 The GitHub Project and issue labels are automated from this dependency model. If the registry and an issue disagree, stop and correct the issue before implementation.

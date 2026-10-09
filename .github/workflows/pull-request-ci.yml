@@ -1,0 +1,95 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # This repository currently has no package manifest or lockfile. Keep
+      # the baseline executable without downloading an untracked dependency graph.
+      - run: node --check relay/server.mjs
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check relay/server.mjs
+      - run: node --check tests/relay/deployment.test.mjs
+      - run: node --check tests/relay/relay.test.mjs
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test tests/relay/*.test.mjs
+
+  docker-smoke:
+    name: Docker smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: docker build --tag verma-ci:${{ github.sha }} .
+
+  model-manifest:
+    name: Model manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - shell: pwsh
+        run: ./scripts/ci/check-model-manifest.ps1
+      - shell: pwsh
+        run: ./tests/ci/model-manifest.tests.ps1
+
+  workflow-safety:
+    name: Workflow safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - shell: pwsh
+        run: ./scripts/ci/check-workflow-safety.ps1 -WorkflowPath .github/workflows/pull-request-ci.yml -RequireCiJobs
+      - shell: pwsh
+        run: ./tests/ci/workflow-safety.tests.ps1
+      - shell: pwsh
+        run: ./tests/ci/ci-baseline.tests.ps1
