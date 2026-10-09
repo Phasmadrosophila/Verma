@@ -77,7 +77,7 @@ Work strictly within the defined scope tiers from `docs/prd.md`:
 
 ### P2: Out of Scope for Hackathon (Do Not Build)
 - Cloudflare managed cloud relay / billing / multi-tenant SaaS.
-- Android WebView wrapper.
+- Android mobile app via Expo (`https://expo.dev/`).
 - Enterprise roles, ACLs, and organization recovery.
 - Crypto wallet entry workflows (excluded from AI).
 - Arbitrary file attachments and general import formats.

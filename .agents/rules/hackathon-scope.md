@@ -27,7 +27,7 @@ Do not work on P1 or P2 features until the full P0 winning demo loop runs reliab
 
 ### P2 — Out of Scope for Hackathon
 - Cloudflare managed cloud multi-tenant service, billing, and SLAs.
-- Android WebView wrapper.
+- Android mobile app via Expo (`https://expo.dev/`).
 - Enterprise roles, ACLs, and organization recovery.
 - Crypto wallet entry workflows.
 - Arbitrary file attachments.
