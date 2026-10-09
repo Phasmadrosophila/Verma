@@ -165,51 +165,10 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
             </View>
           </View>
 
-          <View style={styles.completionBadge}>
-            <Text style={styles.completionBadgeText}>🛡️ VAULT INITIALIZED · AES-256</Text>
-          </View>
-
           <Text style={styles.completionTitle}>
             Your space.{'\n'}
             <Text style={{ color: colors.brandOrange }}>Your fresh start.</Text>
           </Text>
-
-          <Text style={styles.completionDesc}>
-            Your encrypted vault is active on this device. Master key is locked with Argon2id and your recovery phrase is set.
-          </Text>
-
-          <View style={styles.readinessCard}>
-            <View style={styles.readinessItem}>
-              <Text style={styles.readinessEmoji}>🔑</Text>
-              <View style={styles.readinessInfo}>
-                <Text style={styles.readinessTitle}>Master passphrase active</Text>
-                <Text style={styles.readinessSub}>Argon2id · 256-bit local encryption</Text>
-              </View>
-              <Text style={styles.readinessCheck}>✓</Text>
-            </View>
-
-            <View style={styles.readinessDivider} />
-
-            <View style={styles.readinessItem}>
-              <Text style={styles.readinessEmoji}>📝</Text>
-              <View style={styles.readinessInfo}>
-                <Text style={styles.readinessTitle}>Recovery phrase backed up</Text>
-                <Text style={styles.readinessSub}>24 offline words for emergency restore</Text>
-              </View>
-              <Text style={styles.readinessCheck}>✓</Text>
-            </View>
-
-            <View style={styles.readinessDivider} />
-
-            <View style={styles.readinessItem}>
-              <Text style={styles.readinessEmoji}>📶</Text>
-              <View style={styles.readinessInfo}>
-                <Text style={styles.readinessTitle}>Zero cloud exposure</Text>
-                <Text style={styles.readinessSub}>100% offline · No central servers</Text>
-              </View>
-              <Text style={styles.readinessCheck}>✓</Text>
-            </View>
-          </View>
 
           <View style={styles.completionActions}>
             <TouchableOpacity
@@ -420,17 +379,19 @@ const styles = StyleSheet.create({
   },
   completionContainer: {
     alignItems: 'center',
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.xxl,
+    justifyContent: 'center',
   },
   completionHero: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: spacing.lg,
+    marginVertical: spacing.xl,
+    position: 'relative',
   },
   successEmblem: {
-    width: 92,
-    height: 92,
-    borderRadius: 32,
+    width: 136,
+    height: 136,
+    borderRadius: 44,
     backgroundColor: colors.warm,
     alignItems: 'center',
     justifyContent: 'center',
@@ -439,17 +400,17 @@ const styles = StyleSheet.create({
     borderColor: colors.surface,
   },
   emblemLogo: {
-    width: 50,
-    height: 50,
+    width: 80,
+    height: 80,
     resizeMode: 'contain',
   },
   emblemCheck: {
     position: 'absolute',
-    right: -8,
-    bottom: -6,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    right: -10,
+    bottom: -8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.brandPeri,
     borderWidth: 3,
     borderColor: colors.surface,
@@ -458,93 +419,27 @@ const styles = StyleSheet.create({
   },
   emblemCheckText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '800',
-  },
-  completionBadge: {
-    backgroundColor: colors.assist,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: radii.pill,
-    marginBottom: spacing.md,
-  },
-  completionBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#425ABD',
-    letterSpacing: 0.5,
   },
   completionTitle: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: '800',
     color: colors.text,
     textAlign: 'center',
-    lineHeight: 34,
-    letterSpacing: -0.5,
-  },
-  completionDesc: {
-    fontSize: 12,
-    color: colors.muted,
-    textAlign: 'center',
-    lineHeight: 18,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.sm,
-  },
-  readinessCard: {
-    width: '100%',
-    backgroundColor: '#FDFAF7',
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: '#EBE0D5',
-    padding: spacing.md,
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  readinessItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  readinessEmoji: {
-    fontSize: 18,
-  },
-  readinessInfo: {
-    flex: 1,
-  },
-  readinessTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  readinessSub: {
-    fontSize: 10,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  readinessCheck: {
-    fontSize: 12,
-    color: '#1F7A36',
-    fontWeight: '800',
-    backgroundColor: '#E7F5EA',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  readinessDivider: {
-    height: 1,
-    backgroundColor: '#F0E5D9',
+    lineHeight: 42,
+    letterSpacing: -1,
+    marginVertical: spacing.xl,
   },
   completionActions: {
     width: '100%',
-    gap: spacing.xs,
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
   completionFootnote: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.muted,
     textAlign: 'center',
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
   },
 });
