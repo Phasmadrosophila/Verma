@@ -132,53 +132,52 @@ Every implementation task must have one accountable GitHub assignee, one milesto
 
 ### 7.1 Canonical task format
 
-Every implementation issue and project card must use the canonical task format below. Do not create free-form implementation issues. Use plain field labels exactly as shown; do not replace them with arbitrary heading names or reorder them.
+Every implementation issue and project card must use the canonical Markdown task format below. Do not create free-form implementation issues. Use the exact headings, checklist style, field order, and workflow footer; do not replace them with arbitrary heading names or reorder them.
 
 ```text
-Task ID
+### Task ID
 <LANE>-<MILESTONE>-<NN>
 
-Lane
+### Lane
 <lane name> (lane:<label>)
 
-Milestone
+### Milestone
 <milestone code and name> (GitHub milestone: <exact GitHub milestone>)
 
-Size
+### Size
 XS | S | M | L | XL
 
-Features
+### Features
 <feature IDs, or None>
 
-Goal
+### Goal
 <one concrete outcome>
 
-Spec references
+### Spec references
 <docs/path.md §section>
 
-Acceptance criteria (AC IDs)
+### Acceptance criteria (AC IDs)
 - <AC-ID>: <testable behavior>
 
-Done when
+**Done when**
 <observable completion statement>
 
-Test plan (write these first — red → green → commit)
-- <test or verification>
+### Test plan (write these first — red → green → commit)
+- [ ] <test or verification>
 
-Dependencies
-Blocked by [<Task ID>] <issue title> #<number>
-None
+### Dependencies
+- Blocked by #<number> `<TASK-ID>`
+- None
 
-Definition of done (AGENTS.md §8)
-- Referenced acceptance criteria pass end to end.
-- Every test-plan line exists as a test or recorded verification.
-- Typecheck, lint, and tests pass.
-- Affected docs are updated in the same PR.
-- The change is exercised locally or in CI.
-- Privacy rules are respected: no logs with entry content, no secrets, synthetic fixtures only.
+### Definition of done (AGENTS.md §8)
+- [ ] Referenced acceptance criteria pass end to end.
+- [ ] Every test-plan line exists as a test or recorded verification.
+- [ ] Typecheck, lint, and tests pass.
+- [ ] Affected docs are updated in the same PR.
+- [ ] The change is exercised locally or in CI.
+- [ ] Privacy rules are respected: no logs with entry content, no secrets, synthetic fixtures only.
 
-Workflow
-docs/development-workflow.md · Backlog: docs/workplan.md
+<sub>Workflow: [docs/development-workflow.md](docs/development-workflow.md) · Backlog: [docs/workplan.md](docs/workplan.md)</sub>
 ```
 
 Task IDs use these lanes:

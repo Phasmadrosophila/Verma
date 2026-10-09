@@ -6,48 +6,47 @@ The issue is the unit of work. The issue body defines the goal, acceptance crite
 
 ## Canonical issue shape
 
-Use this exact order:
+Use this exact order and Markdown formatting:
 
 ```text
-Task ID
+### Task ID
 <LANE>-<MILESTONE>-<NN>
 
-Lane
+### Lane
 <lane> (lane:<label>)
 
-Milestone
+### Milestone
 <code and name> (GitHub milestone: <exact milestone>)
 
-Size
+### Size
 XS | S | M | L | XL
 
-Features
+### Features
 <feature IDs, or None>
 
-Goal
+### Goal
 <one concrete outcome>
 
-Spec references
+### Spec references
 <source-of-truth references>
 
-Acceptance criteria (AC IDs)
+### Acceptance criteria (AC IDs)
 - <AC-ID>: <testable behavior>
 
-Done when
+**Done when**
 <observable completion>
 
-Test plan (write these first — red → green → commit)
-- <named test or recorded verification>
+### Test plan (write these first — red → green → commit)
+- [ ] <named test or recorded verification>
 
-Dependencies
-Blocked by [<TASK-ID>] <issue title> #<number>
-None
+### Dependencies
+- Blocked by #<number> `<TASK-ID>`
+- None
 
-Definition of done (AGENTS.md §8)
-- <required completion checks>
+### Definition of done (AGENTS.md §8)
+- [ ] <required completion check>
 
-Workflow
-docs/development-workflow.md · Backlog: docs/workplan.md
+<sub>Workflow: [docs/development-workflow.md](../../docs/development-workflow.md) · Backlog: [docs/workplan.md](../../docs/workplan.md)</sub>
 ```
 
 Do not use a generic “Scope” section in place of Goal, do not use vague acceptance criteria, and do not list dependencies without task IDs and issue numbers.
