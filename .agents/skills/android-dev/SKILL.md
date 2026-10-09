@@ -20,6 +20,10 @@ Authoritative architectural guide for the Android mobile application for
 ## 1. Mobile Architecture
 
 - **Framework:** [Expo](https://expo.dev/) (React Native with TypeScript) located in `apps/mobile`. The current mobile API integration is tracked by issue #55 and is an explicit scope deviation from the hackathon P2 boundary; desktop web remains the primary release path.
+- **Current implementation:** `apps/mobile` is a React Native client that talks to the Hono backend over HTTP via `apiClient.ts`. The native modules listed below are **not currently installed**; they are planned, not present.
+
+### Post-hackathon roadmap (native modules — not yet installed)
+
 - **Expo Modules & Native Integrations:**
   - **Encrypted Storage:** `expo-sqlite` (or SQLCipher / libsodium-backed store via custom Expo Module) for encrypted local vault storage.
   - **Hardware Security & Keystore:** `expo-secure-store` backed by `AndroidKeyStore` / Hardware Security Module (HSM).
