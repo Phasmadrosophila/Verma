@@ -78,3 +78,4 @@ finally {
 }
 
 Write-Host 'AC-A-M0-04-02: model manifest checker accepts intentional TBD candidates and valid pinned entries, and rejects incomplete pinned entries.'
+exit 0

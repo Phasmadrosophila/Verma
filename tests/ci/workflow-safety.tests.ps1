@@ -25,3 +25,4 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 Write-Host 'AC-A-M0-04-01: workflow safety checker accepts the safe fixture and rejects the unsafe fixture.'
+exit 0
