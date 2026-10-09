@@ -23,7 +23,8 @@ h3{font-weight:600;letter-spacing:-.035em;line-height:1.25}
 .skip-link:focus{transform:none}
 .site-header{position:sticky;top:16px;display:flex;align-items:center;gap:28px;min-height:64px;padding:10px 20px 10px 22px;margin-top:16px;margin-bottom:12px;border-radius:999px;background:rgba(255,252,248,.78);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.8);box-shadow:0 10px 30px rgba(41,38,33,.07),0 1px 3px rgba(41,38,33,.04);z-index:100;transition:background-color 200ms ease,box-shadow 200ms ease,border-color 200ms ease}
 .brand{display:inline-flex;align-items:center;gap:12px;flex:none;font:400 24px/1 var(--brand);text-transform:uppercase;letter-spacing:-.3px}
-.brand-name{font-family:var(--brand);text-transform:uppercase;letter-spacing:.3px}
+.brand-name{font-family:var(--brand);text-transform:uppercase;letter-spacing:.3px;background:linear-gradient(105deg,#FE820E 0%,#FFA858 18%,#FFFFFF 36%,#90B0FC 54%,#3E63F5 72%,#FFFFFF 88%,#FE820E 100%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block;animation:vermaBrandShift 9s ease-in-out infinite;filter:drop-shadow(0 1px 1.5px rgba(41,38,33,.22))}
+@keyframes vermaBrandShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .brand-mark{width:38px;height:38px;display:grid;place-items:center;position:relative;flex:none;background:transparent}
 .brand-mark img{width:100%;height:100%;object-fit:contain}
 .desktop-nav{margin-left:auto;display:flex;align-items:center;gap:28px;font-size:14px;font-weight:600}
