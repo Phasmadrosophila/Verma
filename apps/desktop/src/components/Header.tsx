@@ -10,15 +10,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onLock, syncActive = true }) => {
   return (
     <View style={styles.header}>
-      <View style={styles.brandRow}>
-        <View style={styles.logoBadge}>
-          <Text style={styles.logoBadgeText}>V</Text>
-        </View>
-        <Text style={styles.wordmark}>
-          Verma<Text style={styles.wordmarkDot}>.</Text>
-        </Text>
-      </View>
-
+      <View style={styles.spacer} />
       <View style={styles.actionsRow}>
         <View style={styles.syncBadge}>
           <View style={[styles.syncDot, syncActive && styles.syncDotActive]} />
@@ -41,40 +33,17 @@ export const Header: React.FC<HeaderProps> = ({ onLock, syncActive = true }) => 
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: colors.brandOrange,
+    backgroundColor: colors.surface,
     paddingHorizontal: spacing.xxl,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
+    paddingVertical: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  logoBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: radii.md,
-    backgroundColor: colors.paper,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoBadgeText: {
-    fontSize: typography.sizeLg,
-    fontWeight: '800',
-    color: colors.brandOrange,
-  },
-  wordmark: {
-    fontSize: typography.sizeXxl,
-    fontWeight: '700',
-    color: colors.text,
-    letterSpacing: -0.5,
-  },
-  wordmarkDot: {
-    color: colors.paper,
+  spacer: {
+    flex: 1,
   },
   actionsRow: {
     flexDirection: 'row',

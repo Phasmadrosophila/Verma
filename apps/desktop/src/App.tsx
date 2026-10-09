@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native';
 const SafeAreaProvider = ({ children }: any) => <>{children}</>;
 import { AddEditModal } from './components/AddEditModal';
-import { BottomNav, NavTab } from './components/BottomNav';
+import { Sidebar, NavTab } from './components/Sidebar';
 import { DetailModal } from './components/DetailModal';
 import { Header } from './components/Header';
 import { AskScreen } from './screens/AskScreen';
@@ -191,58 +191,62 @@ export function App() {
     <SafeAreaView style={styles.safeContainer}>
       <StatusBar barStyle="dark-content" />
 
-      <Header onLock={handleLock} syncActive={true} />
+      <View style={styles.desktopLayout}>
+        <Sidebar
+          currentTab={currentTab}
+          onSelectTab={(tab) => setCurrentTab(tab)}
+          onAddNew={() => {
+            setEntryToEdit(null);
+            setAddModalVisible(true);
+          }}
+        />
 
-      <View style={styles.mainContent}>
-        {currentTab === 'vault' && (
-          <>
-            {loadState === 'loading' && (
-              <View style={styles.centerFill}>
-                <ActivityIndicator color={colors.brandPeri} />
-                <Text style={styles.centerText}>Loading your vault…</Text>
-              </View>
+        <View style={styles.mainContentWrapper}>
+          <Header onLock={handleLock} syncActive={true} />
+          
+          <View style={styles.mainContent}>
+            {currentTab === 'vault' && (
+              <>
+                {loadState === 'loading' && (
+                  <View style={styles.centerFill}>
+                    <ActivityIndicator color={colors.brandPeri} />
+                    <Text style={styles.centerText}>Loading your vault…</Text>
+                  </View>
+                )}
+                {loadState === 'error' && (
+                  <View style={styles.centerFill}>
+                    <Text style={styles.errorTitle}>Couldn’t reach your vault</Text>
+                    <Text style={styles.centerText}>{loadError}</Text>
+                    <TouchableOpacity style={styles.retryBtn} onPress={() => void loadEntries()}>
+                      <Text style={styles.retryBtnText}>Retry</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {loadState === 'ready' && (
+                  <VaultScreen
+                    entries={entries}
+                    onSelectEntry={(entry) => setSelectedEntry(entry)}
+                    onOpenAsk={() => setCurrentTab('ask')}
+                  />
+                )}
+              </>
             )}
-            {loadState === 'error' && (
-              <View style={styles.centerFill}>
-                <Text style={styles.errorTitle}>Couldn’t reach your vault</Text>
-                <Text style={styles.centerText}>{loadError}</Text>
-                <TouchableOpacity style={styles.retryBtn} onPress={() => void loadEntries()}>
-                  <Text style={styles.retryBtnText}>Retry</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            {loadState === 'ready' && (
-              <VaultScreen
+
+            {currentTab === 'ask' && (
+              <AskScreen
                 entries={entries}
                 onSelectEntry={(entry) => setSelectedEntry(entry)}
-                onOpenAsk={() => setCurrentTab('ask')}
               />
             )}
-          </>
-        )}
 
-        {currentTab === 'ask' && (
-          <AskScreen
-            entries={entries}
-            onSelectEntry={(entry) => setSelectedEntry(entry)}
-          />
-        )}
+            {currentTab === 'import' && (
+              <ImportScreen onCommitImport={handleCommitImport} />
+            )}
 
-        {currentTab === 'import' && (
-          <ImportScreen onCommitImport={handleCommitImport} />
-        )}
-
-        {currentTab === 'devices' && <DevicesScreen onShowToast={showToast} />}
+            {currentTab === 'devices' && <DevicesScreen onShowToast={showToast} />}
+          </View>
+        </View>
       </View>
-
-      <BottomNav
-        currentTab={currentTab}
-        onSelectTab={(tab) => setCurrentTab(tab)}
-        onAddNew={() => {
-          setEntryToEdit(null);
-          setAddModalVisible(true);
-        }}
-      />
 
       <DetailModal
         entry={selectedEntry}
@@ -283,7 +287,16 @@ export function App() {
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
-    backgroundColor: colors.brandOrange,
+    backgroundColor: colors.surface,
+  },
+  desktopLayout: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  mainContentWrapper: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: colors.surface,
   },
   mainContent: {
     flex: 1,
