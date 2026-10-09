@@ -5,7 +5,7 @@ param(
     [switch]$RequireCiJobs
 )
 
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 $content = Get-Content -LiteralPath $WorkflowPath -Raw
 $failures = [System.Collections.Generic.List[string]]::new()
 

@@ -23,7 +23,7 @@ foreach ($model in $models) {
 
     # Candidate models are represented by the documented `tbd` status and
     # literal TBD detail values. They have no artifact to pin in CI yet.
-    if ($model.status -eq 'tbd') {
+    if ([string]$model.status -ieq 'tbd') {
         foreach ($property in 'model_name', 'version', 'sha256', 'license', 'source_url', 'artifact_path', 'redistribution_review') {
             if ([string]$model.$property -ne 'TBD') {
                 throw "TBD model manifest entry '$modelId' must use literal TBD for '$property'."
