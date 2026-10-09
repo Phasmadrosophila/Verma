@@ -4,7 +4,7 @@
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   const $ = selector => document.querySelector(selector);
   assert('Landing has a single main heading and all six product sections', document.querySelectorAll('h1').length === 1 && ['features', 'inside', 'how', 'privacy', 'questions'].every(id => document.getElementById(id)));
-  assert('Primary actions lead to app onboarding', [...document.querySelectorAll('.button')].every(a => a.getAttribute('href') === '/app'));
+  assert('Primary actions lead to the download chooser or app onboarding', [...document.querySelectorAll('.button')].every(a => ['/download', '/app'].includes(a.getAttribute('href'))));
   assert('All section links resolve', [...document.querySelectorAll('a[href^="#"]')].every(a => document.querySelector(a.getAttribute('href'))));
   assert('Gallery links open the corresponding app screens', [...document.querySelectorAll('.showcase-card')].map(a => a.getAttribute('href')).join() === '/app#vault,/app#ask,/app#import,/app#devices');
   assert('No horizontal page overflow', document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
@@ -44,6 +44,9 @@
   assert('All illustrations and real app previews load', [...document.images].every(image => image.complete && image.naturalWidth));
   const app = await fetch('/app');
   assert('App route serves the onboarding application', app.ok && (await app.text()).includes('id="content"'));
+  const download = await fetch('/download');
+  const downloadText = await download.text();
+  assert('Download route serves all deployment choices', download.ok && ['Verma Local', 'Self-hosted', 'Enterprise'].every(label => downloadText.includes(label)));
   const nestedApp = await fetch('/app/');
   assert('Trailing slash resolves to canonical app route', nestedApp.ok && new URL(nestedApp.url).pathname === '/app');
   scrollTo({top:0, behavior:'instant'});

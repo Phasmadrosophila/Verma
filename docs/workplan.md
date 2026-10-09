@@ -40,6 +40,7 @@ This is the task registry for the Verma Delivery project. GitHub issues are the 
 | E-MR-02 | #14 | HitsukiMok | Release | E-MR-01, A-M3-01 |
 | B-M1-05 | #27 | whinee | P0 AI Demo | None |
 | E-MR-03 | #28 | HitsukiMok | Release | B-M1-05 |
+| C-MR-02 | #52 | helenaherrero515 | Release | None |
 
 ## Order of execution
 

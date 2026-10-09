@@ -15,6 +15,8 @@ node server.mjs
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+The audience-based deployment chooser is available at [http://localhost:3000/download](http://localhost:3000/download). It distinguishes the ready Local demo from the Self-hosted technical path and future Enterprise direction.
+
 ## Page Structure
 
 The landing website consists of 6 thoughtful, responsive sections:

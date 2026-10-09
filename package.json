@@ -10,7 +10,7 @@
     "dev": "pnpm --filter @app/api dev",
     "start": "node server.mjs",
     "preview:landing": "node server.mjs",
-    "check:landing": "node --check landing.js && node --check server.mjs"
+    "check:landing": "node --check landing.js && node --check server.mjs && node qa/download-page.test.mjs"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
