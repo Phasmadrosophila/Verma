@@ -207,7 +207,7 @@ Use the task ID as the stable identifier. The issue title should be a concise ou
 - When an issue is blocked, add `status:blocked` and write every dependency as `blocked by #N`; the workflow moves the card to `Blocked`.
 - When all blockers close, automation changes the issue to `status:ready` and moves the card to `Ready`.
 - When the issue closes, automation changes it to `status:done` and moves the card to `Done`.
-- Pull requests must reference the task issue, use the PR template, and keep the linked issue's workflow state accurate.
+- Pull requests must reference the task issue, use and fully complete `.github/pull_request_template.md`, and keep the linked issue's workflow state accurate. No placeholder text or unexplained unchecked checklist items may remain when a PR is marked ready for review.
 
 ### Delivery cadence
 

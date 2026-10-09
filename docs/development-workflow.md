@@ -59,7 +59,7 @@ Do not use a generic “Scope” section in place of Goal, do not use vague acce
 4. Add `blocked by [<TASK-ID>] <issue title> #N` for every unresolved dependency.
 5. Start in Backlog unless the issue is fully specified and unblocked.
 6. Move to In Progress when the assigned owner begins work.
-7. Open a draft PR using the required template and link the issue. A ready-for-review PR moves the linked issue to In Review; merging moves it to Done.
+7. Open a draft PR using the fully completed `.github/pull_request_template.md` and link the issue. A ready-for-review PR moves the linked issue to In Review; merging moves it to Done.
 8. Address review feedback and attach test evidence.
 9. Close the issue only after the definition of done is satisfied.
 
@@ -69,6 +69,8 @@ Do not use a generic “Scope” section in place of Goal, do not use vague acce
 - Commit each major solution checkpoint separately when it advances an acceptance criterion or definition-of-done item.
 - A substantive PR must contain multiple meaningful commits. Do not submit a one-commit PR for non-trivial work.
 - A single commit is reserved for genuinely trivial changes such as a typo, isolated documentation correction, or equivalent maintenance fix.
+- Every PR must use and fully complete `.github/pull_request_template.md`. Replace all placeholders, document acceptance-criteria evidence and command results, complete the security/privacy and definition-of-done checklists, and explain any `N/A` items.
+- Do not mark a draft PR ready for review while the template is incomplete or contains placeholder text.
 
 ## Board automation
 

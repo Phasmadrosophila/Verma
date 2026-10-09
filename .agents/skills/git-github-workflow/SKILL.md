@@ -21,6 +21,7 @@ Work is tracked via **GitHub Issues**, the repository-scoped **Verma Delivery** 
 - **One task per branch, PR, and GitHub Issue.** Every feature gets its own canonical task issue, its own branch, and its own pull request. Do not bundle unrelated changes together.
 - **Issue before implementation.** Do not begin untracked feature work. The issue must have exactly one accountable assignee, one milestone, a task ID, and explicit dependencies.
 - **Use the canonical issue body.** Use the Engineering Task template and preserve the exact Markdown headings, checkbox test plan, checkbox definition of done, and workflow footer documented in `docs/development-workflow.md`.
+- **Complete the PR template every time.** Every pull request must use `.github/pull_request_template.md`. Replace every placeholder, fill every section, map every acceptance criterion to evidence, record commands and results, and check only boxes that are actually satisfied. Do not leave template comments, empty bullets, `AC-...`, `<command>`, or other placeholder text in a PR description.
 - **Use the repository board.** Daily execution happens in [Verma Delivery](https://github.com/orgs/Phasmadrosophila/projects/4), not the organization overview board.
 - **Do not manually fight automation.** Use workflow labels and dependency syntax; Project Automation synchronizes the issue and board status.
 - **NEVER MERGE THE PR BY YOURSELF.** Do not run `git merge`, `gh pr merge`, enable auto-merge, or squash/rebase on GitHub. Implementation is complete when the PR is opened and reported. Merging is strictly reserved for human reviewers.
@@ -89,26 +90,20 @@ Examples:
 - Keep blocker references in the issue body. Open blockers must remain `status:blocked`; when all blockers close, automation promotes the issue to `status:ready`.
 - Do not log issue content, vault data, secrets, or real user data.
 
-### 4. Open a draft Pull Request (Do NOT merge)
+### 4. Open a draft Pull Request and complete the template (Do NOT merge)
 
-Push the branch and open a **draft** PR targeting `main`. The PR must link the task issue and use `.github/pull_request_template.md`:
+Push the branch and open a **draft** PR targeting `main`. The PR must link the task issue and use the complete contents of `.github/pull_request_template.md`. Do not use a short custom summary in place of the template.
+
+Create a temporary PR body file, fill it completely, review it locally, and pass it with `--body-file`:
 
 ```bash
 git push -u origin lyraphasma/issue-<NUMBER>-<short-slug>
-gh pr create --draft --base main --title "<type>: <Short description> (#<NUMBER>)" --body "Closes #<NUMBER>
-
-## Summary
-<Summary of changes>
-
-## Commit structure
-<List the major solution checkpoints and their commit hashes/messages. Confirm this is not a one-commit PR unless the change is genuinely trivial.>
-
-## Verification
-<Tests and checks performed>
-
-## Acceptance criteria evidence
-<AC IDs and evidence>"
+gh pr create --draft --base main --title "<type>: <Short description> (#<NUMBER>)" --body-file .github/pull-request-body.md
 ```
+
+The completed PR body must include the task metadata, goal, concrete changes, evidence for every acceptance criterion, test commands and results, commit structure, documentation and contract checks, security and privacy checks, definition-of-done checks, and reviewer notes.
+
+Before converting the draft PR to ready for review, verify that no unresolved placeholders remain. If a checklist item is not applicable, replace it with an explicit `N/A` explanation.
 
 PR status automation is authoritative:
 
@@ -126,7 +121,7 @@ When the draft PR is open, report:
 3. Pull Request URL
 4. Checks / tests performed
 5. Current issue and board status.
-6. **Review Prompt:** Remind the developer to request teammate review, then mark the PR ready for review only after CI and test evidence are complete.
+6. **Review Prompt:** Remind the developer to request teammate review, then mark the PR ready for review only after the PR template is fully completed, CI and test evidence are complete, and all applicable definition-of-done checks pass.
 
 ## Repository defaults
 
