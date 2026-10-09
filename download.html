@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F7EDE3">
+  <meta name="description" content="Choose the Verma deployment that fits you: Local, Self-hosted, or future Enterprise.">
+  <title>Choose your Verma — Local, Self-hosted, or Enterprise</title>
+  <link rel="icon" href="assets/verma-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Parkinsans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="download.css">
+</head>
+<body>
+  <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="home" viewBox="0 0 24 24"><path d="m3 11 9-7 9 7v9H3Z"/><path d="M9 20v-6h6v6"/></symbol>
+    <symbol id="server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></symbol>
+    <symbol id="building" viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M2 21h20M8 7h2m4 0h2M8 11h2m4 0h2M8 15h2m4 0h2"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L20 6"/></symbol>
+  </defs></svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header container">
+    <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
+    <nav class="download-nav" aria-label="Download page navigation"><a href="/#features">Features</a><a href="/cloud">Cloud</a><a href="/">Back to home</a></nav>
+  </header>
+
+  <main id="main" class="download-main container">
+    <section class="download-intro" aria-labelledby="download-title">
+      <div class="eyebrow">CHOOSE YOUR VERMA</div>
+      <h1 id="download-title">One vault.<br><span>Your way.</span></h1>
+      <p>Start local for the simplest private experience. Run your own continuity service when you want more control. Enterprise support comes later.</p>
+    </section>
+
+    <section class="deployment-grid" aria-label="Verma deployment options">
+      <article class="deployment-card recommended">
+        <div class="card-topline"><span class="availability">RECOMMENDED · DEMO READY</span><span class="deployment-icon"><svg class="icon" aria-hidden="true"><use href="#home"/></svg></span></div>
+        <div><p class="audience">FOR EVERYDAY USERS</p><h2>Verma Local</h2><p class="card-description">The easiest way to use Verma. Your vault and AI stay on your devices, with no provider account or server to manage.</p></div>
+        <ul>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Works offline by default</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Local AI with no network access</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Direct sync between paired devices</li>
+        </ul>
+        <a class="button dark deployment-action" href="/app">Explore the Local demo <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+      </article>
+
+      <article class="deployment-card">
+        <div class="card-topline"><span class="availability preview">TECHNICAL PREVIEW</span><span class="deployment-icon self-hosted"><svg class="icon" aria-hidden="true"><use href="#server"/></svg></span></div>
+        <div><p class="audience">FOR HOMELABBERS &amp; TECHNICAL TEAMS</p><h2>Self-hosted</h2><p class="card-description">Run the Docker relay and heartbeat service on your own machine. You own the infrastructure, backups, and security configuration.</p></div>
+        <ul>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Encrypted payloads only</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Relay and continuity heartbeat</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Operator-controlled deployment</li>
+        </ul>
+        <a class="button secondary deployment-action" href="https://github.com/Phasmadrosophila/Verma" target="_blank" rel="noreferrer">View source &amp; setup <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+      </article>
+
+      <article class="deployment-card future">
+        <div class="card-topline"><span class="availability future-label">PRODUCT DIRECTION</span><span class="deployment-icon enterprise"><svg class="icon" aria-hidden="true"><use href="#building"/></svg></span></div>
+        <div><p class="audience">FOR ORGANIZATIONS</p><h2>Enterprise</h2><p class="card-description">A future managed option for organization recovery, roles, policy, and auditability without provider access to secret payloads.</p></div>
+        <ul>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Role and audit model planned</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Controlled organization recovery</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#check"/></svg>Not part of the hackathon MVP</li>
+        </ul>
+        <button class="button secondary deployment-action" type="button" disabled>Not yet available</button>
+      </article>
+    </section>
+
+    <aside class="scope-note" aria-label="Availability note">
+      <strong>What can I use today?</strong>
+      <p>The current release is an interactive hackathon concept. Local is the primary experience, Self-hosted is a technical continuity prototype, and Enterprise remains a future product direction.</p>
+    </aside>
+  </main>
+
+  <footer class="download-footer container">
+    <a href="/">← Back to Verma</a>
+    <div class="download-footer-credits">
+      <span>© 2026 Verma. All rights reserved.</span>
+      <span>Made by Phasmadrosophilia</span>
+    </div>
+  </footer>
+</body>
+</html>

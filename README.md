@@ -45,3 +45,13 @@ npm run test:ui
 ```
 
 Interactive browser checks can be executed in the browser console using `qa/browser-smoke.js`.
+
+## Marketing Landing Page
+
+The standalone marketing page and deployment chooser run without external dependencies:
+
+```bash
+npm run preview:landing
+```
+
+Open [http://localhost:3000](http://localhost:3000) for the landing page and [http://localhost:3000/download](http://localhost:3000/download) for the Local, Self-hosted, and Enterprise chooser. Run `npm run check:landing` for syntax and static acceptance checks.

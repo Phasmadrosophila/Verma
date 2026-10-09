@@ -25,6 +25,7 @@ apps/mobile/web-build/
 # Local agent tooling config (machine-specific, not shared)
 .claude/worktrees/
 .kiro/settings/
+.codex/
 skills-lock.json
 
 # ==============================================================================
