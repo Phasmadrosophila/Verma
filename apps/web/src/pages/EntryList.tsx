@@ -4,6 +4,10 @@ import { api } from '../api';
 import { Search, Plus, Lock } from 'lucide-react';
 import type { RedactedEntryMetadata } from '@app/shared';
 
+import { Button } from '../components/primitives/Button';
+import { EmptyState } from '../components/primitives/EmptyState';
+import { LoadingState } from '../components/primitives/LoadingState';
+
 export const EntryList = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -37,13 +41,12 @@ export const EntryList = () => {
     <div className="flex flex-col h-full gap-6">
       <div className="flex justify-between items-center">
         <h2 className="text-interface-heading">All Items</h2>
-        <button 
+        <Button 
           onClick={() => navigate('/entry/new')}
-          className="flex items-center gap-2 bg-[var(--color-brand-orange)] text-[var(--color-text)] px-4 py-2 rounded-full text-body font-medium hover:opacity-90 transition-opacity"
+          leftIcon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-5 h-5" />
           New Entry
-        </button>
+        </Button>
       </div>
 
       <div className="relative">
@@ -53,28 +56,36 @@ export const EntryList = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search metadata..."
-          className="w-full pl-10 pr-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] text-body focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-orange)]"
+          className="w-full pl-10 pr-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] text-body focus-ring"
         />
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 text-red-700 rounded-[var(--radius-md)] text-body">
+        <div className="p-4 bg-red-50 text-red-700 rounded-[var(--radius-md)] text-body border border-red-200">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="text-body text-[var(--color-text-muted)]">Loading entries...</div>
+        <LoadingState
+          title="Loading entries..."
+          description="Retrieving decrypted index from local memory."
+        />
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 bg-[var(--color-paper)] rounded-full flex items-center justify-center mb-4">
-            <Search className="w-8 h-8 text-[var(--color-text-muted)]" />
-          </div>
-          <h3 className="text-interface-heading mb-2">No entries found</h3>
-          <p className="text-body text-[var(--color-text-muted)] max-w-md">
-            {query ? 'Try a different search term.' : 'Your vault is empty. Add a new entry to get started.'}
-          </p>
-        </div>
+        <EmptyState
+          icon={<Search className="w-7 h-7" />}
+          title={query ? "No entries match your search" : "Your vault is empty"}
+          description={
+            query
+              ? `No metadata matched "${query}". Check spelling or try a broader keyword.`
+              : "Store your passwords, note bodies, and API keys securely on this device."
+          }
+          action={{
+            label: "Create First Entry",
+            icon: <Plus className="w-4 h-4" />,
+            onClick: () => navigate("/entry/new"),
+          }}
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {entries.map((entry) => (

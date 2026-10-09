@@ -2,14 +2,14 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { LockStatus } from '@app/shared';
 import { api } from './api';
 
-interface VaultContextType {
+export interface VaultContextType {
   status: LockStatus | 'loading';
   isLocked: boolean;
   isInitialized: boolean;
   checkStatus: () => Promise<void>;
 }
 
-const VaultContext = createContext<VaultContextType | null>(null);
+export const VaultContext = createContext<VaultContextType | null>(null);
 
 export const VaultProvider = ({ children }: { children: ReactNode }) => {
   const [status, setStatus] = useState<LockStatus | 'loading'>('loading');
