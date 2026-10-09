@@ -1,0 +1,43 @@
+{
+  "acceptance_criterion": "AC-E-MR-03-02",
+  "blockers": [
+    "Runtime commands llama-cli, llama-server, and ollama were not found on PATH on 2026-10-10.",
+    "No llama-cli, llama-server, or ollama process was running on 2026-10-10.",
+    "No .gguf, .bin, or .onnx model artifact exists below the repository models directory on 2026-10-10.",
+    "models/manifest.json identifies the local-assistant-primary model with status tbd and artifact_path TBD."
+  ],
+  "configuration": {
+    "measured_runs_requested": 10,
+    "runtime_flags": "Not applicable: no local runtime command was available.",
+    "warmup_runs": 2
+  },
+  "device": {
+    "cpu": "AMD Ryzen 7 7435HS; 8 cores; 16 logical processors; reported max clock 3100 MHz",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU; driver 32.0.16.1692; reported adapter RAM 4293918720 bytes",
+    "memory": "17179869184 bytes installed physical memory",
+    "os": "Microsoft Windows 11 Home Single Language; version 10.0.26200; build 26200; 64-bit"
+  },
+  "input": {
+    "fixture": "models/evaluation_fixtures.json",
+    "synthetic": true,
+    "secret_fields": "Rejected by harness before invocation"
+  },
+  "measurements": [],
+  "memory_method": "Not measured: no local runtime process was launched.",
+  "raw_outputs": [
+    "Get-Command llama-cli: not found",
+    "Get-Command llama-server: not found",
+    "Get-Command ollama: not found",
+    "Get-Process llama-cli,llama-server,ollama: no matching process",
+    "Get-ChildItem models -Recurse -Include *.gguf,*.bin,*.onnx: no matching artifact"
+  ],
+  "recorded_at_local": "2026-10-10 Asia/Shanghai",
+  "runtime": {
+    "model": "Not measured: manifest status is tbd; no reviewed artifact is present.",
+    "runtime": "Not measured: llama.cpp executable is unavailable; Ollama is also unavailable and would be development-only."
+  },
+  "schema_version": "1.0",
+  "status": "not_measured",
+  "task_id": "E-MR-03",
+  "test_protocol": "2 requested warmups and 10 requested measured runs; zero runs executed because the production runtime and model artifact were unavailable."
+}
