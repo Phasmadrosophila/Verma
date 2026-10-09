@@ -98,7 +98,7 @@ Model/runtime documentation:
 - [`docs/COMPETITION-HANDBOOK.md`](docs/COMPETITION-HANDBOOK.md) — competition requirements and evidence rules.
 - [`docs/prd.md`](docs/prd.md) — product requirements and scope.
 
-The intended Verma code license remains undecided and is described as fair-code/source-available direction in the release records. No final license file or final compatibility conclusion has been selected.
+Verma's code license direction is **fair-code/source-available**. The specific final license and its commercial-use terms remain pending legal and release review, so no final license file or compatibility conclusion has been selected yet.
 
 ## Development checks
 
