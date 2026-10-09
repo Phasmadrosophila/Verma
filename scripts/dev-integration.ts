@@ -4,7 +4,9 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const dataDirectory = resolve(root, '.local', 'integration');
-const dbPath = resolve(dataDirectory, 'vault.db');
+const dbPath = process.env.INTEGRATION_DB_PATH
+  ? resolve(process.env.INTEGRATION_DB_PATH)
+  : resolve(dataDirectory, 'vault.db');
 const apiPort = Number(process.env.API_PORT ?? 3000);
 const webPort = Number(process.env.WEB_PORT ?? 5173);
 const seedFixtures = process.env.SEED_FIXTURES !== 'false';

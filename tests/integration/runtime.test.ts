@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -17,6 +18,7 @@ test('AC-A-M0-05-01..05: integration runtime starts both apps and exposes P0 rou
       WEB_PORT: String(webPort),
       RESET_INTEGRATION_DATA: 'true',
       SEED_FIXTURES: 'true',
+      INTEGRATION_DB_PATH: `.local/integration/test-${randomUUID()}.db`,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
     shell: process.platform === 'win32',
