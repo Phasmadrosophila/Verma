@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native';
+const SafeAreaProvider = ({ children }: any) => <>{children}</>;
 import { AddEditModal } from './components/AddEditModal';
 import { BottomNav, NavTab } from './components/BottomNav';
 import { DetailModal } from './components/DetailModal';
@@ -157,7 +158,7 @@ export function App() {
   if (!hasOnboarded) {
     return (
       <SafeAreaView style={styles.safeContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle="dark-content" />
         <WelcomeScreen onComplete={() => setHasOnboarded(true)} />
       </SafeAreaView>
     );
@@ -167,7 +168,7 @@ export function App() {
   if (isLocked) {
     return (
       <SafeAreaView style={styles.safeContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <StatusBar barStyle="dark-content" />
         <LockedScreen
           onUnlock={async (passphrase?: string) => {
             if (passphrase) {
@@ -188,7 +189,7 @@ export function App() {
   // 3. Main App Shell
   return (
     <SafeAreaView style={styles.safeContainer}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.brandOrange} />
+      <StatusBar barStyle="dark-content" />
 
       <Header onLock={handleLock} syncActive={true} />
 
