@@ -8,10 +8,10 @@
     "check": "pnpm --recursive run check",
     "test": "pnpm --recursive run test",
     "dev": "pnpm --filter @app/api dev",
-    "start": "node server.mjs",
-    "preview:ui": "node server.mjs",
-    "check:ui": "node --check app.js && node --check vault.js && node --check server.mjs",
-    "test:ui": "node --test tests/vault.test.mjs"
+    "mobile:start": "pnpm --filter @app/mobile start",
+    "preview:web": "pnpm --filter @app/mobile-preview dev",
+    "test:mobile": "pnpm --filter @app/mobile test",
+    "test:preview": "pnpm --filter @app/mobile-preview test"
   },
   "devDependencies": {
     "typescript": "^5.8.2"
