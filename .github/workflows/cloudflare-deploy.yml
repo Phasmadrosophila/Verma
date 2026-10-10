@@ -202,4 +202,4 @@ jobs:
           # Ephemeral CI-only substitution; committed toml keeps placeholders
           sed -i "s/verma_relay_kv_production_id/${PROD_ID}/g; s/verma_relay_kv_preview_id/${PREVIEW_ID}/g" apps/web/wrangler.toml
 
-          pnpm --dir apps/web exec wrangler deploy --config wrangler.toml --name="${PROJECT_NAME}" --keep-vars
+          pnpm --dir apps/web exec wrangler deploy --config wrangler.toml --env="" --name="${PROJECT_NAME}" --keep-vars

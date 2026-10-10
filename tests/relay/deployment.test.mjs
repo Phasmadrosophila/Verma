@@ -42,7 +42,7 @@ test('AC-A-M0-04-06: Cloudflare deployment defines serverless KV binding, safe C
   assert.match(workflow, /storage\/kv\/namespaces/);
   assert.match(workflow, /Deployment must never create or delete storage/);
   assert.match(workflow, /pnpm --dir apps\/web exec wrangler deploy --config wrangler\.toml --env preview/);
-  assert.match(workflow, /pnpm --dir apps\/web exec wrangler deploy --config wrangler\.toml --name=/);
+  assert.match(workflow, /pnpm --dir apps\/web exec wrangler deploy --config wrangler\.toml --env="" --name=/);
   assert.doesNotMatch(workflow, /kv namespace create/);
   assert.match(webWorker, /env\.ASSETS\.fetch/);
   assert.match(webWorker, /handleRelayRequest/);

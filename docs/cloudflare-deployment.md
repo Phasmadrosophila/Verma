@@ -51,6 +51,21 @@ Verma is an offline-first, local-first digital secrets manager. The Cloudflare d
 
 ## 2. Environment & Secret Isolation
 
+### 2.1 GitHub token permissions
+
+The `CLOUDFLARE_API_TOKEN` repository secret must be an API token created for
+the same Cloudflare account as `CLOUDFLARE_ACCOUNT_ID`. Grant it these account
+permissions:
+
+- **Workers Scripts: Edit** — create/update the `verma-web` Worker.
+- **Workers KV Storage: Read** — resolve the existing relay namespaces during deployment.
+- **Workers KV Storage: Edit** — required by the relay if namespace data is administered through the token.
+
+The token's account resource must be explicitly restricted to the account ID in
+`CLOUDFLARE_ACCOUNT_ID`. A Pages-only token cannot deploy this Worker and
+produces `No access to the specified service` for
+`/accounts/<account-id>/workers/services/verma-web`.
+
 | Environment | Workers URL Pattern | KV Namespace (`VERMA_RELAY_KV`) | Secret Access |
 |---|---|---|---|
 | **Production** | `https://verma-web.<account>.workers.dev` (or custom domain) | Production KV Namespace ID | Repository Secrets on `main` branch |
