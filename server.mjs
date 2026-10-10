@@ -1,3 +1,4 @@
+import { previewPort } from './scripts/preview-options.mjs';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve, sep } from 'node:path';
@@ -10,14 +11,20 @@ const types = {
   '.js': 'text/javascript',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
-  '.woff2': 'font/woff2'
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf'
 };
 const allowed = new Set(['/index.html', '/landing.css', '/landing.js', '/cloud.html', '/cloud.css', '/download.html', '/download.css']);
-const port = Number(process.env.PORT || 3000);
+const port = previewPort(5127);
 
 createServer(async (req, res) => {
   try {
-    const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    const url = new URL(req.url, 'http://localhost');
+    const pathname = decodeURIComponent(url.pathname);
+    if (['/cloud/', '/download/'].includes(pathname)) {
+      res.writeHead(302, { Location: pathname.slice(0, -1) + url.search }).end();
+      return;
+    }
     if (pathname === '/app' || pathname === '/app/') {
       res.writeHead(302, { Location: '/#inside' }).end();
       return;
