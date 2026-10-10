@@ -23,7 +23,9 @@ import { MobileVaultEntry } from './state/vaultStore';
 import {
   ApiError,
   apiClient,
+  classifyError,
   EntryDraft,
+  ErrorKind,
   MobileEntryMetadata,
 } from './state/apiClient';
 import { colors, radii, spacing, typography } from './theme/tokens';
@@ -44,7 +46,7 @@ function metadataToEntry(m: MobileEntryMetadata): MobileVaultEntry {
   };
 }
 
-type LoadState = 'loading' | 'ready' | 'error';
+type LoadState = 'loading' | 'ready' | 'offline' | 'error';
 
 export function App() {
   const [hasOnboarded, setHasOnboarded] = useState(false);
@@ -78,9 +80,22 @@ export function App() {
       setEntries(list.map(metadataToEntry));
       setLoadState('ready');
     } catch (err) {
-      const msg =
-        err instanceof ApiError ? err.message : 'Could not load your vault.';
-      setLoadError(msg);
+      const kind = classifyError(err);
+      // A locked vault is not a load failure: revoke access and route to the
+      // lock screen rather than showing a network-error state.
+      if (kind === 'Locked') {
+        setEntries([]);
+        setIsLocked(true);
+        return;
+      }
+      if (kind === 'Offline') {
+        setLoadError("You're offline. Your vault lives on this device.");
+        setLoadState('offline');
+        return;
+      }
+      setLoadError(
+        err instanceof ApiError ? err.message : 'Could not load your vault.'
+      );
       setLoadState('error');
     }
   }, []);
@@ -108,6 +123,26 @@ export function App() {
     secret: data.secret,
   });
 
+  /**
+   * Route a mutation/reveal failure by its kind. A locked vault takes the whole
+   * app to the lock screen (never the network-error state); offline and other
+   * kinds surface a distinct toast. Returns true once handled.
+   */
+  const handleVaultError = (err: unknown, fallback: string): boolean => {
+    const kind = classifyError(err);
+    if (kind === 'Locked') {
+      setEntries([]);
+      setIsLocked(true);
+      return true;
+    }
+    if (kind === 'Offline') {
+      showToast("You're offline. Changes need your vault reachable.");
+      return true;
+    }
+    showToast(err instanceof ApiError ? err.message : fallback);
+    return true;
+  };
+
   const handleSaveEntry = async (
     data: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: string | number }
   ) => {
@@ -121,7 +156,7 @@ export function App() {
       }
       await loadEntries();
     } catch (err) {
-      showToast(err instanceof ApiError ? err.message : 'Could not save entry.');
+      if (handleVaultError(err, 'Could not save entry.')) return;
     }
   };
 
@@ -132,7 +167,7 @@ export function App() {
       showToast(`Deleted ${item?.title || 'item'}`);
       await loadEntries();
     } catch (err) {
-      showToast(err instanceof ApiError ? err.message : 'Could not delete entry.');
+      if (handleVaultError(err, 'Could not delete entry.')) return;
     }
   };
 
@@ -173,9 +208,10 @@ export function App() {
             if (passphrase) {
               try {
                 await apiClient.unlockVault(passphrase);
-              } catch {
-                // LockedScreen surfaces its own error; stay locked on failure.
-                throw new Error('unlock-failed');
+              } catch (err) {
+                // Preserve the classified kind so LockedScreen can tell a wrong
+                // passphrase (Unauthorized) from an offline failure.
+                throw classifyError(err) as ErrorKind;
               }
             }
             setIsLocked(false);
@@ -199,6 +235,15 @@ export function App() {
               <View style={styles.centerFill}>
                 <ActivityIndicator color={colors.brandPeri} />
                 <Text style={styles.centerText}>Loading your vault…</Text>
+              </View>
+            )}
+            {loadState === 'offline' && (
+              <View style={styles.centerFill}>
+                <Text style={styles.errorTitle}>You’re offline</Text>
+                <Text style={styles.centerText}>{loadError}</Text>
+                <TouchableOpacity style={styles.retryBtn} onPress={() => void loadEntries()}>
+                  <Text style={styles.retryBtnText}>Retry</Text>
+                </TouchableOpacity>
               </View>
             )}
             {loadState === 'error' && (
