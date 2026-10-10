@@ -1,3 +1,8 @@
+> **Design previews:** `pnpm preview:landing` → http://localhost:5127/;
+> `pnpm preview:mobile` → http://localhost:5128/?demo=1#vault.
+> Both accept `--port NUMBER`. The final landing design is in PR #76.
+> See [reproducible previews](docs/preview-reproducibility.md).
+
 <p align="center">
   <img width="180" src="./assets/verma-logo.png" alt="Verma logo" />
 </p>
