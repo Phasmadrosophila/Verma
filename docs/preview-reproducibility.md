@@ -11,6 +11,22 @@ pnpm preview:landing
 pnpm preview:mobile
 ```
 
+For the local backend-connected experience, run the API as well:
+
+```sh
+# Terminal 1
+pnpm dev
+# Terminal 2
+pnpm preview:landing
+```
+
+Then open `http://localhost:5127/download` or `http://localhost:5127/pricing`.
+The **Launch Verma Local** and **Launch Basic** actions open `/app#vault`, which
+is the mobile UI served by the landing server. Its `/api/*` requests stay on
+the same machine and are proxied to the loopback Hono API at port 3000. If the
+API is unavailable, the UI remains usable in its local browser-storage fallback;
+`?demo=1` remains the isolated six-entry screenshot mode.
+
 - Landing: http://localhost:5127/
 - Mobile screenshot state: http://localhost:5128/?demo=1#vault
 - Mobile onboarding: http://localhost:5128/?demo=1#welcome
