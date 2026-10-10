@@ -77,12 +77,11 @@ Work strictly within the defined scope tiers from `docs/prd.md`:
 
 ### P2: Out of Scope for Hackathon (Do Not Build)
 - Cloudflare managed cloud relay / billing / multi-tenant SaaS.
-- Android mobile app via Expo (`https://expo.dev/`).
+- Android mobile app.
 
-The repository now contains an Expo mobile implementation and issue #55 tracks
-its real-backend integration. This is an explicit post-MVP scope deviation:
-desktop web remains the primary hackathon release path, and mobile work must not
-displace the P0 desktop, offline, AI, or sync acceptance criteria.
+The repository previously contained an Expo mobile implementation. This has been
+replaced by the Electron desktop application, which is the primary hackathon
+release path. Mobile work must not displace the P0 desktop, offline, AI, or sync acceptance criteria.
 - Enterprise roles, ACLs, and organization recovery.
 - Crypto wallet entry workflows (excluded from AI).
 - Arbitrary file attachments and general import formats.

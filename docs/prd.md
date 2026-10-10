@@ -186,9 +186,6 @@ QUIC is valuable here because it is the transport behind a direct, resumable, au
 ### P2: Roadmap, not hackathon scope
 
 - Managed cloud relay, Cloudflare deployment, billing, and operations.
-- Android mobile app via Expo (`https://expo.dev/`).
-
-  The repository now contains an Expo mobile client (`apps/mobile`). This is an explicit post-MVP scope deviation: desktop web remains the primary hackathon release path, and mobile work must not displace the P0 desktop, offline, AI, or sync acceptance criteria.
 - Enterprise roles, ACLs, audit logs, and organization recovery.
 - Full estate workflows, Legacy Readiness, multiple recipients, legal workflows, and policy controls.
 - Crypto wallet entry workflows.
@@ -426,7 +423,7 @@ These are P1 capabilities and must not delay the offline AI and direct-sync demo
 
 | Layer | Direction | Notes |
 | --- | --- | --- |
-| Frontend | Single-page app, desktop view first | Android via Expo (`https://expo.dev/`) later |
+| Frontend | Electron desktop app | React Native Web / Vite renderer |
 | Backend | Hono | Runs on Cloudflare Workers and in Docker |
 | Local storage | `better-sqlite3` with application-layer encryption | Local-first default; SQLCipher is not in use |
 | Device sync | Intended QUIC, Syncthing-style | Implemented transport is an in-memory `DirectPeerTransport` test harness (`packages/shared/src/sync/transport.ts`); native QUIC transport is not yet implemented |

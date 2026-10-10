@@ -116,7 +116,7 @@ Running the assistant locally benefits Verma because vault metadata and user que
 | GitHub and pull-request workflows | Repository hosting, issue tracking, CI, and review require internet access. |
 | Deployment and hosted asset delivery | Hosting, deployment, and any remote asset delivery are network-dependent. |
 | Optional relay use | The P1 self-hosted opaque-envelope relay requires a reachable relay deployment; it is not required for the local vault or P0 local AI path. |
-| Mobile physical-device integration | The separate Expo/mobile path may require a configurable LAN API URL; it is not the primary desktop release path. |
+
 
 The core desktop vault and its deterministic fallback flows do not require a cloud AI service. The current repository does not implement a production `llama.cpp` launcher, model download flow, or OS-level network/filesystem sandbox. See [`docs/release/local-vs-online.md`](docs/release/local-vs-online.md) for the detailed evidence boundary.
 

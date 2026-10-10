@@ -4,7 +4,7 @@ This page records the current repository, asset, dependency, service, model, and
 
 ## Existing code and history
 
-Verma is developed in the public `Phasmadrosophila/Verma` repository. The repository history contains the current Hono API, React/Vite desktop web application, shared TypeScript package, Expo/mobile work, mobile-preview prototype, relay prototype, verification scripts, synthetic fixtures, and release documentation. Earlier commits and merged pull requests remain visible in Git history.
+Verma is developed in the public `Phasmadrosophila/Verma` repository. The repository history contains the current Hono API, Electron desktop application, shared TypeScript package, mobile-preview prototype, relay prototype, verification scripts, synthetic fixtures, and release documentation. Earlier commits and merged pull requests remain visible in Git history.
 
 The repository includes implementation and design work from multiple contributors. The Git history and GitHub pull requests are the authoritative contribution record; this page does not attempt to replace that record with a generated authorship list.
 
@@ -16,7 +16,7 @@ Asset provenance, font licensing, and any third-party artwork attribution should
 
 ## Dependencies and frameworks
 
-The dependency graph is recorded in `package.json` files and pinned by `pnpm-lock.yaml`. The main application uses Node.js, pnpm workspaces, TypeScript, Hono, `@hono/node-server`, `better-sqlite3`, Zod, React, React DOM, React Router, Vite, Tailwind CSS, Lucide React, Expo/React Native for the mobile work, and TypeScript test tooling. The relay uses the Docker/Compose runtime described in `docs/self-hosted.md`.
+The dependency graph is recorded in `package.json` files and pinned by `pnpm-lock.yaml`. The main application uses Node.js, pnpm workspaces, TypeScript, Hono, `@hono/node-server`, `better-sqlite3`, Zod, React, React DOM, React Router, Vite, Electron, react-native-web, Tailwind CSS, Lucide React, and TypeScript test tooling. The relay uses the Docker/Compose runtime described in `docs/self-hosted.md`.
 
 This page is not a substitute for package-level license notices. A dependency license inventory and final legal review remain release tasks.
 
@@ -65,4 +65,4 @@ Before final submission, the human team should confirm whether any additional AI
 
 ## Scope disclosure
 
-The desktop web application is the primary hackathon release path. Expo/mobile integration is tracked separately, and relay, heartbeat, and Dead Man's Switch functionality is P1 prototype/test mode. These areas should not be presented as completed P0 release capabilities.
+The Electron desktop application is the primary hackathon release path. Relay, heartbeat, and Dead Man's Switch functionality is P1 prototype/test mode. These areas should not be presented as completed P0 release capabilities.

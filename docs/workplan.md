@@ -66,6 +66,6 @@ This is the task registry for the Verma Delivery project. GitHub issues are the 
 8. Evaluate Qwen3 0.6B on target hardware before selecting its production artifact or claiming mobile performance.
 9. Build the frontend foundation in order: shell and primitives, vault lifecycle, unlocked workspace, then accessibility and demo hardening.
 10. Establish the real web/API runtime, integrate frontend screens against it, then run the offline visual E2E harness.
-11. Treat the Expo mobile API integration as an explicitly approved scope deviation; keep desktop web and local-first release work as the primary path.
+11. Treat the Electron desktop app as the primary path, removing any legacy mobile/Expo integration.
 
 The GitHub Project and issue labels are automated from this dependency model. If the registry and an issue disagree, stop and correct the issue before implementation.

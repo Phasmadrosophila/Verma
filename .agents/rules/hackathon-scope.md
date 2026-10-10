@@ -27,7 +27,7 @@ Do not work on P1 or P2 features until the full P0 winning demo loop runs reliab
 
 ### P2 — Out of Scope for Hackathon
 - Cloudflare managed cloud multi-tenant service, billing, and SLAs.
-- Android mobile app via Expo (`https://expo.dev/`). Note: the repo now contains an Expo implementation in `apps/mobile` (issue #55) as an explicit post-MVP scope deviation; desktop web remains the primary hackathon path.
+- Android mobile app. The repository previously contained an Expo implementation, but the Electron desktop application is now the primary hackathon path.
 - Enterprise roles, ACLs, and organization recovery.
 - Crypto wallet entry workflows.
 - Arbitrary file attachments.
