@@ -353,6 +353,9 @@ textarea.input{border-radius:20px}
 .ask-form textarea{font-size:16px}
 .ask-form-bottom .button{border-radius:30px;background:var(--text);color:var(--surface);font-size:10px;min-height:36px}
 #ask-results,#prompt-block{margin-left:24px;margin-right:24px}
+.ai-loading-box{display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--assist);border-radius:18px;font-size:11px;color:#45558e;margin:12px 0}
+.ai-response-bubble{background:var(--assist);border:1px solid #d0d7f9;border-radius:18px;padding:13px 15px;margin:8px 0 12px;color:#354580}
+.ai-response-bubble p{margin:0;font-size:11px;line-height:1.6}
 .prompt-list button{background:var(--surface);border:1px solid #ece2d8;border-radius:30px;min-height:45px;font-size:10px;padding:10px 15px}
 .result-card{border:1px solid #e4e1ee;border-radius:19px;padding:0 13px;background:var(--surface)}
 .result-card .entry-row{padding-left:0;padding-right:0}

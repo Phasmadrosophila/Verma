@@ -16,10 +16,79 @@ const types = {
 };
 const allowed = new Set(['/index.html', '/styles.css', '/theme-b.css', '/app.js', '/vault.js', '/preview-storage.js']);
 const port = previewPort(5128);
+const backendUrl = process.env.BACKEND_URL || (process.env.API_PORT ? `http://127.0.0.1:${process.env.API_PORT}` : 'http://127.0.0.1:3000');
+
+async function handleBackendProxy(req, res, targetUrl) {
+  try {
+    const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(req.method || '');
+    let bodyBuffer = null;
+    if (isBodyMethod) {
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      bodyBuffer = Buffer.concat(chunks);
+    }
+
+    const backendRes = await fetch(targetUrl, {
+      method: req.method,
+      headers: {
+        'Accept': req.headers['accept'] || 'application/json',
+        'Content-Type': req.headers['content-type'] || 'application/json',
+      },
+      body: bodyBuffer,
+    });
+
+    const data = await backendRes.arrayBuffer();
+    res.writeHead(backendRes.status, {
+      'Content-Type': backendRes.headers.get('content-type') || 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Cache-Control': 'no-cache',
+    });
+    res.end(Buffer.from(data));
+  } catch {
+    res.writeHead(503, {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    });
+    res.end(JSON.stringify({
+      error: 'Verma local backend service is offline',
+      isOffline: true,
+      hint: 'Start local Hono backend API via: pnpm dev'
+    }));
+  }
+}
 
 createServer(async (req, res) => {
   try {
-    const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    const url = new URL(req.url, 'http://localhost');
+    const pathname = decodeURIComponent(url.pathname);
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      }).end();
+      return;
+    }
+
+    if (pathname === '/health') {
+      let backendState = 'offline';
+      try {
+        const ping = await fetch(`${backendUrl}/health`, { signal: AbortSignal.timeout(600) });
+        if (ping.ok) backendState = 'online';
+      } catch {}
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+      res.end(JSON.stringify({ status: 'ok', service: 'verma-mobile-preview', backend: backendState }));
+      return;
+    }
+
+    if (pathname.startsWith('/api/')) {
+      await handleBackendProxy(req, res, `${backendUrl}${pathname}${url.search}`);
+      return;
+    }
+
     const route = pathname === '/' ? '/index.html' : pathname;
     const assetRoot = route.startsWith('/assets/fonts/') ? resolve(root, '../..') : root;
     const path = resolve(assetRoot, '.' + route);

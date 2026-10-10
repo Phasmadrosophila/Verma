@@ -38,7 +38,7 @@ const previewAssets = new Set([
 ]);
 
 const port = previewPort(5127);
-const backendUrl = process.env.BACKEND_URL || (process.env.API_PORT ? `http://127.0.0.1:${process.env.API_PORT}` : 'http://127.0.0.1:3001');
+const backendUrl = process.env.BACKEND_URL || (process.env.API_PORT ? `http://127.0.0.1:${process.env.API_PORT}` : 'http://127.0.0.1:3000');
 
 async function handleBackendProxy(req, res, targetUrl) {
   try {

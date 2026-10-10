@@ -1,5 +1,6 @@
 import { previewStorage } from './preview-storage.js';
 const storage = previewStorage(location.search);
+const demoMode = new URLSearchParams(location.search).get('demo') === '1';
 import { seedEntries, typeLabels, escapeHtml as esc, filterEntries, findMetadata, generatePassword, sampleImport, prepareImport } from './vault.js';
 
 const paths = {
@@ -73,6 +74,62 @@ function loadStoredEntries() {
 
 function persistEntries(items) {
   try { storage.setItem(STORAGE_KEY_ENTRIES, JSON.stringify(items)); } catch {}
+}
+
+const backend = { online: false, initialized: false, unlocked: false };
+async function apiRequest(path, options = {}) {
+  const response = await fetch(`/api${path}`, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    signal: options.signal || AbortSignal.timeout(5000),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(body.error || `Local API request failed (${response.status})`);
+    error.status = response.status;
+    throw error;
+  }
+  return body;
+}
+function fromBackendEntry(entry) {
+  const type = entry.type === 'api_key' ? 'api' : entry.type;
+  const secret = entry.type === 'login' ? entry.password : entry.type === 'api_key' ? entry.apiKey : entry.content;
+  return {
+    id: entry.id, type, title: entry.title, subtitle: entry.domain || entry.service || entry.category || 'Your secure item',
+    user: entry.username || entry.service || entry.category || '', domain: entry.url || entry.domain || '',
+    tags: Array.isArray(entry.tags) ? entry.tags : [], favorite: false, brand: 'generic', secret: secret || '',
+    updated: entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString() : 'Just now',
+  };
+}
+function toBackendEntry(item) {
+  const common = { title: item.title, tags: item.tags };
+  if (item.type === 'note') return { ...common, type: 'note', content: item.secret || '', category: item.user || undefined };
+  if (item.type === 'api') return { ...common, type: 'api_key', service: item.user || item.title, apiKey: item.secret || '' };
+  return { ...common, type: 'login', username: item.user || '', password: item.secret || '', url: item.domain || '', domain: item.domain || '' };
+}
+async function syncBackend() {
+  if (demoMode) return;
+  try {
+    const health = await fetch('/health', { signal: AbortSignal.timeout(1500) });
+    if (!health.ok) throw new Error('Local API health check failed');
+    backend.online = true;
+    const status = await apiRequest('/vault/status');
+    backend.initialized = Boolean(status.isInitialized);
+    backend.unlocked = status.status === 'unlocked';
+    if (backend.unlocked) {
+      const result = await apiRequest('/entries');
+      entries = (result.entries || []).map(fromBackendEntry);
+      nextId = entries.length ? Math.max(...entries.map(e => Number(e.id) || 0)) + 1 : 100;
+      persistEntries(entries);
+      if (state.locked) { state.locked = false; state.screen = 'main'; }
+      render();
+    } else if (backend.initialized && state.screen === 'main') {
+      state.locked = true;
+      render();
+    }
+  } catch {
+    backend.online = false;
+  }
 }
 
 const state = {
@@ -309,16 +366,29 @@ function editSheet(item = null) {
       };
       $('#item-type').onchange = syncType; syncType();
       $('#generate').onclick = () => { $('#item-secret').value = generatePassword(); toast('A fresh password, generated on this device'); };
-      $('#item-form').onsubmit = event => {
+      $('#item-form').onsubmit = async event => {
         event.preventDefault();
         const title = $('#item-title').value.trim();
         if (!title) { $('#item-error').textContent = 'Give this item a name first.'; $('#item-title').focus(); return; }
         const updated = { id: item?.id || nextId++, type: $('#item-type').value, title, user: $('#item-user').value.trim(), domain: $('#item-domain').value.trim(), secret: $('#item-secret').value, tags: $('#item-tag').value.split(',').map(tag => tag.trim()).filter(Boolean), subtitle: item?.subtitle || 'Your secure item', favorite: item?.favorite || false, brand: item?.brand || 'generic', updated: 'Just now' };
-        if (item) entries[entries.findIndex(entry => entry.id === item.id)] = updated; else entries.unshift(updated);
-        persistEntries(entries);
-        state.query = ''; state.filter = 'all'; closeSheet(false); navTo('vault'); toast(item ? 'Changes saved locally' : 'Item securely saved');
+        try {
+          if (backend.unlocked) {
+            const result = item
+              ? await apiRequest(`/entries/${encodeURIComponent(item.id)}`, { method: 'PUT', body: JSON.stringify(toBackendEntry(updated)) })
+              : await apiRequest('/entries', { method: 'POST', body: JSON.stringify(toBackendEntry(updated)) });
+            const saved = fromBackendEntry(result.entry);
+            if (item) entries[entries.findIndex(entry => entry.id === item.id)] = { ...updated, ...saved };
+            else entries.unshift({ ...updated, ...saved });
+          } else {
+            if (item) entries[entries.findIndex(entry => entry.id === item.id)] = updated; else entries.unshift(updated);
+            persistEntries(entries);
+          }
+          state.query = ''; state.filter = 'all'; closeSheet(false); navTo('vault'); toast(item ? 'Changes saved locally' : 'Item securely saved');
+        } catch (error) {
+          $('#item-error').textContent = error.message || 'Could not save this item.';
+        }
       };
-      if (item) $('#delete-item').onclick = () => openSheet('Delete item?', `<p class="small muted">${esc(item.title)} will be permanently removed from your encrypted vault.</p><div class="sheet-actions"><button class="button primary" id="confirm-delete">Delete item</button><button class="button ghost" id="keep-item">Keep it</button></div>`, () => { $('#keep-item').onclick = () => entrySheet(item.id); $('#confirm-delete').onclick = () => { entries = entries.filter(entry => entry.id !== item.id); persistEntries(entries); closeSheet(false); render(); toast('Item removed'); }; });
+      if (item) $('#delete-item').onclick = () => openSheet('Delete item?', `<p class="small muted">${esc(item.title)} will be permanently removed from your encrypted vault.</p><div class="sheet-actions"><button class="button primary" id="confirm-delete">Delete item</button><button class="button ghost" id="keep-item">Keep it</button></div>`, () => { $('#keep-item').onclick = () => entrySheet(item.id); $('#confirm-delete').onclick = async () => { try { if (backend.unlocked) await apiRequest(`/entries/${encodeURIComponent(item.id)}`, { method: 'DELETE' }); entries = entries.filter(entry => entry.id !== item.id); persistEntries(entries); closeSheet(false); render(); toast('Item removed'); } catch (error) { toast(error.message || 'Could not remove item'); } }; });
     });
 }
 
@@ -345,15 +415,98 @@ function renderAsk() {
   }
 }
 function runAsk(query) {
-  if (!query.trim()) { $('#ask-query').focus(); toast('A few words will do. What are you looking for?'); return; }
-  state.askQuery = query.trim(); showAskResults(); $('#ask-query').blur();
+  if (!query.trim()) { $('#ask-query')?.focus(); toast('A few words will do. What are you looking for?'); return; }
+  state.askQuery = query.trim(); showAskResults(); $('#ask-query')?.blur();
 }
-function showAskResults() {
+async function showAskResults() {
   if (state.locked || !state.assistant || !$('#ask-results')) return;
-  const results = findMetadata(entries, state.askQuery);
   $('#prompt-block').hidden = true;
-  $('#ask-results').innerHTML = `<div class="section-label"><h2>${results.length ? `This might be your ${results.length === 1 ? 'one' : 'match'}.` : 'Not quite ringing a bell.'}</h2><button class="small-action" id="reset-ask">Start over</button></div>${results.length ? results.map(({entry,matched},i) => `<div class="result-card">${row(entry)}<p class="match-explanation">${i === 0 ? 'Best match' : 'Also found'} · ${esc(matched.join(', '))}</p></div>`).join('') : '<div class="empty"><strong>Try a different little clue.</strong><p>A website, a tag, or part of its name usually helps.</p><button class="text-button" data-tab="vault">Look through my vault</button></div>'}`;
-  $('#reset-ask').onclick = () => { state.askQuery = ''; renderAsk(); $('#ask-query').focus(); };
+  $('#ask-results').innerHTML = `<div class="ai-loading-box"><span class="live-dot" style="background:var(--peri)"></span><span>Consulting local on-device AI...</span></div>`;
+
+  let aiAnswer = null;
+  let relevantIds = [];
+  let isAiOffline = false;
+
+  try {
+    // Only pass non-secret metadata: strictly NO secrets, passwords, or note contents (AGENTS.md §3.1)
+    const redactedMetadata = entries.map(e => ({
+      id: String(e.id),
+      title: e.title,
+      type: e.type,
+      domain: e.domain,
+      tags: e.tags,
+      fieldLabels: [e.type === 'login' ? 'username' : 'name']
+    }));
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // When the encrypted local vault is unlocked, the API performs the
+      // trusted metadata projection. Offline/demo mode sends the same
+      // allowlisted projection explicitly and never includes secret values.
+      body: JSON.stringify(backend.unlocked ? { query: state.askQuery } : { query: state.askQuery, metadata: redactedMetadata }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.answer) {
+        aiAnswer = data.answer;
+        if (Array.isArray(data.relevantEntryIds)) {
+          relevantIds = data.relevantEntryIds.map(String);
+        }
+      }
+    } else {
+      isAiOffline = true;
+    }
+  } catch {
+    isAiOffline = true;
+  }
+
+  // Check if AI output indicated fallback/offline
+  if (!aiAnswer || aiAnswer.includes('unavailable or disabled') || isAiOffline) {
+    isAiOffline = true;
+  }
+
+  // Resolve matching entries
+  let results = [];
+  if (relevantIds.length > 0) {
+    const entryMap = new Map(entries.map(e => [String(e.id), e]));
+    results = relevantIds
+      .map(id => entryMap.get(id))
+      .filter(Boolean)
+      .map(e => ({ entry: e, matched: ['AI matched'] }));
+  }
+
+  // If AI matched nothing or is offline, fall back to deterministic metadata search
+  if (results.length === 0) {
+    results = findMetadata(entries, state.askQuery);
+  }
+
+  if (!$('#ask-results')) return;
+
+  const badgeHtml = isAiOffline
+    ? `<span class="pill muted" style="margin-bottom:8px;display:inline-flex;align-items:center;gap:4px;">${icon('shield')} Local search (AI offline fallback)</span>`
+    : `<span class="pill blue" style="margin-bottom:8px;display:inline-flex;align-items:center;gap:4px;">${icon('spark')} On-device Local AI</span>`;
+
+  const explanationHtml = aiAnswer && !isAiOffline
+    ? `<div class="ai-response-bubble"><p>${esc(aiAnswer)}</p></div>`
+    : '';
+
+  $('#ask-results').innerHTML = `
+    <div class="section-label">
+      <h2>${results.length ? `This might be your ${results.length === 1 ? 'one' : 'match'}.` : 'Not quite ringing a bell.'}</h2>
+      <button class="small-action" id="reset-ask">Start over</button>
+    </div>
+    <div style="margin-bottom:12px;">${badgeHtml}${explanationHtml}</div>
+    ${results.length ? results.map(({entry,matched},i) => `<div class="result-card">${row(entry)}<p class="match-explanation">${i === 0 ? 'Best match' : 'Also found'} · ${esc(matched.join(', '))}</p></div>`).join('') : '<div class="empty"><strong>Try a different little clue.</strong><p>A website, a tag, or part of its name usually helps.</p><button class="text-button" data-tab="vault">Look through my vault</button></div>'}
+  `;
+  const resetBtn = $('#reset-ask');
+  if (resetBtn) resetBtn.onclick = () => { state.askQuery = ''; renderAsk(); $('#ask-query')?.focus(); };
 }
 
 function steps(step) { return `<div class="steps" aria-label="Step ${step} of 3">${[1,2,3].map(i => `<span class="${i <= step ? 'active' : ''}"></span>`).join('')}</div>`; }
@@ -407,23 +560,31 @@ function pairSheet() {
 
 function lockVault() {
   if (state.locked) { $('#unlock-passphrase')?.focus(); return; }
-  closeSheet(false); state.locked = true; state.askQuery = ''; state.query = ''; render(true); toast('Your vault is locked.');
+  closeSheet(false);
+  const finish = () => { state.locked = true; backend.unlocked = false; state.askQuery = ''; state.query = ''; render(true); toast('Your vault is locked.'); };
+  if (backend.unlocked) apiRequest('/vault/lock', { method: 'POST' }).catch(() => {}).finally(finish); else finish();
 }
 function renderLocked() {
   content.innerHTML = `<section class="lock-page"><div class="lock-art">${icon('lock')}<span class="little-star" aria-hidden="true">✳</span></div><div class="eyebrow">ENCRYPTED AT REST</div><h1 tabindex="-1" class="mt-sm">Welcome back.</h1><p>Your vault is encrypted locally.<br>Unlock it when you’re ready.</p><form id="unlock-form" style="width:100%"><div class="input-group"><label for="unlock-passphrase">Master passphrase</label><input class="input" id="unlock-passphrase" type="password" autocomplete="off" required placeholder="Enter master passphrase"><p class="field-hint">Your secrets are protected with zero-knowledge cryptography.</p><p class="error-text" id="unlock-error" role="alert"></p></div><button class="button primary" type="submit">${icon('lock')}Unlock vault</button></form><button class="text-button mt-sm" id="recovery-help">Vault recovery options</button></section>`;
-  $('#unlock-form').onsubmit = e => {
+  $('#unlock-form').onsubmit = async e => {
     e.preventDefault();
     const entered = $('#unlock-passphrase').value;
-    const target = state.passphrase || 'verma-demo';
-    if (entered !== target && entered !== 'verma-demo') {
-      $('#unlock-error').textContent = 'Incorrect master passphrase. Try again.';
-      $('#unlock-passphrase').focus();
-      return;
+    if (backend.initialized && backend.online) {
+      try {
+        await apiRequest('/vault/unlock', { method: 'POST', body: JSON.stringify({ password: entered }) });
+        backend.unlocked = true; state.locked = false; state.screen = 'main';
+        const result = await apiRequest('/entries');
+        entries = (result.entries || []).map(fromBackendEntry); nextId = entries.length ? Math.max(...entries.map(e => Number(e.id) || 0)) + 1 : 100;
+        render(true); toast('Vault unlocked');
+        return;
+      } catch (error) {
+        $('#unlock-error').textContent = error.status === 401 ? 'Incorrect master passphrase. Try again.' : (error.message || 'Could not unlock the local vault.');
+        $('#unlock-passphrase').focus(); return;
+      }
     }
-    state.locked = false;
-    state.screen = 'main';
-    render(true);
-    toast('Vault unlocked');
+    const target = state.passphrase || 'verma-demo';
+    if (entered !== target && entered !== 'verma-demo') { $('#unlock-error').textContent = 'Incorrect master passphrase. Try again.'; $('#unlock-passphrase').focus(); return; }
+    state.locked = false; state.screen = 'main'; render(true); toast('Vault unlocked locally');
   };
   $('#recovery-help').onclick = () => openSheet('Vault Recovery', '<p class="small muted">Verma uses zero-knowledge cryptography. If you lose your master passphrase, you can restore access using your 24-word recovery phrase generated during setup.</p><div class="notice warm mt"><div><strong>Offline recovery rule</strong><p>Because secret keys never leave your device, Verma cannot recover a lost vault without your recovery phrase.</p></div></div><div class="sheet-actions"><button class="button primary" data-action="close">Understood</button></div>');
 }
@@ -455,13 +616,17 @@ function renderSetup() {
   const setupDir = state.setupDir || 'next';
   if (state.setup === 1) {
     content.innerHTML = `<section class="setup-page slide-${setupDir}">${steps(1)}<div class="setup-heading"><div class="eyebrow">CREATE MASTER KEY</div><h1 tabindex="-1" class="mt-sm">Every little universe<br>needs a key.</h1><p>Choose a strong master passphrase to protect your encrypted vault.</p></div><form id="setup-form" class="stack"><div class="input-group"><label for="setup-pass">Master passphrase</label><input class="input" id="setup-pass" type="password" required minlength="8" autocomplete="new-password"><p class="field-hint">Use at least 8 characters. Your master key is derived locally using Argon2id.</p></div><div class="input-group"><label for="confirm-pass">Once more, to be sure</label><input class="input" id="confirm-pass" type="password" required autocomplete="new-password"></div><p id="setup-error" class="error-text" role="alert"></p><button class="button primary" type="submit">Continue ${icon('arrow')}</button><button class="button ghost" type="button" data-tab="vault">Cancel</button></form></section>`;
-    $('#setup-form').onsubmit = e => {
+    $('#setup-form').onsubmit = async e => {
       e.preventDefault();
       const value = $('#setup-pass').value;
       if (value !== $('#confirm-pass').value) {
         $('#setup-error').textContent = 'Those passphrases don’t quite match. Try once more.';
         $('#confirm-pass').focus();
         return;
+      }
+      if (backend.online && !backend.initialized) {
+        try { await apiRequest('/vault/init', { method: 'POST', body: JSON.stringify({ password: value }) }); backend.initialized = true; backend.unlocked = true; }
+        catch (error) { $('#setup-error').textContent = error.message || 'Could not create the local vault.'; return; }
       }
       state.passphrase = value;
       try { storage.setItem(STORAGE_KEY_PASSPHRASE, value); } catch {}
@@ -509,3 +674,4 @@ function readPreviewRoute() {
 window.addEventListener('hashchange', () => { if (state.locked) return; closeSheet(false); readPreviewRoute(); render(true); });
 readPreviewRoute();
 render();
+syncBackend();

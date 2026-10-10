@@ -12,6 +12,10 @@ pnpm preview:mobile
 pnpm preview:mobile --port 6128
 ```
 
+To connect the preview to the encrypted local API, run `pnpm dev` in another
+terminal and open the landing server at `http://localhost:5127/app#vault`.
+The preview proxies `/api/*` to `127.0.0.1:3000`; no remote backend is used.
+
 Open http://localhost:5128/?demo=1#vault for the reproducible six-entry design.
 Use `?demo=1#welcome` for onboarding. Demo mode never reads or writes persisted
 browser data. Without demo=1, the existing browser state remains available.
