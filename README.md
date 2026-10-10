@@ -59,12 +59,16 @@ The desktop app combines an Hono API, a local SQLite vault, explicit secret mask
 
 Prerequisites: Node.js 22 or newer and pnpm 12 (pinned via the `packageManager` field as pnpm@12.8.1; Corepack enabled). From a fresh clone, run `pnpm install`, then:
 
+Backend:
 ```powershell
-pnpm dev:integration
+pnpm dev
 ```
 
-> [!WARNING]
-> This command is documented and implemented, but has not been re-run from a clean clone during this documentation pass. Treat clean-clone setup as **unverified** until `pnpm test:integration` and a browser check pass on the target machine.
+Frontend:
+```powershell
+pnpm start
+```
+
 
 The runner starts:
 
