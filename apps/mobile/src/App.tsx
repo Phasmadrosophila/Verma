@@ -48,6 +48,7 @@ type LoadState = 'loading' | 'ready' | 'error';
 
 export function App() {
   const [hasOnboarded, setHasOnboarded] = useState<boolean | null>(null);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const [currentTab, setCurrentTab] = useState<NavTab>('vault');
 
@@ -177,12 +178,31 @@ export function App() {
     );
   }
 
-  // 1. Onboarding Flow
+  // 1. Onboarding Flow (Vault Not Initialized)
   if (!hasOnboarded) {
+    if (showWelcome) {
+      return (
+        <SafeAreaView style={styles.safeContainer}>
+          <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+          <WelcomeScreen onComplete={() => setShowWelcome(false)} />
+        </SafeAreaView>
+      );
+    }
+
     return (
       <SafeAreaView style={styles.safeContainer}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
-        <WelcomeScreen onComplete={() => setHasOnboarded(true)} />
+        <SetupScreen 
+          onSetupComplete={(password, action) => {
+            setHasOnboarded(true);
+            setIsLocked(false);
+            if (action === 'import') {
+              setCurrentTab('import');
+            } else {
+              setCurrentTab('vault');
+            }
+          }} 
+        />
       </SafeAreaView>
     );
   }
