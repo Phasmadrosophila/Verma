@@ -57,3 +57,24 @@ the synthetic fixture database described above. Issue #55 (Expo mobile backend i
 client uses `EXPO_PUBLIC_API_URL` as its configurable API base URL (default
 `http://localhost:3000`) and must point at a reachable LAN address when running
 on a physical device.
+
+For mobile device testing, start the API with `pnpm dev` and set the base URL
+for the device runtime as follows:
+
+```text
+# Android emulator
+$env:EXPO_PUBLIC_API_URL = 'http://10.0.2.2:3000'; pnpm mobile:start
+
+# Physical Android device over USB
+adb reverse tcp:3000 tcp:3000
+$env:EXPO_PUBLIC_API_URL = 'http://localhost:3000'; pnpm mobile:start
+
+# Physical device on the same LAN as the development machine
+$env:EXPO_PUBLIC_API_URL = 'http://<developer-machine-ip>:3000'; pnpm mobile:start
+```
+
+The mobile app reads `GET /api/vault/status` on startup, initializes or unlocks
+the remote vault through the vault lifecycle routes, lists entries through the
+secret-free `/api/metadata` endpoint, and uses `/api/import/analyze` followed by
+explicit `/api/import/confirm` for CSV imports. Imported preview state excludes
+raw CSV source values and keeps passwords masked.

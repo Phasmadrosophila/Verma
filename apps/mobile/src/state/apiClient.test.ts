@@ -229,3 +229,81 @@ test('checkHealth: reports reachable API and handles HTTP and transport failures
     }
   }
 });
+
+test('apiClient: vault lifecycle methods use the backend routes', async () => {
+  const { calls, restore } = mockFetch((url) => {
+    if (url.endsWith('/api/vault/status')) {
+      return { body: { status: 'uninitialized', isLocked: true, isInitialized: false } };
+    }
+    return { body: { success: true } };
+  });
+
+  try {
+    const status = await apiClient.getVaultStatus();
+    await apiClient.initializeVault('synthetic-password');
+    await apiClient.unlockVault('synthetic-password');
+    await apiClient.lockVault();
+
+    assert.equal(status.isInitialized, false);
+    assert.deepEqual(
+      calls.map((call) => [call.url, call.init?.method ?? 'GET']),
+      [
+        [`${apiClient.baseUrl}/api/vault/status`, 'GET'],
+        [`${apiClient.baseUrl}/api/vault/init`, 'POST'],
+        [`${apiClient.baseUrl}/api/vault/unlock`, 'POST'],
+        [`${apiClient.baseUrl}/api/vault/lock`, 'POST'],
+      ]
+    );
+  } finally {
+    restore();
+  }
+});
+
+test('apiClient: import analysis strips raw source data and confirm/cancel use staging', async () => {
+  const { calls, restore } = mockFetch((url) => {
+    if (url.endsWith('/api/import/analyze')) {
+      return {
+        body: {
+          stagingId: 'staging-1',
+          proposal: {
+            sourceType: 'browser_csv',
+            totalRows: 1,
+            columns: ['name', 'password'],
+            mappings: [],
+            duplicateGroups: [],
+            suggestedTags: ['Work'],
+            previewRows: [{
+              rowIndex: 0,
+              sourceData: { password: 'must-not-be-retained' },
+              proposedEntry: {
+                type: 'login',
+                title: 'Example',
+                username: 'synthetic-user',
+                passwordMasked: '••••••••',
+                tags: ['Work'],
+              },
+              isDuplicate: false,
+              status: 'ready',
+              warnings: [],
+            }],
+          },
+        },
+      };
+    }
+    return { body: { importedCount: 1, failedCount: 0, failedRows: [] } };
+  });
+
+  try {
+    const analysis = await apiClient.analyzeImport('name,password\nExample,synthetic-secret');
+    assert.equal(analysis.stagingId, 'staging-1');
+    assert.equal(analysis.proposal.previewRows[0].passwordMasked, '••••••••');
+    assert.equal(JSON.stringify(analysis).includes('must-not-be-retained'), false);
+
+    await apiClient.confirmImport('staging-1', [0]);
+    await apiClient.cancelImport('staging-1');
+    assert.equal(calls[1].init?.body, JSON.stringify({ stagingId: 'staging-1', confirmedRowIndices: [0], additionalTags: [] }));
+    assert.equal(calls[2].init?.body, JSON.stringify({ stagingId: 'staging-1' }));
+  } finally {
+    restore();
+  }
+});

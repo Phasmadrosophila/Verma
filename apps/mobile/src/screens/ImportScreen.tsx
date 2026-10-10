@@ -1,395 +1,167 @@
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  ImportCandidate,
-  MobileVaultEntry,
-  generatePassword,
-  sampleImportRows,
-} from '../state/vaultStore';
+import { ApiError, apiClient, ImportAnalysis } from '../state/apiClient';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface ImportScreenProps {
-  onCommitImport: (newEntries: MobileVaultEntry[]) => void;
+  onCommitImport: () => void;
 }
 
 export const ImportScreen: React.FC<ImportScreenProps> = ({ onCommitImport }) => {
-  const [candidates, setCandidates] = useState<ImportCandidate[]>(sampleImportRows);
-  const [source, setSource] = useState('Google Chrome');
+  const [csvContent, setCsvContent] = useState('');
+  const [analysis, setAnalysis] = useState<ImportAnalysis | null>(null);
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleAccepted = (id: string | number) => {
-    setCandidates((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, accepted: !c.accepted } : c))
+  const analyze = async () => {
+    if (!csvContent.trim()) {
+      setError('Paste a CSV export before analyzing it.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await apiClient.analyzeImport(csvContent);
+      setAnalysis(result);
+      setSelectedRows(result.proposal.previewRows.map((row) => row.rowIndex));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not analyze this CSV.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const cancel = async () => {
+    if (analysis) await apiClient.cancelImport(analysis.stagingId).catch(() => undefined);
+    setAnalysis(null);
+    setSelectedRows([]);
+  };
+
+  const confirm = async () => {
+    if (!analysis || selectedRows.length === 0) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await apiClient.confirmImport(analysis.stagingId, selectedRows);
+      onCommitImport();
+      if (result.failedCount > 0) {
+        setError(`${result.importedCount} imported; ${result.failedCount} rows could not be imported.`);
+      }
+      setAnalysis(null);
+      setSelectedRows([]);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not confirm this import.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleRow = (rowIndex: number) => {
+    setSelectedRows((current) =>
+      current.includes(rowIndex)
+        ? current.filter((index) => index !== rowIndex)
+        : [...current, rowIndex]
     );
   };
 
-  const handleSelectAll = () => {
-    const allAccepted = candidates.every((c) => c.accepted);
-    setCandidates((prev) => prev.map((c) => ({ ...c, accepted: !allAccepted })));
-  };
-
-  const handleCommit = () => {
-    const acceptedItems = candidates.filter((c) => c.accepted);
-    const converted: MobileVaultEntry[] = acceptedItems.map((c) => ({
-      id: typeof c.id === 'number' ? Date.now() + c.id : `import-${Date.now()}-${c.id}`,
-      type: c.type,
-      title: c.title,
-      subtitle: c.subtitle,
-      user: c.user,
-      domain: c.domain,
-      tags: [c.tag],
-      favorite: false,
-      brand: c.brand,
-      secret: c.type === 'api' ? `sk_live_${generatePassword(24)}` : generatePassword(20),
-      updated: 'Just imported',
-    }));
-
-    onCommitImport(converted);
-  };
-
-  const acceptedCount = candidates.filter((c) => c.accepted).length;
-
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <View style={styles.tagBadge}>
-          <Text style={styles.tagBadgeText}>SMART IMPORT</Text>
-        </View>
+        <View style={styles.tagBadge}><Text style={styles.tagBadgeText}>SMART IMPORT</Text></View>
         <Text style={styles.title}>Messy CSV Cleanup</Text>
         <Text style={styles.subtitle}>
-          Preview browser exports. Verma groups duplicates and suggests tags before
-          anything is committed to encrypted storage.
+          Analyze a browser export, review masked previews, and confirm only the rows you want to store.
         </Text>
       </View>
 
-      {/* Source selector */}
-      <View style={styles.sourceCard}>
-        <Text style={styles.sourceLabel}>IMPORT SOURCE</Text>
-        <View style={styles.sourcePills}>
-          {['Google Chrome', '1Password', 'Bitwarden', 'Apple'].map((s) => (
-            <TouchableOpacity
-              key={s}
-              onPress={() => setSource(s)}
-              style={[
-                styles.sourcePill,
-                source === s && styles.sourcePillActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.sourcePillText,
-                  source === s && styles.sourcePillTextActive,
-                ]}
-              >
-                {s}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Candidates List Header */}
-      <View style={styles.listHeaderRow}>
-        <Text style={styles.listHeaderTitle}>
-          CANDIDATES ({acceptedCount}/{candidates.length} SELECTED)
-        </Text>
-        <TouchableOpacity onPress={handleSelectAll}>
-          <Text style={styles.selectAllText}>
-            {acceptedCount === candidates.length ? 'Deselect All' : 'Select All'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Candidate Items */}
-      <View style={styles.candidatesList}>
-        {candidates.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={[
-              styles.candidateCard,
-              item.duplicate && styles.duplicateCard,
-              item.accepted && styles.candidateCardAccepted,
-            ]}
-            onPress={() => toggleAccepted(item.id)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.candidateTop}>
-              <View style={styles.leftCol}>
-                <View style={styles.checkboxWrapper}>
-                  <View
-                    style={[
-                      styles.checkbox,
-                      item.accepted && styles.checkboxActive,
-                    ]}
-                  >
-                    {item.accepted && <Text style={styles.checkmark}>✓</Text>}
-                  </View>
-                </View>
-
-                <View style={styles.infoCol}>
-                  <View style={styles.nameRow}>
-                    <Text style={styles.itemTitle}>{item.title}</Text>
-                    {item.duplicate && (
-                      <View style={styles.duplicateTag}>
-                        <Text style={styles.duplicateTagText}>DUPLICATE</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.itemUser}>{item.user}</Text>
-                </View>
-              </View>
-
-              <View style={styles.tagPill}>
-                <Text style={styles.tagPillText}>{item.tag}</Text>
-              </View>
-            </View>
-
-            {item.duplicate && (
-              <View style={styles.duplicateWarning}>
-                <Text style={styles.duplicateWarningText}>
-                  Existing entry found for {item.domain}. Select to overwrite or keep existing.
-                </Text>
-              </View>
-            )}
+      {!analysis ? (
+        <>
+          <TextInput
+            multiline
+            value={csvContent}
+            onChangeText={setCsvContent}
+            placeholder="Paste your sanitized CSV export here"
+            placeholderTextColor={colors.textMuted}
+            style={styles.csvInput}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity style={styles.primaryButton} onPress={analyze} disabled={busy}>
+            {busy ? <ActivityIndicator color={colors.paper} /> : <Text style={styles.primaryButtonText}>Analyze CSV</Text>}
           </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Commit Action */}
-      <TouchableOpacity
-        style={[styles.commitBtn, acceptedCount === 0 && styles.commitBtnDisabled]}
-        onPress={handleCommit}
-        disabled={acceptedCount === 0}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.commitBtnText}>
-          Import {acceptedCount} {acceptedCount === 1 ? 'Item' : 'Items'} to Vault
-        </Text>
-      </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>{analysis.proposal.totalRows} rows found</Text>
+            <Text style={styles.summaryText}>
+              {selectedRows.length} selected · {analysis.proposal.duplicateGroups.length} duplicate groups
+            </Text>
+          </View>
+          {analysis.proposal.previewRows.map((row) => {
+            const selected = selectedRows.includes(row.rowIndex);
+            return (
+              <TouchableOpacity key={row.rowIndex} style={styles.rowCard} onPress={() => toggleRow(row.rowIndex)}>
+                <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                  {selected && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <View style={styles.rowContent}>
+                  <Text style={styles.rowTitle}>{row.title || 'Untitled entry'}</Text>
+                  <Text style={styles.rowMeta}>{row.username || row.domain || 'No username or domain'}</Text>
+                  <Text style={styles.rowSecret}>{row.passwordMasked}</Text>
+                  {row.isDuplicate && <Text style={styles.warning}>Duplicate candidate</Text>}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+          <View style={styles.actions}>
+            <TouchableOpacity style={styles.secondaryButton} onPress={cancel} disabled={busy}>
+              <Text style={styles.secondaryButtonText}>Discard</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.primaryButton} onPress={confirm} disabled={busy || selectedRows.length === 0}>
+              {busy ? <ActivityIndicator color={colors.paper} /> : <Text style={styles.primaryButtonText}>Confirm Import</Text>}
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+      {error && <Text style={styles.error}>{error}</Text>}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface,
-  },
-  contentContainer: {
-    paddingHorizontal: spacing.xxl,
-    paddingTop: spacing.lg,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: spacing.lg,
-  },
-  tagBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.warm,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radii.pill,
-    marginBottom: spacing.sm,
-  },
-  tagBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#8F5413',
-    letterSpacing: 1,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: -0.6,
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: colors.textMuted,
-  },
-  sourceCard: {
-    backgroundColor: colors.cardBg,
-    borderRadius: radii.xl,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-    gap: spacing.sm,
-  },
-  sourceLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: colors.textMuted,
-    letterSpacing: 1,
-  },
-  sourcePills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  sourcePill: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: '#E6DACE',
-  },
-  sourcePillActive: {
-    backgroundColor: colors.brandOrange,
-    borderColor: colors.brandOrange,
-  },
-  sourcePillText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.textMuted,
-  },
-  sourcePillTextActive: {
-    color: colors.text,
-    fontWeight: '700',
-  },
-  listHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  listHeaderTitle: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: colors.textMuted,
-    letterSpacing: 1,
-  },
-  selectAllText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.brandPeri,
-  },
-  candidatesList: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  candidateCard: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: '#EFE7DE',
-    borderRadius: radii.lg,
-    padding: spacing.md,
-  },
-  candidateCardAccepted: {
-    borderColor: colors.brandOrange,
-  },
-  duplicateCard: {
-    backgroundColor: '#FFF8F4',
-    borderColor: '#FCD2B3',
-  },
-  candidateTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  leftCol: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    flex: 1,
-  },
-  checkboxWrapper: {
-    justifyContent: 'center',
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#C5B5A3',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-  },
-  checkboxActive: {
-    backgroundColor: colors.brandOrange,
-    borderColor: colors.brandOrange,
-  },
-  checkmark: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.text,
-  },
-  infoCol: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  itemTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  duplicateTag: {
-    backgroundColor: '#FDE1D3',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: radii.pill,
-  },
-  duplicateTagText: {
-    fontSize: 8,
-    fontWeight: '800',
-    color: colors.danger,
-    letterSpacing: 0.5,
-  },
-  itemUser: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  tagPill: {
-    backgroundColor: colors.assist,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radii.pill,
-  },
-  tagPillText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#4F66BD',
-  },
-  duplicateWarning: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: '#F5E4D8',
-  },
-  duplicateWarningText: {
-    fontSize: 10,
-    color: '#9E5B28',
-  },
-  commitBtn: {
-    backgroundColor: colors.brandOrange,
-    paddingVertical: 16,
-    borderRadius: radii.pill,
-    alignItems: 'center',
-    elevation: 2,
-  },
-  commitBtnDisabled: {
-    opacity: 0.5,
-  },
-  commitBtnText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-  },
+  container: { flex: 1, backgroundColor: colors.surface },
+  contentContainer: { padding: spacing.xl, gap: spacing.md },
+  header: { gap: spacing.sm, marginBottom: spacing.md },
+  tagBadge: { alignSelf: 'flex-start', backgroundColor: colors.assist, borderRadius: radii.pill, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+  tagBadgeText: { color: colors.brandPeri, fontSize: typography.sizeXs, fontWeight: '700', letterSpacing: 1 },
+  title: { color: colors.text, fontSize: typography.sizeXl, fontWeight: '800' },
+  subtitle: { color: colors.textMuted, fontSize: typography.sizeSm, lineHeight: 20 },
+  csvInput: { minHeight: 220, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, backgroundColor: colors.paper, color: colors.text, padding: spacing.md, textAlignVertical: 'top' },
+  primaryButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.brandOrange, borderRadius: radii.md, paddingHorizontal: spacing.lg, flex: 1 },
+  primaryButtonText: { color: colors.paper, fontWeight: '700' },
+  secondaryButton: { minHeight: 48, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, paddingHorizontal: spacing.lg, flex: 1 },
+  secondaryButtonText: { color: colors.text, fontWeight: '700' },
+  summaryCard: { backgroundColor: colors.assist, borderRadius: radii.md, padding: spacing.md },
+  summaryTitle: { color: colors.text, fontWeight: '800' },
+  summaryText: { color: colors.textMuted, marginTop: spacing.xs },
+  rowCard: { flexDirection: 'row', gap: spacing.md, backgroundColor: colors.paper, borderRadius: radii.md, padding: spacing.md, borderWidth: 1, borderColor: colors.border },
+  checkbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  checkboxSelected: { backgroundColor: colors.brandPeri, borderColor: colors.brandPeri },
+  checkmark: { color: colors.paper, fontWeight: '800' },
+  rowContent: { flex: 1, gap: spacing.xs },
+  rowTitle: { color: colors.text, fontWeight: '700' },
+  rowMeta: { color: colors.textMuted, fontSize: typography.sizeSm },
+  rowSecret: { color: colors.textMuted, letterSpacing: 1 },
+  warning: { color: colors.brandOrange, fontSize: typography.sizeXs, fontWeight: '700' },
+  actions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
+  error: { color: colors.danger, fontSize: typography.sizeSm },
 });

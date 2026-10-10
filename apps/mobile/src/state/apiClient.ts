@@ -69,6 +69,45 @@ export interface EntryDraft {
   secret: string;
 }
 
+export interface ImportPreviewRow {
+  rowIndex: number;
+  title: string;
+  username: string;
+  domain?: string;
+  tags: string[];
+  passwordMasked: string;
+  isDuplicate: boolean;
+  duplicateGroupId?: string;
+  status: string;
+  warnings: string[];
+}
+
+export interface ImportProposal {
+  sourceType: string;
+  totalRows: number;
+  columns: string[];
+  mappings: Array<{
+    sourceColumn: string;
+    targetField: string;
+    confidence: string;
+    suggestedBy: string;
+  }>;
+  duplicateGroups: Array<{ id: string; reason: string; candidates: unknown[] }>;
+  previewRows: ImportPreviewRow[];
+  suggestedTags: string[];
+}
+
+export interface ImportAnalysis {
+  stagingId: string;
+  proposal: ImportProposal;
+}
+
+export interface ImportConfirmation {
+  importedCount: number;
+  failedCount: number;
+  failedRows: Array<{ rowIndex: number; reason: string }>;
+}
+
 // ---------------------------------------------------------------------------
 // type mapping: mobile 'api' <-> wire 'api_key'
 // ---------------------------------------------------------------------------
@@ -260,6 +299,13 @@ export const apiClient = {
     return request<VaultStatus>('/api/vault/status');
   },
 
+  async initializeVault(password: string): Promise<void> {
+    await request('/api/vault/init', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  },
+
   async unlockVault(password: string): Promise<void> {
     await request('/api/vault/unlock', {
       method: 'POST',
@@ -311,6 +357,55 @@ export const apiClient = {
     return request<AskResult>('/api/ask', {
       method: 'POST',
       body: JSON.stringify({ query }),
+    });
+  },
+
+  async analyzeImport(csvContent: string): Promise<ImportAnalysis> {
+    const data = await request<{ stagingId: string; proposal: any }>('/api/import/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ csvContent }),
+    });
+    return {
+      stagingId: data.stagingId,
+      proposal: {
+        sourceType: data.proposal.sourceType,
+        totalRows: data.proposal.totalRows,
+        columns: data.proposal.columns ?? [],
+        mappings: data.proposal.mappings ?? [],
+        duplicateGroups: data.proposal.duplicateGroups ?? [],
+        suggestedTags: data.proposal.suggestedTags ?? [],
+        // Never retain sourceData or any unmasked secret value in mobile state.
+        previewRows: (data.proposal.previewRows ?? []).map((row: any) => ({
+          rowIndex: row.rowIndex,
+          title: row.proposedEntry?.title ?? '',
+          username: row.proposedEntry?.username ?? '',
+          domain: row.proposedEntry?.domain,
+          tags: row.proposedEntry?.tags ?? [],
+          passwordMasked: row.proposedEntry?.passwordMasked ?? '••••••••',
+          isDuplicate: Boolean(row.isDuplicate),
+          duplicateGroupId: row.duplicateGroupId,
+          status: row.status ?? 'ready',
+          warnings: row.warnings ?? [],
+        })),
+      },
+    };
+  },
+
+  async confirmImport(
+    stagingId: string,
+    confirmedRowIndices: number[],
+    additionalTags: string[] = []
+  ): Promise<ImportConfirmation> {
+    return request<ImportConfirmation>('/api/import/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ stagingId, confirmedRowIndices, additionalTags }),
+    });
+  },
+
+  async cancelImport(stagingId: string): Promise<void> {
+    await request('/api/import/cancel', {
+      method: 'POST',
+      body: JSON.stringify({ stagingId }),
     });
   },
 };

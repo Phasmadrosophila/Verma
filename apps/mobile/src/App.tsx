@@ -48,7 +48,9 @@ type LoadState = 'loading' | 'ready' | 'error';
 
 export function App() {
   const [hasOnboarded, setHasOnboarded] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
+  const [backendState, setBackendState] = useState<
+    'loading' | 'uninitialized' | 'locked' | 'unlocked' | 'error'
+  >('loading');
   const [currentTab, setCurrentTab] = useState<NavTab>('vault');
 
   const [entries, setEntries] = useState<MobileVaultEntry[]>([]);
@@ -62,6 +64,19 @@ export function App() {
 
   // Toast state
   const [toast, setToast] = useState<string | null>(null);
+
+  const refreshBackendState = useCallback(() => {
+    setBackendState('loading');
+    void apiClient.getVaultStatus().then((status) => {
+      setBackendState(
+        status.isInitialized ? (status.isLocked ? 'locked' : 'unlocked') : 'uninitialized'
+      );
+    }).catch(() => setBackendState('error'));
+  }, []);
+
+  useEffect(() => {
+    refreshBackendState();
+  }, [refreshBackendState]);
 
   const showToast = (message: string) => {
     setToast(message);
@@ -87,10 +102,10 @@ export function App() {
 
   // Load the list once the user is onboarded and the vault is unlocked.
   useEffect(() => {
-    if (hasOnboarded && !isLocked) {
+    if (hasOnboarded && backendState === 'unlocked') {
       void loadEntries();
     }
-  }, [hasOnboarded, isLocked, loadEntries]);
+  }, [hasOnboarded, backendState, loadEntries]);
 
   const handleCopy = (label: string, _text: string) => {
     showToast(`Copied ${label} to clipboard`);
@@ -136,7 +151,7 @@ export function App() {
     }
   };
 
-  const handleCommitImport = (_newItems: MobileVaultEntry[]) => {
+  const handleCommitImport = () => {
     // Import is handled by its own screen; refresh the list afterwards.
     void loadEntries();
     showToast('Import complete');
@@ -150,7 +165,7 @@ export function App() {
       // Lock the UI regardless; a failed network call must not keep us unlocked.
     }
     setEntries([]);
-    setIsLocked(true);
+    setBackendState('locked');
   };
 
   // 1. Onboarding Flow
@@ -163,8 +178,55 @@ export function App() {
     );
   }
 
+  if (backendState === 'loading') {
+    return (
+      <SafeAreaView style={styles.safeContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <View style={styles.centerFill}>
+          <ActivityIndicator color={colors.brandPeri} />
+          <Text style={styles.centerText}>Connecting to your vault…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (backendState === 'error') {
+    return (
+      <SafeAreaView style={styles.safeContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <View style={styles.centerFill}>
+          <Text style={styles.errorTitle}>Couldn’t reach your vault</Text>
+          <Text style={styles.centerText}>Check the backend URL and try again.</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={refreshBackendState}>
+            <Text style={styles.retryBtnText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (backendState === 'uninitialized') {
+    return (
+      <SafeAreaView style={styles.safeContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+        <SetupScreen
+          onSetupComplete={async (passphrase) => {
+            if (!passphrase) return;
+            try {
+              await apiClient.initializeVault(passphrase);
+              setBackendState('unlocked');
+            } catch (err) {
+              showToast(err instanceof ApiError ? err.message : 'Could not initialize vault.');
+              throw err;
+            }
+          }}
+        />
+      </SafeAreaView>
+    );
+  }
+
   // 2. Locked State
-  if (isLocked) {
+  if (backendState === 'locked') {
     return (
       <SafeAreaView style={styles.safeContainer}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
@@ -178,7 +240,7 @@ export function App() {
                 throw new Error('unlock-failed');
               }
             }
-            setIsLocked(false);
+            setBackendState('unlocked');
           }}
         />
       </SafeAreaView>
