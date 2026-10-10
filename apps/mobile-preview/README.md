@@ -4,25 +4,25 @@ A responsive, interactive mobile UI prototype for **Verma** ("A password manager
 
 ## Quick Start
 
-Requires Node.js 20 or newer. No external npm dependencies required.
+Requires Node.js 22+ and pnpm 12.8.1. From the repository root:
 
-```bash
-# Start the preview server on port 3000
-npm start
-# or
-node server.mjs
+```sh
+pnpm preview:mobile
+# Optional custom port:
+pnpm preview:mobile --port 6128
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open http://localhost:5128/?demo=1#vault for the reproducible six-entry design.
+Use `?demo=1#welcome` for onboarding. Demo mode never reads or writes persisted
+browser data. Without demo=1, the existing browser state remains available.
+This is a UI prototype; use synthetic data only.
 
-- On mobile devices, the app fills the viewport with safe-area support.
-- On desktop devices, the app renders inside a studio mockup frame with preview navigation.
-- Deep links:
-  - `/#welcome` — 3-step illustrated introduction & onboarding
-  - `/#vault` — Main vault search, favorites, and entries
-  - `/#ask` — Ask Your Vault natural language metadata search
-  - `/#import` — Smart CSV import preview and duplicate resolution
-  - `/#devices` — Authenticated device pairing simulation
+Fonts are bundled in the repository, so internet access is not required for
+rendering. At desktop widths the UI is a centered phone frame; on small screens
+it fills the viewport. See [preview reproducibility](../../docs/preview-reproducibility.md)
+for both apps, browser-size guidance, commands, and verification limitations.
+
+Deep links: `#welcome`, `#vault`, `#ask`, `#import`, `#devices`.
 
 ## Included Flows
 
