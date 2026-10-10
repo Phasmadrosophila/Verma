@@ -116,16 +116,18 @@ jobs:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
           PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME || 'verma-web' }}
         run: |
-          # Idempotently provision the KV namespaces (ignore "already exists" errors)
+          # Resolve existing KV namespaces. Deployment must never create or delete storage.
           PROD_TITLE="VERMA_RELAY_KV"
           PREVIEW_TITLE="VERMA_RELAY_KV_preview"
-          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" || true
-          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
-
-          # Resolve the real hex IDs from the account's namespace list
-          KV_LIST="$(pnpm --dir apps/web exec wrangler kv namespace list)"
-          PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.[] | select(.title == $t) | .id')"
-          PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.[] | select(.title == $t) | .id')"
+          KV_LIST="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces")"
+          if [ "$(echo "${KV_LIST}" | jq -r '.success')" != "true" ]; then
+            echo "Cloudflare KV namespace lookup failed: ${KV_LIST}" >&2
+            exit 1
+          fi
+          PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.result[] | select(.title == $t) | .id')"
+          PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.result[] | select(.title == $t) | .id')"
 
           if [ -z "${PROD_ID}" ] || [ -z "${PREVIEW_ID}" ]; then
             echo "Failed to resolve KV namespace IDs (prod='${PROD_ID}' preview='${PREVIEW_ID}')" >&2
@@ -179,16 +181,18 @@ jobs:
 
       - name: Deploy production to Cloudflare Workers
         run: |
-          # Idempotently provision the KV namespaces (ignore "already exists" errors)
+          # Resolve existing KV namespaces. Deployment must never create or delete storage.
           PROD_TITLE="VERMA_RELAY_KV"
           PREVIEW_TITLE="VERMA_RELAY_KV_preview"
-          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" || true
-          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
-
-          # Resolve the real hex IDs from the account's namespace list
-          KV_LIST="$(pnpm --dir apps/web exec wrangler kv namespace list)"
-          PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.[] | select(.title == $t) | .id')"
-          PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.[] | select(.title == $t) | .id')"
+          KV_LIST="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces")"
+          if [ "$(echo "${KV_LIST}" | jq -r '.success')" != "true" ]; then
+            echo "Cloudflare KV namespace lookup failed: ${KV_LIST}" >&2
+            exit 1
+          fi
+          PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.result[] | select(.title == $t) | .id')"
+          PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.result[] | select(.title == $t) | .id')"
 
           if [ -z "${PROD_ID}" ] || [ -z "${PREVIEW_ID}" ]; then
             echo "Failed to resolve KV namespace IDs (prod='${PROD_ID}' preview='${PREVIEW_ID}')" >&2

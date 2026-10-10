@@ -107,7 +107,7 @@ npx wrangler deploy --config apps/web/wrangler.toml
 Or via Dashboard:
 1. Navigate to **Workers & Pages** -> **Create application** -> **Workers** tab.
 2. Create or select the Worker named `verma-web`.
-3. Attach the production and preview KV namespaces to the `VERMA_RELAY_KV` binding.
+3. Create the `VERMA_RELAY_KV` and `VERMA_RELAY_KV_preview` namespaces once, then attach their IDs to the `VERMA_RELAY_KV` binding. CI only reads existing namespaces; it never creates or deletes them during deployment.
 
 ### 3.5 Configure KV Binding in Cloudflare Dashboard
 1. Go to **Workers & Pages** -> click Worker `verma-web`.
