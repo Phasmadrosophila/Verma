@@ -205,12 +205,26 @@ export const httpClient = {
 };
 
 /**
- * The data seam. In offline mode (EXPO_PUBLIC_API_URL unset) it is the
- * in-process `localVault`; otherwise it is the real HTTP client. Both expose an
- * identical method surface, so App.tsx and the screens need no changes.
- *
- * This is a plain conditional (no Proxy): the shared primitives now live in the
- * leaf `vaultTypes` module, so apiClient imports localVault one-way with no
- * require cycle, and `localVault` is fully initialized by the time this runs.
+ * Resolve the offline backend. On a device, prefer the expo-sqlite-backed
+ * `sqliteVault` (real on-device persistence); it is loaded with a guarded
+ * `require` so the native `expo-sqlite` module is never imported under the node
+ * test runner (tsx), where it cannot load. If it is unavailable (the node test
+ * path), fall back to the in-process in-memory `localVault`. Both expose an
+ * identical surface (`typeof httpClient`).
  */
-export const apiClient: typeof httpClient = OFFLINE ? localVault : httpClient;
+function resolveOfflineVault(): typeof httpClient {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = require('./sqliteVault') as { sqliteVault: typeof httpClient };
+    return mod.sqliteVault;
+  } catch {
+    return localVault;
+  }
+}
+
+/**
+ * The data seam. In offline mode (EXPO_PUBLIC_API_URL unset) it is the offline
+ * vault (sqlite-backed on device, in-memory under tests); otherwise it is the
+ * real HTTP client. App.tsx and the screens need no changes.
+ */
+export const apiClient: typeof httpClient = OFFLINE ? resolveOfflineVault() : httpClient;
