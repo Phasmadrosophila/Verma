@@ -17,7 +17,8 @@ interface DetailModalProps {
   onEdit: (entry: MobileVaultEntry) => void;
   onDelete: (id: string | number) => void;
   onCopy: (label: string, text: string) => void;
-  onReveal?: (entry: MobileVaultEntry) => Promise<string>;
+  /** Lazily fetch the plaintext secret — called ONLY on explicit reveal. */
+  onRevealSecret: (id: string | number) => Promise<string>;
 }
 
 export const DetailModal: React.FC<DetailModalProps> = ({
@@ -27,54 +28,50 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   onEdit,
   onDelete,
   onCopy,
-  onReveal,
+  onRevealSecret,
 }) => {
-  const [revealed, setRevealed] = useState(false);
-  const [revealedSecret, setRevealedSecret] = useState<string | null>(null);
-  const [isRevealing, setIsRevealing] = useState(false);
+  // The plaintext secret is held only while revealed, and only in this
+  // component's local state — never in the list / App state.
+  const [secret, setSecret] = useState<string | null>(null);
+  const [revealBusy, setRevealBusy] = useState(false);
+  const [revealError, setRevealError] = useState(false);
 
   if (!entry) return null;
 
+  const revealed = secret !== null;
+
+  const clearSecret = () => {
+    setSecret(null);
+    setRevealError(false);
+    setRevealBusy(false);
+  };
+
   const handleClose = () => {
-    setRevealed(false);
-    setRevealedSecret(null);
+    clearSecret();
     onClose();
   };
 
-  const currentSecret = revealedSecret || entry.secret;
-
   const handleToggleReveal = async () => {
     if (revealed) {
-      setRevealed(false);
+      clearSecret();
       return;
     }
-    if (entry.secret) {
-      setRevealed(true);
-      return;
-    }
-    if (onReveal) {
-      setIsRevealing(true);
-      try {
-        const sec = await onReveal(entry);
-        setRevealedSecret(sec);
-        setRevealed(true);
-      } catch {
-        // graceful handle
-      } finally {
-        setIsRevealing(false);
-      }
-    } else {
-      setRevealed(true);
+    setRevealBusy(true);
+    setRevealError(false);
+    try {
+      const value = await onRevealSecret(entry.id);
+      setSecret(value);
+    } catch {
+      setRevealError(true);
+    } finally {
+      setRevealBusy(false);
     }
   };
 
   const getSecretDisplay = () => {
-    if (isRevealing) {
-      return 'Decrypting with Argon2id...';
-    }
-    if (revealed) {
-      return currentSecret || '(Empty secret)';
-    }
+    if (revealError) return 'Could not load secret';
+    if (revealBusy) return 'Revealing…';
+    if (revealed) return secret;
     return '••••••••••••••••';
   };
 
@@ -164,12 +161,12 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     : 'Password'}
                 </Text>
                 <TouchableOpacity
-                  onPress={handleToggleReveal}
+                  onPress={() => void handleToggleReveal()}
                   style={styles.revealBtn}
-                  disabled={isRevealing}
+                  disabled={revealBusy}
                 >
                   <Text style={styles.revealBtnText}>
-                    {isRevealing ? 'Decrypting...' : revealed ? 'Hide secret' : 'Reveal secret'}
+                    {revealed ? 'Hide secret' : revealBusy ? 'Revealing…' : 'Reveal secret'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -186,7 +183,11 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   {getSecretDisplay()}
                 </Text>
                 <TouchableOpacity
-                  onPress={() => onCopy('Secret', currentSecret)}
+                  onPress={async () => {
+                    // Fetch on demand if not already revealed; never cache in list state.
+                    const value = revealed ? secret : await onRevealSecret(entry.id).catch(() => null);
+                    if (value) onCopy('Secret', value);
+                  }}
                   style={[styles.actionBtn, styles.actionBtnPrimary]}
                 >
                   <Text style={styles.actionBtnPrimaryText}>Copy</Text>

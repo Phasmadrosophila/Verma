@@ -1,6 +1,8 @@
 export type EntryType = 'login' | 'note' | 'api';
 
 export interface MobileVaultEntry {
+  // Backend IDs are string UUIDs (e.g. "syn-api-001"). Locally-created seed
+  // rows may still use a numeric id, so accept both.
   id: string | number;
   type: EntryType;
   title: string;
@@ -10,6 +12,10 @@ export interface MobileVaultEntry {
   tags: string[];
   favorite: boolean;
   brand: string;
+  /**
+   * Display secret. Empty for list items (zero-secret boundary) and populated
+   * ONLY when the user explicitly reveals one entry via the API.
+   */
   secret: string;
   updated: string;
 }
@@ -241,13 +247,4 @@ export function generatePassword(length: number = 20): string {
 
   return result;
 }
-
-export {
-  mobileApi,
-  toMobileEntry,
-  toWireEntryInput,
-  getApiBaseUrl,
-  setApiBaseUrl,
-} from './apiClient';
-export type { ApiClientResult } from './apiClient';
 

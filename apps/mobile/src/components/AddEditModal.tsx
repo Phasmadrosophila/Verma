@@ -19,7 +19,11 @@ interface AddEditModalProps {
   visible: boolean;
   entryToEdit: MobileVaultEntry | null;
   onClose: () => void;
-  onSave: (entry: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: string | number }) => void;
+  onSave: (
+    entry: Omit<MobileVaultEntry, 'id' | 'updated'> & { id?: string | number }
+  ) => void;
+  /** Fetch the plaintext secret for an existing entry being edited. */
+  onLoadSecret: (id: string | number) => Promise<string>;
 }
 
 export const AddEditModal: React.FC<AddEditModalProps> = ({
@@ -27,6 +31,7 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
   entryToEdit,
   onClose,
   onSave,
+  onLoadSecret,
 }) => {
   const [type, setType] = useState<EntryType>('login');
   const [title, setTitle] = useState('');
@@ -39,6 +44,7 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
   const [revealSecret, setRevealSecret] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     if (entryToEdit) {
       setType(entryToEdit.type);
       setTitle(entryToEdit.title);
@@ -46,8 +52,20 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
       setUser(entryToEdit.user || '');
       setDomain(entryToEdit.domain || '');
       setTagsStr(entryToEdit.tags.join(', '));
-      setSecret(entryToEdit.secret);
       setFavorite(entryToEdit.favorite);
+      // The list entry carries no secret; fetch it lazily for editing.
+      if (entryToEdit.secret) {
+        setSecret(entryToEdit.secret);
+      } else {
+        setSecret('');
+        void onLoadSecret(entryToEdit.id)
+          .then((value) => {
+            if (!cancelled) setSecret(value);
+          })
+          .catch(() => {
+            /* leave empty; user can re-enter */
+          });
+      }
     } else {
       setType('login');
       setTitle('');
@@ -59,7 +77,10 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
       setFavorite(false);
     }
     setRevealSecret(false);
-  }, [entryToEdit, visible]);
+    return () => {
+      cancelled = true;
+    };
+  }, [entryToEdit, visible, onLoadSecret]);
 
   const handleGenerate = () => {
     const pw = generatePassword(20);

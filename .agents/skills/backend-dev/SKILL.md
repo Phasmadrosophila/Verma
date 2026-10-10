@@ -2,9 +2,10 @@
 name: backend-dev
 description: >-
   Engineering guide and checklist for developing Verma's backend and API
-  services. Covers Hono framework, encrypted SQLite storage, trusted-layer
-  metadata redaction, sandboxed llama.cpp integration, QUIC direct sync,
-  SPAKE2 pairing, deterministic security checks, and Docker relay services.
+  services. Covers Hono framework, better-sqlite3 storage with AES-256-GCM
+  payload encryption, trusted-layer metadata redaction, Ollama HTTP adapter
+  integration, authenticated peer sync, node:crypto primitives, deterministic
+  security checks, and Docker relay services.
 ---
 
 # Backend Development Guide (Verma)
@@ -14,11 +15,11 @@ and sync protocols for **Verma** based on `docs/prd.md`.
 
 ## 1. Architecture & Core Stack
 
-- **Framework:** Hono (TypeScript) — portable across Node.js runtime, Docker containers, and Cloudflare Workers.
-- **Local Database:** Encrypted SQLite (e.g., SQLCipher or libsodium-authenticated storage).
-- **AI Runtime:** `llama.cpp` locally (via Unix socket or stdio in production; Ollama for dev only).
-- **Device Sync:** QUIC-based Syncthing-style authenticated peer-to-peer transport.
-- **Cryptography:** `libsodium` for symmetric/asymmetric encryption, `Ed25519` for device identities, `SPAKE2` for device pairing.
+- **Framework:** Hono (TypeScript) on Node.js (`@hono/node-server`).
+- **Local Database:** SQLite via better-sqlite3 with AES-256-GCM payload encryption (not SQLCipher/libsodium).
+- **AI Runtime:** Ollama HTTP adapter (`127.0.0.1:11434`, default llama3.2).
+- **Device Sync:** Authenticated peer sync engine with Ed25519 identity (QUIC is the target).
+- **Cryptography:** `node:crypto` (aes-256-gcm, ed25519, scrypt, createHmac) — not libsodium/SPAKE2.
 
 ## 2. Local AI Pipeline & Redaction Engine
 

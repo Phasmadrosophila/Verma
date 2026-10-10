@@ -41,6 +41,18 @@ This is the task registry for the Verma Delivery project. GitHub issues are the 
 | B-M1-05 | #27 | whinee | P0 AI Demo | None |
 | E-MR-03 | #28 | HitsukiMok | Release | B-M1-05 |
 | C-MR-02 | #52 | helenaherrero515 | Release | None |
+| C-M0-04 | #31 | helenaherrero515 | P0 Foundation | C-M0-02 |
+| C-M0-05 | #32 | Faiithal | P0 Foundation | C-M0-02, C-M0-04 |
+| C-M0-06 | #33 | Faiithal | P0 Foundation | C-M0-02, C-M0-04, C-M0-05 |
+| C-M0-07 | #34 | helenaherrero515 | P0 Foundation | C-M0-04, C-M0-05, C-M0-06 |
+| A-M0-05 | #48 | HitsukiMok | P0 Foundation | None |
+| C-M0-08 | #49 | Faiithal | P0 Foundation | A-M0-05, C-M0-04, C-M0-05, C-M0-06 |
+| E-MR-04 | #50 | HitsukiMok | Release | A-M0-05, C-M0-08, C-M0-07 |
+| C-M0-09 | #55 | Faiithal | P0 Foundation | None |
+| C-MR-01 | #19 | HitsukiMok | Release | TODO(verify) |
+| B-MR-02 | #60 | whinee | Release | TODO(verify) |
+| A-M0-06 | #61 | whinee | P0 Foundation | TODO(verify) |
+| TODO(verify) | #59 | helenaherrero515 | Release | TODO(verify) |
 
 ## Order of execution
 
@@ -51,6 +63,9 @@ This is the task registry for the Verma Delivery project. GitHub issues are the 
 5. Complete `D-M2-01` and `E-MR-01` before considering continuity work.
 6. Start `A-M3-01` only after the P0 offline AI and direct-sync loop passes repeatedly.
 7. Finish `E-MR-02` as the final release gate.
-8. Evaluate and document the Qwen3 0.6B candidate before selecting any production artifact or claiming mobile performance.
+8. Evaluate Qwen3 0.6B on target hardware before selecting its production artifact or claiming mobile performance.
+9. Build the frontend foundation in order: shell and primitives, vault lifecycle, unlocked workspace, then accessibility and demo hardening.
+10. Establish the real web/API runtime, integrate frontend screens against it, then run the offline visual E2E harness.
+11. Treat the Expo mobile API integration as an explicitly approved scope deviation; keep desktop web and local-first release work as the primary path.
 
 The GitHub Project and issue labels are automated from this dependency model. If the registry and an issue disagree, stop and correct the issue before implementation.
