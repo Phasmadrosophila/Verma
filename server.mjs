@@ -97,7 +97,7 @@ async function handleBackendProxy(req, res, targetUrl) {
   }
 }
 
-createServer(async (req, res) => {
+const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', 'http://localhost');
     const pathname = decodeURIComponent(url.pathname);
@@ -211,4 +211,13 @@ createServer(async (req, res) => {
     console.error('SERVER ERR:', serverErr);
     res.writeHead(404).end('Not found');
   }
-}).listen(port, '0.0.0.0', () => console.log(`Verma Landing Page is ready at http://localhost:${port}`));
+});
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Verma Landing Page is already running at http://localhost:${port}`);
+    process.exit(0);
+  }
+  throw error;
+});
+server.listen(port, '0.0.0.0', () => console.log(`Verma Landing Page is ready at http://localhost:${port}`));
