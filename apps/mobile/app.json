@@ -2,6 +2,7 @@
   "expo": {
     "name": "Verma",
     "slug": "verma",
+    "owner": "phasmo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/verma-logo.png",
@@ -26,11 +27,9 @@
     },
     "extra": {
       "eas": {
-        "_comment": "Run `eas init` to populate projectId (do NOT hand-edit it) and set `owner` at the expo root below. Build config is inert until both exist.",
-        "projectId": "REPLACE_VIA_EAS_INIT"
+        "projectId": "1b41794c-7fab-49f5-a985-7b9cb08e9634"
       }
     },
-    "_owner_note": "After `eas init`, add a top-level \"owner\": \"<expo-account>\" field inside this expo block.",
     "plugins": [
       "expo-sqlite"
     ]
