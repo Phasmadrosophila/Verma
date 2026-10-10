@@ -37,11 +37,6 @@ jobs:
         with:
           version: 12.8.1
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 12.8.1
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -124,11 +119,11 @@ jobs:
           # Idempotently provision the KV namespaces (ignore "already exists" errors)
           PROD_TITLE="VERMA_RELAY_KV"
           PREVIEW_TITLE="VERMA_RELAY_KV_preview"
-          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" || true
-          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
+          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" || true
+          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
 
           # Resolve the real hex IDs from the account's namespace list
-          KV_LIST="$(pnpm exec wrangler kv namespace list)"
+          KV_LIST="$(pnpm --dir apps/web exec wrangler kv namespace list)"
           PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.[] | select(.title == $t) | .id')"
           PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.[] | select(.title == $t) | .id')"
 
@@ -140,7 +135,7 @@ jobs:
           # Ephemeral CI-only substitution; committed toml keeps placeholders
           sed -i "s/verma_relay_kv_production_id/${PROD_ID}/g; s/verma_relay_kv_preview_id/${PREVIEW_ID}/g" apps/web/wrangler.toml
 
-          pnpm exec wrangler deploy --config apps/web/wrangler.toml --env preview
+          pnpm --dir apps/web exec wrangler deploy --config wrangler.toml --env preview
 
       - name: Skip preview deploy when secrets unavailable
         if: env.CLOUDFLARE_API_TOKEN == ''
@@ -187,11 +182,11 @@ jobs:
           # Idempotently provision the KV namespaces (ignore "already exists" errors)
           PROD_TITLE="VERMA_RELAY_KV"
           PREVIEW_TITLE="VERMA_RELAY_KV_preview"
-          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" || true
-          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
+          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" || true
+          pnpm --dir apps/web exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
 
           # Resolve the real hex IDs from the account's namespace list
-          KV_LIST="$(pnpm exec wrangler kv namespace list)"
+          KV_LIST="$(pnpm --dir apps/web exec wrangler kv namespace list)"
           PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.[] | select(.title == $t) | .id')"
           PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.[] | select(.title == $t) | .id')"
 
@@ -203,4 +198,4 @@ jobs:
           # Ephemeral CI-only substitution; committed toml keeps placeholders
           sed -i "s/verma_relay_kv_production_id/${PROD_ID}/g; s/verma_relay_kv_preview_id/${PREVIEW_ID}/g" apps/web/wrangler.toml
 
-          pnpm exec wrangler deploy --config apps/web/wrangler.toml --name="${PROJECT_NAME}" --keep-vars
+          pnpm --dir apps/web exec wrangler deploy --config wrangler.toml --name="${PROJECT_NAME}" --keep-vars
