@@ -73,7 +73,7 @@ export const LockedScreen: React.FC<LockedScreenProps> = ({ onUnlock }) => {
           <View style={styles.inputGroup}>
             <TextInput
               style={styles.input}
-              placeholder="Master passphrase (demo: verma-demo)"
+              placeholder="Master passphrase"
               placeholderTextColor="#A89E92"
               secureTextEntry
               value={passphrase}

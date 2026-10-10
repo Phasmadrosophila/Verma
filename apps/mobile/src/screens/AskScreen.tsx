@@ -29,6 +29,7 @@ export const AskScreen: React.FC<AskScreenProps> = ({
   >([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [aiAnswer, setAiAnswer] = useState<string | null>(null);
   const [offlineFallback, setOfflineFallback] = useState(false);
 
   /** Local, zero-secret metadata search — used as the offline fallback. */
@@ -39,9 +40,11 @@ export const AskScreen: React.FC<AskScreenProps> = ({
     setQuery(queryText);
     setBusy(true);
     setOfflineFallback(false);
+    setAiAnswer(null);
     try {
       // Ask the sandboxed on-device model via the backend (metadata only).
-      const { relevantEntryIds } = await apiClient.askVault(queryText);
+      const { answer, relevantEntryIds } = await apiClient.askVault(queryText);
+      setAiAnswer(answer);
       const byId = new Map(entries.map((e) => [String(e.id), e]));
       const matched = relevantEntryIds
         .map((id) => byId.get(String(id)))
@@ -108,6 +111,17 @@ export const AskScreen: React.FC<AskScreenProps> = ({
           <Text style={styles.askBtnText}>{busy ? 'Asking…' : 'Ask Local AI'}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Local AI Answer Banner */}
+      {aiAnswer && (
+        <View style={styles.aiAnswerCard}>
+          <View style={styles.aiAnswerHeader}>
+            <Text style={styles.aiAnswerIcon}>✨</Text>
+            <Text style={styles.aiAnswerTitle}>Verma Local AI</Text>
+          </View>
+          <Text style={styles.aiAnswerText}>{aiAnswer}</Text>
+        </View>
+      )}
 
       {/* Prompt Suggestions */}
       <View style={styles.suggestionsSection}>
@@ -399,5 +413,34 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     color: '#4F66BD',
+  },
+  aiAnswerCard: {
+    backgroundColor: colors.assist,
+    borderRadius: radii.xl,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#D8DEFA',
+  },
+  aiAnswerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  aiAnswerIcon: {
+    fontSize: 14,
+  },
+  aiAnswerTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#4F66BD',
+    letterSpacing: 0.5,
+  },
+  aiAnswerText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.text,
+    fontWeight: '500',
   },
 });

@@ -29,10 +29,11 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header container">
     <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
-    <nav class="desktop-nav" aria-label="Main navigation"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">Guide</a><a class="nav-cloud" href="/cloud"><svg class="icon cloud-icon" aria-hidden="true"><use href="#cloud"/></svg>Cloud</a></nav>
+    <nav class="desktop-nav" aria-label="Main navigation"><a href="#features">Features</a><a href="/pricing">Pricing</a><a href="#how">Guide</a><a href="#stack">Stack</a><a class="nav-cloud" href="/cloud"><svg class="icon cloud-icon" aria-hidden="true"><use href="#cloud"/></svg>Cloud</a></nav>
+    <div class="engine-badge" id="engine-badge" title="Local Verma Engine Status"><span class="engine-dot" aria-hidden="true"></span><span class="engine-text">Local Engine</span></div>
     <a class="button dark header-cta" href="/download">Download Verma</a>
     <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu"><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
-    <nav id="mobile-menu" aria-label="Mobile navigation" hidden><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">Guide</a><a href="/cloud">Cloud</a></nav>
+    <nav id="mobile-menu" aria-label="Mobile navigation" hidden><a href="#features">Features</a><a href="/pricing">Pricing</a><a href="#how">Guide</a><a href="#stack">Stack</a><a href="/cloud">Cloud</a></nav>
   </header>
   <main id="main">
     <section class="hero container" aria-labelledby="hero-title">
@@ -119,10 +120,141 @@
       <div class="how-art"><div class="how-geometry" aria-hidden="true"></div><img src="assets/welcome-organize.svg" width="360" height="300" alt="Illustrated cards finding a home in a colorful box" loading="lazy"><div class="tidy-note scroll-pop chat-bubble-pop"><span class="note-check"><svg class="icon" aria-hidden="true"><use href="#check"/></svg></span><div>A place for everything.<small>And a little more headspace for you.</small></div><svg class="icon" aria-hidden="true"><use href="#star"/></svg></div></div>
     </div></section>
 
-    <section class="privacy-section container" id="privacy" aria-labelledby="privacy-title"><div class="privacy-card scroll-pop">
-      <div class="privacy-copy"><div class="privacy-emblem"><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div><h2 id="privacy-title">An on-device assistant.<br>With a strict security boundary.</h2><p>Verma’s Local AI assistant searches only safe metadata like titles, domains, and tags. Passwords, note contents, and secret keys are redacted in trusted code before model inference.</p><a class="text-link" href="/app#ask">See Ask Verma in action <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div>
-      <div class="privacy-visual"><div class="privacy-window scroll-pop"><div class="window-top"><span aria-hidden="true"><i></i><i></i><i></i></span><small>Your little universe</small><svg class="icon" aria-hidden="true"><use href="#lock"/></svg></div><div class="boundary-group"><p><span class="boundary-dot"></span> HELPFUL LITTLE CLUES</p><div class="clue-chips"><span class="scroll-pop">Google · Work</span><span class="scroll-pop">accounts.google.com</span><span class="scroll-pop">Work</span></div></div><div class="boundary-line"><span></span><svg class="icon" aria-hidden="true"><use href="#lock"/></svg><span></span></div><div class="boundary-group secret-group"><p>YOUR SECRETS STAY YOURS</p><div class="secret-demo scroll-pop"><div><small>Password</small><strong aria-label="Password hidden">••••••••••••</strong></div><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div><small>Hidden until you choose to reveal it.</small></div></div><div class="privacy-sticker scroll-pop chat-bubble-pop"><svg class="icon" aria-hidden="true"><use href="#star"/></svg> Your space. Your say.</div></div>
-    </div></section>
+    <section class="privacy-section container" id="privacy" aria-labelledby="privacy-title">
+      <div class="privacy-card scroll-pop">
+        <div class="privacy-copy">
+          <div class="privacy-emblem"><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div>
+          <h2 id="privacy-title">An on-device assistant.<br>With a strict security boundary.</h2>
+          <p>Verma’s Local AI assistant searches only safe metadata like titles, domains, and tags. Passwords, note contents, and secret keys are redacted in trusted code before model inference.</p>
+          <a class="text-link" href="/app#ask">See Ask Verma in action <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a>
+        </div>
+        <div class="privacy-visual">
+          <div class="privacy-window scroll-pop">
+            <div class="window-top"><span aria-hidden="true"><i></i><i></i><i></i></span><small>Your little universe</small><svg class="icon" aria-hidden="true"><use href="#lock"/></svg></div>
+            <div class="boundary-group"><p><span class="boundary-dot"></span> HELPFUL LITTLE CLUES</p><div class="clue-chips"><span class="scroll-pop">Google · Work</span><span class="scroll-pop">accounts.google.com</span><span class="scroll-pop">Work</span></div></div>
+            <div class="boundary-line"><span></span><svg class="icon" aria-hidden="true"><use href="#lock"/></svg><span></span></div>
+            <div class="boundary-group secret-group"><p>YOUR SECRETS STAY YOURS</p><div class="secret-demo scroll-pop"><div><small>Password</small><strong aria-label="Password hidden">••••••••••••</strong></div><svg class="icon" aria-hidden="true"><use href="#shield"/></svg></div><small>Hidden until you choose to reveal it.</small></div>
+          </div>
+          <div class="privacy-sticker scroll-pop chat-bubble-pop"><svg class="icon" aria-hidden="true"><use href="#star"/></svg> Your space. Your say.</div>
+        </div>
+      </div>
+
+      <!-- Live Interactive Ask Your Vault Test Drive -->
+      <div class="live-ask-tester scroll-pop">
+        <div class="tester-header">
+          <span class="tester-tag"><svg class="icon" aria-hidden="true" style="width:16px;height:16px;"><use href="#sparkles"/></svg> LIVE INTERACTIVE TEST DRIVE</span>
+          <span class="tester-status" id="tester-backend-badge">Probing Engine...</span>
+        </div>
+        <div class="tester-prompt-row">
+          <span class="tester-prompt-label">Quick search cues:</span>
+          <button type="button" class="query-chip" data-query="That work Google account">"Work Google account"</button>
+          <button type="button" class="query-chip" data-query="Our family streaming account">"Streaming account"</button>
+          <button type="button" class="query-chip" data-query="AWS cloud staging token">"AWS API key"</button>
+        </div>
+        <form class="tester-input-row" id="live-ask-form">
+          <div class="tester-input-wrap">
+            <input type="text" id="live-ask-input" class="tester-input" placeholder="Describe the item you need (e.g. Work Google account)..." value="That work Google account" aria-label="Natural language search query">
+            <button type="submit" class="tester-submit-btn" id="live-ask-submit">Ask Verma <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></button>
+          </div>
+        </form>
+        <div class="tester-output-box" id="live-ask-output" aria-live="polite">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Repository Final Architecture & Tech Stack Showcase -->
+    <section class="stack-section container" id="stack" aria-labelledby="stack-title">
+      <div class="section-heading center scroll-pop">
+        <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#star"/></svg> THE REPOSITORY TECH STACK</div>
+        <h2 id="stack-title">Engineered offline-first.<br><span>Zero compromises on privacy.</span></h2>
+        <p>Verma unifies a high-performance Hono API, native React Native mobile with instant web preview, encrypted SQLite, and a sandboxed llama.cpp AI engine with strict pre-inference redaction.</p>
+      </div>
+      <div class="stack-grid">
+        <article class="stack-card scroll-pop">
+          <span class="stack-tag"><svg class="icon" style="width:14px;height:14px;"><use href="#key"/></svg> Backend / API</span>
+          <h3>Local Hono API</h3>
+          <p>Lightweight TypeScript Hono runtime executing on-device and in Docker containers. Microsecond routing and zero-leak logging prevent any unredacted payload storage.</p>
+          <div class="stack-pills">
+            <span class="stack-pill">Hono</span>
+            <span class="stack-pill">TypeScript</span>
+            <span class="stack-pill">Docker Multi-stage</span>
+            <span class="stack-pill">Safe Logger</span>
+          </div>
+        </article>
+        <article class="stack-card scroll-pop">
+          <span class="stack-tag"><svg class="icon" style="width:14px;height:14px;"><use href="#shield"/></svg> Frontend &amp; Client</span>
+          <h3>Native Mobile &amp; Web SPA</h3>
+          <p>Cross-platform React Native / Expo 52 mobile app paired with an instant desktop web preview. Shared UI components and offline state engines ensure a seamless experience.</p>
+          <div class="stack-pills">
+            <span class="stack-pill">React Native</span>
+            <span class="stack-pill">Expo 52</span>
+            <span class="stack-pill">Web SPA</span>
+            <span class="stack-pill">CSS Custom Props</span>
+          </div>
+        </article>
+        <article class="stack-card scroll-pop">
+          <span class="stack-tag"><svg class="icon" style="width:14px;height:14px;"><use href="#lock"/></svg> Storage &amp; Cryptography</span>
+          <h3>Encrypted SQLite Vault</h3>
+          <p>Zero plaintext secrets. Storage backed by SQLCipher and libsodium authenticated cryptography. Master keys derived deterministically via 24-word recovery phrases.</p>
+          <div class="stack-pills">
+            <span class="stack-pill">SQLite / SQLCipher</span>
+            <span class="stack-pill">libsodium</span>
+            <span class="stack-pill">ChaCha20-Poly1305</span>
+            <span class="stack-pill">BIP-39 24-word</span>
+          </div>
+        </article>
+        <article class="stack-card scroll-pop">
+          <span class="stack-tag"><svg class="icon" style="width:14px;height:14px;"><use href="#star"/></svg> Local AI Engine</span>
+          <h3>Sandboxed llama.cpp</h3>
+          <p>On-device natural language queries without cloud telemetry. The AI engine runs in a zero-network sandbox with a strict pre-inference metadata redaction boundary in trusted code.</p>
+          <div class="stack-pills">
+            <span class="stack-pill">llama.cpp</span>
+            <span class="stack-pill">Qwen GGUF</span>
+            <span class="stack-pill">Redaction Boundary</span>
+            <span class="stack-pill">Zero Network</span>
+          </div>
+        </article>
+        <article class="stack-card scroll-pop">
+          <span class="stack-tag"><svg class="icon" style="width:14px;height:14px;"><use href="#arrow"/></svg> Peer-to-Peer Sync</span>
+          <h3>Direct QUIC Transport</h3>
+          <p>Serverless device-to-device synchronization over local UDP using Syncthing architecture. Devices pair directly with SPAKE2 password exchange and Ed25519 identity keys.</p>
+          <div class="stack-pills">
+            <span class="stack-pill">QUIC / UDP</span>
+            <span class="stack-pill">SPAKE2</span>
+            <span class="stack-pill">Ed25519</span>
+            <span class="stack-pill">Syncthing-style</span>
+          </div>
+        </article>
+        <article class="stack-card scroll-pop">
+          <span class="stack-tag"><svg class="icon" style="width:14px;height:14px;"><use href="#check"/></svg> Shared Core</span>
+          <h3>@app/shared Monorepo</h3>
+          <p>Unified TypeScript library powering data models, deterministic strength audits, crypto wrappers, and verification tests across API, web, and native mobile targets.</p>
+          <div class="stack-pills">
+            <span class="stack-pill">@app/shared</span>
+            <span class="stack-pill">pnpm Workspaces</span>
+            <span class="stack-pill">Automated Verification</span>
+            <span class="stack-pill">Zod Schemas</span>
+          </div>
+        </article>
+      </div>
+      <div class="stack-banner scroll-pop">
+        <div class="stack-banner-text">
+          <strong>Production-grade monorepo stack</strong>
+          Everything runs offline on your personal hardware with zero mandatory telemetry or accounts.
+        </div>
+        <div class="stack-badges-wrap">
+          <span class="tech-badge-item">TypeScript</span>
+          <span class="tech-badge-item">Hono</span>
+          <span class="tech-badge-item">React Native</span>
+          <span class="tech-badge-item">Expo</span>
+          <span class="tech-badge-item">SQLite</span>
+          <span class="tech-badge-item">libsodium</span>
+          <span class="tech-badge-item">QUIC</span>
+          <span class="tech-badge-item">Docker</span>
+        </div>
+      </div>
+    </section>
 
     <section class="faq-section container" id="questions" aria-labelledby="faq-title"><div class="section-heading center scroll-pop"><div class="eyebrow">GOOD QUESTIONS, SIMPLE ANSWERS</div><h2 id="faq-title">A little more <span>clarity.</span></h2></div><div class="faq-list">
       <details class="scroll-pop"><summary>What can I store in Verma?<svg class="icon" aria-hidden="true"><use href="#plus"/></svg></summary><p>Verma securely stores account logins, private notes, and developer API keys all in one unified, encrypted local vault.</p></details>
@@ -134,6 +266,6 @@
 
     <section class="final-section container" aria-labelledby="final-title"><div class="final-card scroll-pop"><div class="final-ring" aria-hidden="true"></div><span class="final-star" aria-hidden="true">✳</span><div class="eyebrow">A LITTLE LESS TO REMEMBER</div><h2 id="final-title">Ready for real<br>peace of mind?</h2><p>Experience an offline password manager you never have to learn.</p><a class="button dark" href="/download">Download Verma <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><small>Available for macOS, Windows, and Linux · Offline &amp; private by design</small><img src="assets/geometric.svg" width="240" height="240" alt="" loading="lazy"></div></section>
   </main>
-  <footer class="site-footer container"><div class="footer-top"><a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a><p>Your digital life. A little lighter.</p><nav aria-label="Footer navigation"><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#how">Guide</a><a href="/cloud">Cloud</a><a href="#privacy">Privacy</a><a href="#questions">FAQs</a></nav></div><div class="footer-bottom"><span>© 2026 Verma. All rights reserved.</span><span>Made by Phasmadrosophilia for APPBuildersPH Hackathon 2026</span></div></footer>
+  <footer class="site-footer container"><div class="footer-top"><a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a><p>Your digital life. A little lighter.</p><nav aria-label="Footer navigation"><a href="#features">Features</a><a href="/pricing">Pricing</a><a href="#how">Guide</a><a href="/cloud">Cloud</a><a href="#privacy">Privacy</a><a href="#questions">FAQs</a></nav></div><div class="footer-bottom"><span>© 2026 Verma. All rights reserved.</span><span>Made by Phasmadrosophilia for APPBuildersPH Hackathon 2026</span></div></footer>
 </body>
 </html>

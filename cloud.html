@@ -37,15 +37,16 @@
     <a class="brand" href="/" aria-label="Verma home"><span class="brand-mark"><img src="assets/verma-logo.png" alt=""></span><span class="brand-name">VERMA</span></a>
     <nav class="desktop-nav" aria-label="Main navigation">
       <a href="/#features">Features</a>
-      <a href="#pricing">Pricing</a>
+      <a href="/pricing">Pricing</a>
       <a href="/#how">Guide</a>
       <a class="nav-cloud active" href="/cloud"><svg class="icon cloud-icon" aria-hidden="true"><use href="#cloud"/></svg>Cloud</a>
     </nav>
+    <div class="engine-badge" id="engine-badge" title="Local Verma Engine Status"><span class="engine-dot" aria-hidden="true"></span><span class="engine-text">Local Engine</span></div>
     <a class="button dark header-cta" href="/download">Download Verma</a>
     <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-menu"><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
     <nav id="mobile-menu" aria-label="Mobile navigation" hidden>
       <a href="/#features">Features</a>
-      <a href="#pricing">Pricing</a>
+      <a href="/pricing">Pricing</a>
       <a href="/#how">Guide</a>
       <a href="/cloud">Cloud</a>
     </nav>
@@ -198,6 +199,20 @@
       </div>
     </section>
 
+    <!-- Live Relay Heartbeat Diagnostic Probe -->
+    <section class="container scroll-pop" aria-label="Local Relay Diagnostic Probe">
+      <div class="relay-test-card">
+        <div class="relay-test-header">
+          <h3><svg class="icon" aria-hidden="true" style="width:22px;height:22px;"><use href="#sync"/></svg> Test Local Relay &amp; Heartbeat</h3>
+          <button type="button" class="relay-probe-action-btn" id="probe-relay-btn">Probe Relay Health</button>
+        </div>
+        <p class="relay-test-desc">Verma can run a local relay service in Docker or directly via Hono. Test local QUIC transport reachability and emergency heartbeat continuity.</p>
+        <div class="relay-probe-result" id="relay-probe-output" aria-live="polite">
+          <div class="probe-line ready">Click "Probe Relay Health" to test the local engine connection and peer status.</div>
+        </div>
+      </div>
+    </section>
+
     <!-- Pricing Section -->
     <section class="pricing-section-cloud container" id="pricing" aria-labelledby="pricing-title">
       <div class="section-heading center scroll-pop">
@@ -341,7 +356,7 @@
       <p>Your digital life. A little lighter.</p>
       <nav aria-label="Footer navigation">
         <a href="/#features">Features</a>
-        <a href="#pricing">Pricing</a>
+        <a href="/pricing">Pricing</a>
         <a href="/#how">Guide</a>
         <a href="/cloud">Cloud</a>
         <a href="/#privacy">Privacy</a>

@@ -216,3 +216,16 @@ test('apiClient: a non-2xx response yields a typed ApiError carrying the server 
     restore();
   }
 });
+
+
+test('checkHealth: reports reachable API and handles HTTP and transport failures', async () => {
+  for (const response of [{ body: { status: 'ok' } }, { status: 503 }, 'reject'] as const) {
+    const mock = mockFetch(() => response);
+    try {
+      assert.equal(await apiClient.checkHealth(), typeof response === 'object' && 'body' in response);
+      assert.equal(mock.calls[0]?.url, `${apiClient.baseUrl}/health`);
+    } finally {
+      mock.restore();
+    }
+  }
+});

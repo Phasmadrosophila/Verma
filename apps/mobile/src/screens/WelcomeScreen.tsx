@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -56,6 +58,31 @@ const slides: Slide[] = [
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const slideAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    slideAnim.setValue(0);
+    Animated.timing(slideAnim, {
+      toValue: 1,
+      duration: 320,
+      useNativeDriver: true,
+    }).start();
+  }, [currentSlide]);
+
+  const isFirstSlide = currentSlide === 0;
+
+  const slideTranslateX = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [isFirstSlide ? 0 : 60, 0],
+  });
+  const slideTranslateY = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [isFirstSlide ? 60 : 0, 0],
+  });
+  const slideOpacity = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [isFirstSlide ? 0 : 0.2, 1],
+  });
 
   const slide = slides[currentSlide];
 
@@ -72,9 +99,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
       {/* Top Header */}
       <View style={styles.topRow}>
         <View style={styles.brandRow}>
-          <View style={styles.brandBadge}>
-            <Text style={styles.brandBadgeText}>V</Text>
-          </View>
+          <Image
+            source={require('../../assets/verma-logo.png')}
+            style={styles.brandLogo}
+          />
           <Text style={styles.brandWordmark}>
             Verma<Text style={{ color: slide.accentColor }}>.</Text>
           </Text>
@@ -86,7 +114,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
       </View>
 
       {/* Main Art & Content */}
-      <View style={styles.content}>
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: slideOpacity,
+            transform: [
+              { translateX: slideTranslateX },
+              { translateY: slideTranslateY },
+            ],
+          },
+        ]}
+      >
         <View style={[styles.iconCircle, { borderColor: slide.accentColor }]}>
           <Text style={styles.heroEmoji}>{slide.icon}</Text>
         </View>
@@ -98,7 +137,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           <Text style={styles.title}>{slide.title}</Text>
           <Text style={styles.description}>{slide.description}</Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Bottom Controls */}
       <View style={styles.footer}>
@@ -150,18 +189,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  brandBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: radii.md,
-    backgroundColor: colors.text,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandBadgeText: {
-    fontSize: typography.sizeMd,
-    fontWeight: '800',
-    color: colors.paper,
+  brandLogo: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain',
   },
   brandWordmark: {
     fontSize: typography.sizeXxl,

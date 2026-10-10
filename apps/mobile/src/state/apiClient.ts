@@ -247,6 +247,15 @@ function secretFromEntry(entry: any): string {
 export const apiClient = {
   baseUrl: BASE_URL,
 
+  async checkHealth(): Promise<boolean> {
+    try {
+      await request('/health');
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
   async getVaultStatus(): Promise<VaultStatus> {
     return request<VaultStatus>('/api/vault/status');
   },
