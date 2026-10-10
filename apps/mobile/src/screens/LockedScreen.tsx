@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { Icon } from '../components/Icon';
+import type { ErrorKind } from '../state/apiClient';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface LockedScreenProps {
@@ -29,8 +30,18 @@ export const LockedScreen: React.FC<LockedScreenProps> = ({ onUnlock }) => {
     try {
       await onUnlock(passphrase.trim());
       setPassphrase('');
-    } catch {
-      setError('That doesn’t match your demo passphrase. Try again.');
+    } catch (err) {
+      // `onUnlock` rejects with a classified ErrorKind. Only a true
+      // Unauthorized means a wrong passphrase; an offline/transport failure
+      // must not be mislabeled as a bad passphrase.
+      const kind = err as ErrorKind;
+      if (kind === 'Offline') {
+        setError('You’re offline. Reconnect to unlock your vault.');
+      } else if (kind === 'Unauthorized') {
+        setError('That doesn’t match your demo passphrase. Try again.');
+      } else {
+        setError('Couldn’t unlock your vault. Please try again.');
+      }
     } finally {
       setBusy(false);
     }

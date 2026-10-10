@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { classifyError } from '../state/apiClient';
 import { MobileVaultEntry } from '../state/vaultStore';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
@@ -34,7 +35,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   // component's local state — never in the list / App state.
   const [secret, setSecret] = useState<string | null>(null);
   const [revealBusy, setRevealBusy] = useState(false);
-  const [revealError, setRevealError] = useState(false);
+  const [revealError, setRevealError] = useState<string | null>(null);
 
   if (!entry) return null;
 
@@ -42,7 +43,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 
   const clearSecret = () => {
     setSecret(null);
-    setRevealError(false);
+    setRevealError(null);
     setRevealBusy(false);
   };
 
@@ -57,19 +58,26 @@ export const DetailModal: React.FC<DetailModalProps> = ({
       return;
     }
     setRevealBusy(true);
-    setRevealError(false);
+    setRevealError(null);
     try {
       const value = await onRevealSecret(entry.id);
       setSecret(value);
-    } catch {
-      setRevealError(true);
+    } catch (err) {
+      const kind = classifyError(err);
+      setRevealError(
+        kind === 'Locked'
+          ? 'Vault locked — unlock to reveal'
+          : kind === 'Offline'
+          ? 'Offline — can’t reach your vault'
+          : 'Could not load secret'
+      );
     } finally {
       setRevealBusy(false);
     }
   };
 
   const getSecretDisplay = () => {
-    if (revealError) return 'Could not load secret';
+    if (revealError) return revealError;
     if (revealBusy) return 'Revealing…';
     if (revealed) return secret;
     return '••••••••••••••••';

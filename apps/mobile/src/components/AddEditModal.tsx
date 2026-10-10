@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { classifyError } from '../state/apiClient';
 import {
   EntryType,
   MobileVaultEntry,
@@ -42,6 +43,7 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
   const [secret, setSecret] = useState('');
   const [favorite, setFavorite] = useState(false);
   const [revealSecret, setRevealSecret] = useState(false);
+  const [secretLoadError, setSecretLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +56,7 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
       setTagsStr(entryToEdit.tags.join(', '));
       setFavorite(entryToEdit.favorite);
       // The list entry carries no secret; fetch it lazily for editing.
+      setSecretLoadError(null);
       if (entryToEdit.secret) {
         setSecret(entryToEdit.secret);
       } else {
@@ -62,8 +65,18 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
           .then((value) => {
             if (!cancelled) setSecret(value);
           })
-          .catch(() => {
-            /* leave empty; user can re-enter */
+          .catch((err) => {
+            // Field stays empty (user can re-enter), but tell them WHY it's
+            // blank when the vault is locked or unreachable.
+            if (cancelled) return;
+            const kind = classifyError(err);
+            setSecretLoadError(
+              kind === 'Locked'
+                ? 'Vault locked — unlock to load the existing secret.'
+                : kind === 'Offline'
+                ? 'Offline — couldn’t load the existing secret.'
+                : null
+            );
           });
       }
     } else {
@@ -75,6 +88,7 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
       setTagsStr('');
       setSecret(generatePassword(18));
       setFavorite(false);
+      setSecretLoadError(null);
     }
     setRevealSecret(false);
     return () => {
@@ -254,6 +268,9 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
                   </TouchableOpacity>
                 )}
               </View>
+              {secretLoadError ? (
+                <Text style={styles.secretLoadError}>{secretLoadError}</Text>
+              ) : null}
             </View>
 
             {/* Save Button */}
@@ -377,6 +394,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.brandPeri,
     fontWeight: '700',
+  },
+  secretLoadError: {
+    fontSize: 11,
+    color: colors.danger,
+    marginLeft: 2,
+    marginTop: 2,
   },
   secretInputWrapper: {
     position: 'relative',
