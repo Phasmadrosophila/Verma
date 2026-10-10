@@ -16,24 +16,35 @@ test('AC-A-M0-04-03: deployment defines a pinned non-root relay with a healthche
   assert.match(smoke, /synthetic-encrypted-envelope/);
 });
 
-test('AC-A-M0-04-06: Cloudflare deployment defines serverless KV binding, safe CI/CD, and preview/production gates', async () => {
-  const [pagesWrangler, relayWrangler, workflow] = await Promise.all([
-    readFile('apps/web/wrangler.toml', 'utf8'),
-    readFile('relay/wrangler.toml', 'utf8'),
-    readFile('.github/workflows/cloudflare-deploy.yml', 'utf8'),
+test('AC-A-M0-04-06: Cloudflare Workers deployment defines serverless KV binding, safe CI/CD, and preview/production gates', async () => {
+  const [webWrangler, workflow] = await Promise.all([
+    readFile('apps/web/wrangler.jsonc', 'utf8'),
+    readFile('.github/workflows/cloudflare-workers-deploy.yml', 'utf8'),
   ]);
 
-  // KV Namespace binding verification
-  assert(pagesWrangler.includes('binding = "VERMA_RELAY_KV"'));
-  assert(pagesWrangler.includes('pages_build_output_dir = "dist"'));
-  assert(relayWrangler.includes('binding = "VERMA_RELAY_KV"'));
-  assert(relayWrangler.includes('main = "worker.mjs"'));
+  const config = JSON.parse(stripJsoncComments(webWrangler));
+
+  // Worker contract (mirrors the parallel worker's apps/web/wrangler.jsonc)
+  assert.equal(config.name, 'verma-web');
+  assert.equal(config.main, 'worker/index.mjs');
+  assert.equal(config.assets.directory, './dist');
+  assert.equal(config.assets.not_found_handling, 'single-page-application');
+  assert.equal(config.preview_urls, true);
+  const kv = config.kv_namespaces.find((entry) => entry.binding === 'VERMA_RELAY_KV');
+  assert(kv, 'kv_namespaces must bind VERMA_RELAY_KV');
 
   // Workflow safety & secret isolation verification
   assert.match(workflow, /permissions:\s+contents: read/);
   assert.match(workflow, /CLOUDFLARE_API_TOKEN/);
   assert.match(workflow, /CLOUDFLARE_ACCOUNT_ID/);
-  assert.match(workflow, /CLOUDFLARE_PROJECT_NAME/);
   assert.match(workflow, /preview-deploy/);
   assert.match(workflow, /production-deploy/);
+  assert.match(workflow, /versions upload/);
+  assert.match(workflow, /--preview-alias/);
 });
+
+function stripJsoncComments(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/[^\n]*/g, '');
+}

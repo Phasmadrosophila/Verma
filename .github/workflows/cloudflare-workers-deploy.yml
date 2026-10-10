@@ -1,0 +1,266 @@
+# Cloudflare Workers deployment pipeline for the verma-web Worker (dataset: apps/web).
+# Replaces the retired Cloudflare Pages pipeline (cloudflare-deploy.yml).
+#
+# Preview aliases are created with `wrangler versions upload --preview-alias <alias>` and
+# appear at https://<alias>-verma-web.<account-subdomain>.workers.dev. Password-strength
+# metadata aside, previews must never share production KV data, so preview-deploy swaps the
+# committed 'verma_relay_kv_production_id' placeholder for a dedicated PREVIEW namespace id.
+#
+# Production URL (unless a custom domain/route is configured, which this pipeline does NOT
+# assume or create): https://verma-web.<account-subdomain>.workers.dev/
+
+name: Cloudflare Workers Deployment
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (Typecheck, Lint, Test, Build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify relay & worker syntax
+        run: |
+          node --check relay/server.mjs
+          node --check relay/cloudflare-relay.mjs
+          node --check relay/worker.mjs
+          node --check apps/web/worker/index.mjs
+          node --check tests/relay/deployment.test.mjs
+          node --check tests/relay/relay.test.mjs
+          node --check tests/relay/cloudflare-relay.test.mjs
+          node --check tests/relay/worker-entry.test.mjs
+
+      - name: Run relay & serverless KV tests
+        run: node --test tests/relay/*.test.mjs
+
+      - name: Build shared package
+        run: pnpm --filter @app/shared run build
+
+      - name: Workspace typecheck
+        run: pnpm run check
+
+      - name: Workspace lint
+        run: pnpm --filter @app/web run lint
+
+      - name: Workspace test suite
+        run: pnpm run test
+
+      - name: Build packages & web assets
+        run: pnpm run build
+
+      - name: Upload web distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+          retention-days: 1
+
+  preview-deploy:
+    name: Deploy Preview (Cloudflare Workers)
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # PRs and pushes on any non-main ref get a versioned preview; main is handled by
+    # production-deploy. NEVER use pull_request_target: untrusted fork PRs run without
+    # repository secrets and are guarded by the CLOUDFLARE_API_TOKEN != '' check below.
+    if: github.ref != 'refs/heads/main'
+    # Least privilege: pull-requests: write is needed ONLY to post/update the preview URL
+    # comment on the triggering pull request.
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download web build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - name: Compute deterministic preview alias
+        id: alias
+        run: |
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            ALIAS="pr-${{ github.event.pull_request.number }}"
+          else
+            ALIAS="$(printf '%s' "$GITHUB_REF_NAME" \
+              | tr '[:upper:]' '[:lower:]' \
+              | sed 's/[^a-z0-9-]/-/g; s/-\+/-/g; s/^-//; s/-$//')"
+            if [ -z "$ALIAS" ]; then ALIAS="main"; fi
+            # Aliases must begin with a lowercase letter (see wrangler contract).
+            case "$ALIAS" in
+              [a-z]*) ;;
+              *) ALIAS="b-${ALIAS}" ;;
+            esac
+            # Keep alias + '-' + 'verma-web' <= 63 chars.
+            ALIAS="${ALIAS:0:52}"
+          fi
+          echo "alias=${ALIAS}" >> "$GITHUB_OUTPUT"
+
+      - name: Provision preview KV namespace (idempotent)
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          npx --yes wrangler@4.149.0 kv namespace create "VERMA_RELAY_KV" || true
+          npx --yes wrangler@4.149.0 kv namespace create "VERMA_RELAY_KV_preview" || true
+
+      - name: Bind preview KV namespace in wrangler config
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          KV_LIST="$(npx --yes wrangler@4.149.0 kv namespace list)"
+          PREVIEW_ID="$(printf '%s' "$KV_LIST" | jq -r --arg t "VERMA_RELAY_KV_preview" '.[] | select(.title == $t) | .id')"
+          if [ -z "${PREVIEW_ID}" ]; then
+            echo "::error::Failed to resolve preview KV namespace id" >&2
+            exit 1
+          fi
+          # Previews must never share production KV data: swap in the preview namespace id.
+          sed -i "s/verma_relay_kv_production_id/${PREVIEW_ID}/g" apps/web/wrangler.jsonc
+
+      - name: Skip preview deploy when credentials unavailable
+        if: env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "Preview deployment skipped: Cloudflare credentials are empty (fork / untrusted PR)."
+          echo "No deploy, KV provisioning, or URL comment is attempted without credentials."
+
+      - name: Deploy preview version (versions upload)
+        id: deploy-preview
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        uses: cloudflare/wrangler-action@v4.1.3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.149.0'
+          workingDirectory: apps/web
+          command: versions upload --preview-alias ${{ steps.alias.outputs.alias }}
+
+      - name: Capture preview alias URL
+        id: preview-url
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          COMMAND_OUTPUT: ${{ steps.deploy-preview.outputs.command-output }}
+        run: |
+          PREVIEW_URL="$(printf '%s\n' "$COMMAND_OUTPUT" | sed -n 's/^Version Preview Alias URL: *//p' | tr -d '[:space:]')"
+          if [ -z "$PREVIEW_URL" ]; then
+            PREVIEW_URL="$(printf '%s\n' "$COMMAND_OUTPUT" | grep -oE 'https://[a-z0-9][a-z0-9-]*\.workers\.dev' | head -n1)"
+          fi
+          if [ -z "$PREVIEW_URL" ]; then
+            echo "warning: could not parse preview URL from wrangler output" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "url=${PREVIEW_URL}" >> "$GITHUB_OUTPUT"
+          echo "Preview alias URL: ${PREVIEW_URL}"
+
+      - name: Post or update preview URL comment
+        if: env.CLOUDFLARE_API_TOKEN != '' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.preview-url.outputs.url }}
+          PREVIEW_ALIAS: ${{ steps.alias.outputs.alias }}
+        with:
+          script: |
+            const marker = '<!-- verma-preview-url -->';
+            const url = process.env.PREVIEW_URL || '';
+            const alias = process.env.PREVIEW_ALIAS || '';
+            const body = `${marker}\n### Verma web preview (Workers)\n\n- Preview alias: \`${alias}\`\n- Preview URL: ${url || 'unavailable (see deploy logs)'}\n\nThis URL serves the uploaded version only and never production traffic.`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+  production-deploy:
+    name: Deploy Production (Cloudflare Workers)
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Production only on push to main. versions-only previews never run here.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download web build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+
+      - name: Provision production KV namespace (idempotent)
+        run: |
+          npx --yes wrangler@4.149.0 kv namespace create "VERMA_RELAY_KV" || true
+
+      - name: Bind production KV namespace in wrangler config
+        run: |
+          KV_LIST="$(npx --yes wrangler@4.149.0 kv namespace list)"
+          PROD_ID="$(printf '%s' "$KV_LIST" | jq -r --arg t "VERMA_RELAY_KV" '.[] | select(.title == $t) | .id')"
+          if [ -z "${PROD_ID}" ]; then
+            echo "::error::Failed to resolve production KV namespace id" >&2
+            exit 1
+          fi
+          sed -i "s/verma_relay_kv_production_id/${PROD_ID}/g" apps/web/wrangler.jsonc
+
+      - name: Deploy to production (Cloudflare Workers)
+        uses: cloudflare/wrangler-action@v4.1.3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.149.0'
+          workingDirectory: apps/web
+          command: deploy
