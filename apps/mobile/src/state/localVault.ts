@@ -30,7 +30,10 @@ import {
 const DEMO_PASSPHRASE = 'verma-demo';
 
 let entries: MobileVaultEntry[] = structuredClone(seedEntries);
-let locked = true;
+// Offline demo starts UNLOCKED, matching apps/mobile-preview (state.locked:false),
+// so "Explore demo" lands on a populated vault. The lock button still locks it,
+// and 'verma-demo' unlocks. (The test-only reset re-locks to assert the gate.)
+let locked = false;
 
 function nextId(): string {
   // String UUID-ish id; avoids colliding with numeric seed ids.
