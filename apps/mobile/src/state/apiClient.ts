@@ -313,4 +313,32 @@ export const apiClient = {
       body: JSON.stringify({ query }),
     });
   },
+
+  async initVault(password: string): Promise<void> {
+    await request('/api/vault/init', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  },
+
+  async analyzeImport(csvContent: string, customMappings?: any): Promise<any> {
+    return request('/api/import/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ csvContent, customMappings }),
+    });
+  },
+
+  async cancelImport(stagingId: string): Promise<any> {
+    return request('/api/import/cancel', {
+      method: 'POST',
+      body: JSON.stringify({ stagingId }),
+    });
+  },
+
+  async confirmImport(stagingId: string, options?: any): Promise<any> {
+    return request('/api/import/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ stagingId, ...options }),
+    });
+  },
 };

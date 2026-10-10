@@ -712,3 +712,15 @@ textarea.input{border-radius:20px}
 @media(prefers-reduced-motion:reduce){
   .welcome-page.slide-rise, .welcome-page.slide-next, .welcome-page.slide-prev, .setup-page.slide-next, .setup-page.slide-prev, .skeleton-box{animation:none!important;transform:none!important}
 }
+
+.ai-loading-box{display:flex;align-items:center;gap:12px;padding:16px;border-radius:18px;background:var(--assist);color:#3f5196;margin:14px 0}
+.ai-loading-box p{font-size:12px;margin:0}
+.ai-loading-box .assistant-orb{width:36px;height:36px;border-radius:12px;box-shadow:none;flex:none}
+.ai-loading-box .assistant-orb .icon{width:20px;height:20px}
+.ai-response-bubble{background:var(--assist);border:1px solid #c8d0f4;border-radius:18px;padding:14px 16px;margin:12px 0;color:#2c396b}
+.ai-response-bubble p{font-size:12px;line-height:1.6;margin-top:6px}
+.badge-ai{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#4f64b8}
+.badge-ai .icon{width:13px;height:13px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1.8s linear infinite}
+

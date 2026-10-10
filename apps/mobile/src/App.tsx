@@ -47,7 +47,8 @@ function metadataToEntry(m: MobileEntryMetadata): MobileVaultEntry {
 type LoadState = 'loading' | 'ready' | 'error';
 
 export function App() {
-  const [hasOnboarded, setHasOnboarded] = useState(false);
+  const [hasOnboarded, setHasOnboarded] = useState<boolean | null>(null);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const [currentTab, setCurrentTab] = useState<NavTab>('vault');
 
@@ -62,6 +63,20 @@ export function App() {
 
   // Toast state
   const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function checkStatus() {
+      try {
+        const status = await apiClient.getVaultStatus();
+        setHasOnboarded(status.isInitialized);
+        setIsLocked(status.isLocked);
+      } catch (err) {
+        // If API is unreachable, default to requiring onboarding safely
+        setHasOnboarded(false);
+      }
+    }
+    checkStatus();
+  }, []);
 
   const showToast = (message: string) => {
     setToast(message);
@@ -153,12 +168,41 @@ export function App() {
     setIsLocked(true);
   };
 
-  // 1. Onboarding Flow
+  // 0. Initializing Flow
+  if (hasOnboarded === null) {
+    return (
+      <SafeAreaView style={[styles.safeContainer, { justifyContent: 'center', alignItems: 'center' }]}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.brandOrange} />
+        <ActivityIndicator size="large" color={colors.surface} />
+      </SafeAreaView>
+    );
+  }
+
+  // 1. Onboarding Flow (Vault Not Initialized)
   if (!hasOnboarded) {
+    if (showWelcome) {
+      return (
+        <SafeAreaView style={styles.safeContainer}>
+          <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
+          <WelcomeScreen onComplete={() => setShowWelcome(false)} />
+        </SafeAreaView>
+      );
+    }
+
     return (
       <SafeAreaView style={styles.safeContainer}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.paper} />
-        <WelcomeScreen onComplete={() => setHasOnboarded(true)} />
+        <SetupScreen 
+          onSetupComplete={(password, action) => {
+            setHasOnboarded(true);
+            setIsLocked(false);
+            if (action === 'import') {
+              setCurrentTab('import');
+            } else {
+              setCurrentTab('vault');
+            }
+          }} 
+        />
       </SafeAreaView>
     );
   }
