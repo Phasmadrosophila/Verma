@@ -23,7 +23,7 @@ export function createApp(options: AppOptions = {}): { app: Hono; repo: VaultRep
 
   const app = new Hono();
 
-  // Enable CORS for native mobile clients, mobile preview, and cross-origin tools
+  // CORS middleware for web SPA and mobile client compatibility
   app.use('*', cors());
 
   // Safe request logging middleware: zero payload contents logged

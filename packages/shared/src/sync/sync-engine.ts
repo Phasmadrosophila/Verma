@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import type { DeviceIdentity } from './identity.js';
 import type { PairingManager, PairedDevice } from './pairing.js';
 import type {
@@ -28,6 +29,7 @@ export class DesktopSyncEngine {
   private identity: DeviceIdentity;
   private pairingManager: PairingManager;
   private applyHandler?: DeltaApplyHandler;
+  private seenNonces = new Set<string>();
 
   constructor(
     identity: DeviceIdentity,
@@ -55,6 +57,11 @@ export class DesktopSyncEngine {
    * Responds to inbound peer handshake request.
    */
   async handleInboundHandshake(message: HandshakeMessage): Promise<HandshakeMessage> {
+    if (this.seenNonces.has(message.nonce)) {
+      throw new UnauthorizedPeerError('Handshake replay detected');
+    }
+    this.seenNonces.add(message.nonce);
+
     const paired = this.pairingManager.getPairedDevice(message.senderDeviceId);
     if (!paired) {
       throw new UnauthorizedPeerError(`Rejected handshake: peer "${message.senderDeviceId}" is not paired`);
@@ -67,7 +74,7 @@ export class DesktopSyncEngine {
     }
 
     const timestamp = Date.now();
-    const nonce = Math.random().toString(36).substring(2, 15);
+    const nonce = randomBytes(16).toString('hex');
     const ackData = `HANDSHAKE_ACK:${this.identity.deviceId}:${message.senderDeviceId}:${timestamp}:${nonce}`;
     const signature = signData(ackData, this.identity.privateKeyPem);
 
@@ -85,6 +92,11 @@ export class DesktopSyncEngine {
    * Responds to inbound encrypted sync envelope.
    */
   async handleInboundEnvelope(envelope: EncryptedSyncEnvelope): Promise<EncryptedSyncEnvelope | null> {
+    if (this.seenNonces.has(envelope.nonce)) {
+      throw new UnauthorizedPeerError('Envelope replay detected');
+    }
+    this.seenNonces.add(envelope.nonce);
+
     const paired = this.pairingManager.getPairedDevice(envelope.senderDeviceId);
     if (!paired) {
       throw new UnauthorizedPeerError(`Rejected envelope: peer "${envelope.senderDeviceId}" is not paired`);
@@ -121,7 +133,7 @@ export class DesktopSyncEngine {
     try {
       // Step 1: Mutual Handshake Authentication
       const timestamp = Date.now();
-      const nonce = Math.random().toString(36).substring(2, 15);
+      const nonce = randomBytes(16).toString('hex');
       const initData = `HANDSHAKE_INIT:${this.identity.deviceId}:${targetDeviceId}:${timestamp}:${nonce}`;
       const initSignature = signData(initData, this.identity.privateKeyPem);
 
@@ -138,6 +150,11 @@ export class DesktopSyncEngine {
       if (!ack || ack.type !== 'HANDSHAKE_ACK') {
         throw new UnauthorizedPeerError('Peer handshake acknowledgment was invalid or rejected');
       }
+
+      if (this.seenNonces.has(ack.nonce)) {
+        throw new UnauthorizedPeerError('Handshake ACK replay detected');
+      }
+      this.seenNonces.add(ack.nonce);
 
       const expectedAckData = `HANDSHAKE_ACK:${targetDeviceId}:${this.identity.deviceId}:${ack.timestamp}:${ack.nonce}`;
       const isAckValid = verifySignature(expectedAckData, ack.signature, paired.publicKeyPem);

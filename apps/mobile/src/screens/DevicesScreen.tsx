@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { PairedDevice } from '../state/vaultStore';
-import { getApiBaseUrl, mobileApi } from '../state/apiClient';
+import { apiClient } from '../state/apiClient';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface DevicesScreenProps {
@@ -39,11 +39,11 @@ export const DevicesScreen: React.FC<DevicesScreenProps> = ({ onShowToast }) => 
   const [pairingPhrase, setPairingPhrase] = useState('meadow-cobalt-lantern');
   const [pairingCode, setPairingCode] = useState('4821');
   const [backendStatus, setBackendStatus] = useState<'connected' | 'offline' | 'checking'>('checking');
-  const apiUrl = getApiBaseUrl();
+  const apiUrl = apiClient.baseUrl;
 
   useEffect(() => {
     let mounted = true;
-    mobileApi.checkHealth().then((healthy) => {
+    apiClient.checkHealth().then((healthy) => {
       if (mounted) setBackendStatus(healthy ? 'connected' : 'offline');
     });
     return () => {
@@ -53,7 +53,7 @@ export const DevicesScreen: React.FC<DevicesScreenProps> = ({ onShowToast }) => 
 
   const handleTestBackendConnection = async () => {
     onShowToast('Checking Verma API backend...');
-    const healthy = await mobileApi.checkHealth();
+    const healthy = await apiClient.checkHealth();
     setBackendStatus(healthy ? 'connected' : 'offline');
     if (healthy) {
       onShowToast(`Backend API online (HTTP 200 ok at ${apiUrl})`);

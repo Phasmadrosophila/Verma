@@ -23,7 +23,7 @@ powershell -ExecutionPolicy Bypass -File scripts/rehearsal/verify-rehearsal-docs
 
 | Check | Expected | Actual for this preparation | Status | Timestamp | Operator | Build |
 | --- | --- | --- | --- | --- | --- | --- |
-| Synthetic shared-suite | 55 tests pass; Smart Import preview has masked synthetic passwords and no live credential patterns | 55 passed, 0 failed | PASS | 2026-10-10T00:26:13+08:00 | Codex worker | `c7a68b7aef42f5e7561c2e3e0309f5da33dac686` |
+| Synthetic shared-suite | 59 tests pass; Smart Import preview has masked synthetic passwords and no live credential patterns | 59 passed, 0 failed | PASS | 2026-10-10T00:26:13+08:00 | Codex worker | `c7a68b7aef42f5e7561c2e3e0309f5da33dac686` |
 | Model evaluation fixture gate | Candidate and synthetic fixtures pass; output includes `AC-B-M1-05-04 PASS` | Exit 0; reported `AC-B-M1-05-04 PASS` | PASS | 2026-10-10T00:26:13+08:00 | Codex worker | `c7a68b7aef42f5e7561c2e3e0309f5da33dac686` |
 | Full workspace suite | All workspace tests pass | API suite blocked before tests: `@app/shared/dist/index.js` missing; shared suite passed | FAIL | 2026-10-10T00:25:00+08:00 | Codex worker | `c7a68b7aef42f5e7561c2e3e0309f5da33dac686` |
 

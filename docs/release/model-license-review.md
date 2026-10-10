@@ -6,7 +6,7 @@
 | --- | --- |
 | Review status | **OPEN** |
 | Verma product direction | Fair-code, source-available; the final product license is not selected. |
-| Candidate model license signal | Apache-2.0 is reported for the proposed Qwen3 candidate, but the exact GGUF and its provenance are **NOT VERIFIED**. |
+| Application model license signal | Apache-2.0 is reported for Qwen3 0.6B, but the exact production GGUF and its provenance are **NOT VERIFIED**. |
 | Compatibility result | No compatibility conclusion has been made. |
 
 ## Apache-2.0 and the fair-code direction

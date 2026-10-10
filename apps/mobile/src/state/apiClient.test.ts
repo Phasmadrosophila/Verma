@@ -1,193 +1,231 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  deriveBrand,
-  getApiBaseUrl,
-  setApiBaseUrl,
-  toMobileEntry,
-  toWireEntryInput,
-  mobileApi,
-} from './apiClient';
-import type {
-  LoginEntry,
-  NoteEntry,
-  ApiKeyEntry,
-  RedactedEntryMetadata,
-} from '@app/shared';
+  apiClient,
+  ApiError,
+  toWireType,
+  fromWireType,
+  toMetadataEntry,
+} from './apiClient.js';
 
-test('apiClient: Base URL configuration and custom setter', () => {
-  const original = getApiBaseUrl();
-  setApiBaseUrl('http://192.168.1.42:3000/');
-  assert.equal(getApiBaseUrl(), 'http://192.168.1.42:3000');
+interface FetchCall {
+  url: string;
+  init?: RequestInit;
+}
 
-  setApiBaseUrl('http://localhost:3000');
-  assert.equal(getApiBaseUrl(), 'http://localhost:3000');
-});
+/** Install a fake global.fetch; returns the recorded calls + a restore fn. */
+function mockFetch(
+  handler: (url: string, init?: RequestInit) => { ok?: boolean; status?: number; body?: unknown } | 'reject'
+): { calls: FetchCall[]; restore: () => void } {
+  const calls: FetchCall[] = [];
+  const original = globalThis.fetch;
+  globalThis.fetch = (async (input: any, init?: RequestInit) => {
+    const url = String(input);
+    calls.push({ url, init });
+    const result = handler(url, init);
+    if (result === 'reject') {
+      throw new TypeError('Network request failed');
+    }
+    const status = result.status ?? 200;
+    return {
+      ok: result.ok ?? (status >= 200 && status < 300),
+      status,
+      json: async () => result.body ?? null,
+    } as Response;
+  }) as typeof fetch;
+  return { calls, restore: () => { globalThis.fetch = original; } };
+}
 
-test('apiClient: deriveBrand produces clean lowercase brand strings', () => {
-  assert.equal(deriveBrand('GitHub!'), 'github');
-  assert.equal(deriveBrand('Google Workspace'), 'googleworkspace');
-  assert.equal(deriveBrand('1Password'), '1password');
-  assert.equal(deriveBrand('???'), 'key');
-});
-
-test('apiClient: toMobileEntry converts LoginEntry with secret', () => {
-  const login: LoginEntry = {
-    id: 'login-1',
-    type: 'login',
-    title: 'ProtonMail',
-    username: 'user@pm.me',
-    password: 'secret-proton-pass-999',
-    domain: 'proton.me',
-    tags: ['Email', 'Security'],
-    createdAt: Date.now() - 60000,
-    updatedAt: Date.now() - 60000,
-  };
-
-  const mobile = toMobileEntry(login);
-  assert.equal(mobile.id, 'login-1');
-  assert.equal(mobile.type, 'login');
-  assert.equal(mobile.title, 'ProtonMail');
-  assert.equal(mobile.user, 'user@pm.me');
-  assert.equal(mobile.domain, 'proton.me');
-  assert.deepEqual(mobile.tags, ['Email', 'Security']);
-  assert.equal(mobile.secret, 'secret-proton-pass-999');
-  assert.equal(mobile.brand, 'protonmail');
-  assert.match(mobile.updated, /1m ago|Just now/);
-});
-
-test('apiClient: toMobileEntry converts NoteEntry with secret', () => {
-  const note: NoteEntry = {
-    id: 'note-1',
-    type: 'note',
-    title: 'Passport Info',
-    content: 'Passport # 123456789',
-    category: 'Personal',
-    tags: ['Documents'],
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-
-  const mobile = toMobileEntry(note);
-  assert.equal(mobile.id, 'note-1');
-  assert.equal(mobile.type, 'note');
-  assert.equal(mobile.title, 'Passport Info');
-  assert.equal(mobile.subtitle, 'Personal');
-  assert.equal(mobile.secret, 'Passport # 123456789');
-  assert.deepEqual(mobile.tags, ['Documents']);
-});
-
-test('apiClient: toMobileEntry converts ApiKeyEntry with secret and maps type to "api"', () => {
-  const apiKey: ApiKeyEntry = {
-    id: 'api-1',
+test('toMetadataEntry: strips every secret field from a leaky /api/entries row', () => {
+  // Shape taken verbatim from the live GET /api/entries (which leaks secrets).
+  const leakyApiKey = {
+    id: 'syn-api-001',
     type: 'api_key',
-    title: 'Stripe Secret Key',
-    service: 'Stripe Payments',
-    apiKey: 'sk_live_1234567890',
-    tags: ['Billing'],
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+    title: 'Stripe Test Secret Key',
+    tags: ['billing'],
+    service: 'stripe',
+    apiKey: 'sk_test_synthetic_leak',
+    apiSecret: 'whsec_synthetic_leak',
+    keyId: 'key_test_stripe_001',
+    createdAt: 1,
+    updatedAt: 2,
   };
+  const projected = toMetadataEntry(leakyApiKey);
+  const serialized = JSON.stringify(projected);
 
-  const mobile = toMobileEntry(apiKey);
-  assert.equal(mobile.id, 'api-1');
-  assert.equal(mobile.type, 'api');
-  assert.equal(mobile.title, 'Stripe Secret Key');
-  assert.equal(mobile.subtitle, 'Stripe Payments');
-  assert.equal(mobile.secret, 'sk_live_1234567890');
-});
+  assert.equal(projected.id, 'syn-api-001');
+  assert.equal(projected.type, 'api', 'api_key must map to mobile "api"');
+  assert.equal(projected.domain, 'stripe');
+  // No secret value or secret key may survive the projection.
+  for (const field of ['apiKey', 'apiSecret', 'password', 'content', 'totpSecret', 'recoveryCodes', 'keyId']) {
+    assert.ok(!(field in (projected as any)), `secret-bearing field "${field}" leaked onto metadata`);
+  }
+  assert.ok(!serialized.includes('sk_test_synthetic_leak'), 'raw apiKey leaked into metadata');
+  assert.ok(!serialized.includes('whsec_synthetic_leak'), 'raw apiSecret leaked into metadata');
 
-test('apiClient: toMobileEntry enforces Zero-Secret boundary for RedactedEntryMetadata', () => {
-  const redacted: RedactedEntryMetadata = {
-    id: 'meta-1',
-    type: 'login',
-    title: 'Bank Portal',
-    domain: 'mybank.com',
-    tags: ['Finance'],
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    isReused: false,
-    isWeak: false,
-    fieldLabels: ['username', 'password'],
+  // A login row with password/totp/recovery codes must likewise be stripped.
+  const leakyLogin = {
+    id: 'syn-login-001', type: 'login', title: 'GitHub', tags: [],
+    username: 'u', password: 'Syn-Pass-Leak', totpSecret: 'JBSWY', recoveryCodes: ['R1'],
+    domain: 'github.com', createdAt: 1, updatedAt: 2,
   };
-
-  const mobile = toMobileEntry(redacted);
-  assert.equal(mobile.id, 'meta-1');
-  assert.equal(mobile.type, 'login');
-  assert.equal(mobile.title, 'Bank Portal');
-  assert.equal(mobile.domain, 'mybank.com');
-  // Invariant: Redacted metadata must NEVER contain secret payload
-  assert.equal(mobile.secret, '', 'Redacted metadata must have empty secret string');
+  const loginSerialized = JSON.stringify(toMetadataEntry(leakyLogin));
+  assert.ok(!loginSerialized.includes('Syn-Pass-Leak'), 'raw password leaked');
+  assert.ok(!loginSerialized.includes('JBSWY'), 'raw totpSecret leaked');
+  assert.ok(!loginSerialized.includes('R1'), 'raw recovery code leaked');
 });
 
-test('apiClient: toWireEntryInput formats payloads correctly for backend API', () => {
-  // Login entry
-  const loginInput = toWireEntryInput({
-    title: 'Amazon',
-    type: 'login',
-    user: 'shopper@example.com',
-    domain: 'amazon.com',
-    tags: ['Shopping'],
-    secret: 'amz-password-777',
-    favorite: true,
-    brand: 'amazon',
-    subtitle: 'Shopping account',
-  });
-  assert.equal(loginInput.type, 'login');
-  assert.equal(loginInput.title, 'Amazon');
-  assert.equal((loginInput as any).username, 'shopper@example.com');
-  assert.equal((loginInput as any).password, 'amz-password-777');
+test('apiClient: type mapping maps api <-> api_key both directions', () => {
+  assert.equal(toWireType('api'), 'api_key');
+  assert.equal(toWireType('login'), 'login');
+  assert.equal(toWireType('note'), 'note');
 
-  // API entry
-  const apiInput = toWireEntryInput({
-    title: 'OpenAI API',
-    type: 'api',
-    user: 'OpenAI',
-    tags: ['AI'],
-    secret: 'sk-abcdef12345',
-    favorite: false,
-    brand: 'openai',
-    subtitle: 'LLM Key',
-  });
-  assert.equal(apiInput.type, 'api_key');
-  assert.equal((apiInput as any).service, 'OpenAI');
-  assert.equal((apiInput as any).apiKey, 'sk-abcdef12345');
-
-  // Note entry
-  const noteInput = toWireEntryInput({
-    title: 'Locker Combination',
-    type: 'note',
-    tags: ['Home'],
-    secret: '12-34-56',
-    favorite: false,
-    brand: 'key',
-    subtitle: 'Padlock',
-  });
-  assert.equal(noteInput.type, 'note');
-  assert.equal((noteInput as any).content, '12-34-56');
+  assert.equal(fromWireType('api_key'), 'api');
+  assert.equal(fromWireType('login'), 'login');
+  assert.equal(fromWireType('note'), 'note');
 });
 
-test('apiClient: mobileApi handles offline mode gracefully without crashing', async () => {
-  // Save current base URL and point to an offline unreachable port
-  const original = getApiBaseUrl();
-  setApiBaseUrl('http://127.0.0.1:59998');
-
+test('apiClient: listEntries hits /api/metadata and maps api_key -> api', async () => {
+  const { calls, restore } = mockFetch((url) => {
+    assert.ok(url.endsWith('/api/metadata'), `unexpected url ${url}`);
+    return {
+      body: {
+        metadata: [
+          { id: 'e1', type: 'login', title: 'GitHub', domain: 'github.com', tags: ['Dev'], updatedAt: 0 },
+          { id: 'e2', type: 'api_key', title: 'DigitalOcean', domain: 'digitalocean', tags: [], updatedAt: 0 },
+        ],
+      },
+    };
+  });
   try {
-    const isHealthy = await mobileApi.checkHealth();
-    assert.equal(isHealthy, false, 'checkHealth must return false when backend is down');
-
-    const statusRes = await mobileApi.getVaultStatus();
-    assert.equal(statusRes.success, false);
-    assert.equal(statusRes.isOffline, true, 'Result must indicate offline state');
-
-    const listRes = await mobileApi.listEntries();
-    assert.equal(listRes.success, false);
-    assert.equal(listRes.isOffline, true);
-
-    const askRes = await mobileApi.askVault('where is my wifi');
-    assert.equal(askRes.success, false);
-    assert.equal(askRes.isOffline, true);
+    const entries = await apiClient.listEntries();
+    assert.equal(calls.length, 1);
+    assert.equal(entries.length, 2);
+    assert.equal(entries[0].type, 'login');
+    assert.equal(entries[1].type, 'api', 'api_key must surface as mobile "api"');
+    assert.equal(entries[0].id, 'e1');
+    // list view must NOT carry a secret field
+    assert.ok(!('secret' in entries[0]), 'metadata entry must not expose a secret');
   } finally {
-    setApiBaseUrl(original);
+    restore();
+  }
+});
+
+test('apiClient: createEntry maps mobile "api" draft to api_key wire payload', async () => {
+  const { calls, restore } = mockFetch((url) => {
+    assert.ok(url.endsWith('/api/entries'));
+    return {
+      status: 201,
+      body: { entry: { id: 'new1', type: 'api_key', title: 'Stripe', service: 'stripe', apiKey: 'sk_x', tags: ['Work'], updatedAt: 0 } },
+    };
+  });
+  try {
+    const created = await apiClient.createEntry({
+      type: 'api',
+      title: 'Stripe',
+      domain: 'stripe',
+      tags: ['Work'],
+      secret: 'sk_x',
+    });
+    const sent = JSON.parse(String(calls[0].init?.body));
+    assert.equal(calls[0].init?.method, 'POST');
+    assert.equal(sent.type, 'api_key', 'wire payload must use api_key, not api');
+    assert.equal(sent.apiKey, 'sk_x');
+    assert.equal(sent.service, 'stripe');
+    // response projected back to mobile type
+    assert.equal(created.type, 'api');
+    assert.equal(created.id, 'new1');
+    assert.ok(!('secret' in created));
+  } finally {
+    restore();
+  }
+});
+
+test('apiClient: updateEntry uses PUT /api/entries/:id and omits type', async () => {
+  const { calls, restore } = mockFetch((url) => {
+    assert.ok(url.endsWith('/api/entries/e9'));
+    return { body: { entry: { id: 'e9', type: 'login', title: 'X', password: 'p', tags: [], updatedAt: 0 } } };
+  });
+  try {
+    await apiClient.updateEntry('e9', { type: 'login', title: 'X', user: 'u', tags: [], secret: 'p' });
+    const sent = JSON.parse(String(calls[0].init?.body));
+    assert.equal(calls[0].init?.method, 'PUT');
+    assert.ok(!('type' in sent), 'update payload must not include type');
+    assert.equal(sent.password, 'p');
+  } finally {
+    restore();
+  }
+});
+
+test('apiClient: getEntrySecret fetches full entry and returns the plaintext secret', async () => {
+  const { calls, restore } = mockFetch((url) => {
+    assert.ok(url.endsWith('/api/entries/e1'));
+    return { body: { entry: { id: 'e1', type: 'login', title: 'X', password: 'hunter2', tags: [], updatedAt: 0 } } };
+  });
+  try {
+    const secret = await apiClient.getEntrySecret('e1');
+    assert.equal(secret, 'hunter2');
+    assert.equal(calls[0].init?.method ?? 'GET', 'GET');
+  } finally {
+    restore();
+  }
+});
+
+test('apiClient: deleteEntry issues DELETE to the entry URL', async () => {
+  const { calls, restore } = mockFetch(() => ({ body: { success: true } }));
+  try {
+    await apiClient.deleteEntry('e1');
+    assert.ok(calls[0].url.endsWith('/api/entries/e1'));
+    assert.equal(calls[0].init?.method, 'DELETE');
+  } finally {
+    restore();
+  }
+});
+
+test('apiClient: a transport failure yields a typed network ApiError (no crash)', async () => {
+  const { restore } = mockFetch(() => 'reject');
+  try {
+    await assert.rejects(
+      () => apiClient.listEntries(),
+      (err: unknown) => {
+        assert.ok(err instanceof ApiError, 'must be an ApiError, not a raw throw');
+        assert.equal(err.isNetworkError, true);
+        assert.equal(err.status, 0);
+        return true;
+      }
+    );
+  } finally {
+    restore();
+  }
+});
+
+test('apiClient: a non-2xx response yields a typed ApiError carrying the server message', async () => {
+  const { restore } = mockFetch(() => ({ status: 423, body: { error: 'Vault is locked' } }));
+  try {
+    await assert.rejects(
+      () => apiClient.listEntries(),
+      (err: unknown) => {
+        assert.ok(err instanceof ApiError);
+        assert.equal(err.status, 423);
+        assert.equal(err.isNetworkError, false);
+        assert.equal(err.message, 'Vault is locked');
+        return true;
+      }
+    );
+  } finally {
+    restore();
+  }
+});
+
+
+test('checkHealth: reports reachable API and handles HTTP and transport failures', async () => {
+  for (const response of [{ body: { status: 'ok' } }, { status: 503 }, 'reject'] as const) {
+    const mock = mockFetch(() => response);
+    try {
+      assert.equal(await apiClient.checkHealth(), typeof response === 'object' && 'body' in response);
+      assert.equal(mock.calls[0]?.url, `${apiClient.baseUrl}/health`);
+    } finally {
+      mock.restore();
+    }
   }
 });
