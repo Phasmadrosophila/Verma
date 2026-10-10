@@ -1,3 +1,4 @@
+import { previewPort } from './scripts/preview-options.mjs';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve, sep } from 'node:path';
@@ -12,7 +13,8 @@ const types = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
-  '.woff2': 'font/woff2'
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf'
 };
 
 const allowed = new Set([
@@ -30,11 +32,12 @@ const allowed = new Set([
 const previewAssets = new Set([
   '/app.js',
   '/vault.js',
+  '/preview-storage.js',
   '/styles.css',
   '/theme-b.css'
 ]);
 
-const port = Number(process.env.PORT || 3000);
+const port = previewPort(5127);
 const backendUrl = process.env.BACKEND_URL || (process.env.API_PORT ? `http://127.0.0.1:${process.env.API_PORT}` : 'http://127.0.0.1:3001');
 
 async function handleBackendProxy(req, res, targetUrl) {
@@ -148,8 +151,8 @@ createServer(async (req, res) => {
     }
 
     // Interactive web app routes
-    if (pathname === '/app/') {
-      res.writeHead(302, { Location: '/app' }).end();
+    if (['/app/', '/cloud/', '/download/', '/pricing/'].includes(pathname)) {
+      res.writeHead(302, { Location: pathname.slice(0, -1) + url.search }).end();
       return;
     }
     if (pathname === '/app') {

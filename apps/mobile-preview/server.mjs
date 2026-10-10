@@ -1,3 +1,4 @@
+import { previewPort } from '../../scripts/preview-options.mjs';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve, sep } from 'node:path';
@@ -10,17 +11,19 @@ const types = {
   '.js': 'text/javascript',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
-  '.woff2': 'font/woff2'
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf'
 };
-const allowed = new Set(['/index.html', '/styles.css', '/theme-b.css', '/app.js', '/vault.js']);
-const port = Number(process.env.PORT || 3000);
+const allowed = new Set(['/index.html', '/styles.css', '/theme-b.css', '/app.js', '/vault.js', '/preview-storage.js']);
+const port = previewPort(5128);
 
 createServer(async (req, res) => {
   try {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const route = pathname === '/' ? '/index.html' : pathname;
-    const path = resolve(root, '.' + route);
-    if ((!allowed.has(route) && !route.startsWith('/assets/')) || !path.startsWith(root + sep)) {
+    const assetRoot = route.startsWith('/assets/fonts/') ? resolve(root, '../..') : root;
+    const path = resolve(assetRoot, '.' + route);
+    if ((!allowed.has(route) && !route.startsWith('/assets/')) || !path.startsWith(assetRoot + sep)) {
       res.writeHead(404).end('Not found');
       return;
     }
