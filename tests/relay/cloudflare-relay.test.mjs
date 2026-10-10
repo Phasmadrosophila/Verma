@@ -6,7 +6,7 @@ import {
   isAuthenticated,
   ID_PATTERN,
 } from '../../relay/cloudflare-relay.mjs';
-import { onRequest } from '../../apps/web/functions/[[route]].js';
+import webWorker from '../../apps/web/worker.mjs';
 
 class MockKVNamespace {
   constructor() {
@@ -246,7 +246,7 @@ test('Cloudflare KV Relay - AC-A-M0-04-04 & Serverless Architecture Verification
     assert.equal(await res.text(), 'Relay storage unavailable');
   });
 
-  await t.test('Pages Functions onRequest middleware correctly delegates relay and static routes', async () => {
+  await t.test('Workers entrypoint correctly delegates relay and static routes', async () => {
     const kv = new MockKVNamespace();
     const env = {
       VERMA_RELAY_KV: kv,
@@ -254,27 +254,18 @@ test('Cloudflare KV Relay - AC-A-M0-04-04 & Serverless Architecture Verification
     };
 
     // Relay route handled directly
-    const healthContext = {
-      request: new Request('http://localhost/health'),
-      env,
-      next: async () => new Response('static-asset'),
-    };
-    const healthRes = await onRequest(healthContext);
+    const healthRes = await webWorker.fetch(new Request('http://localhost/health'), {
+      ...env,
+      ASSETS: { fetch: async () => new Response('static-asset') },
+    });
     assert.equal(healthRes.status, 200);
     assert.deepEqual(await healthRes.json(), { status: 'ok', service: 'verma-cloudflare-relay' });
 
     // Web SPA route delegated to static assets (next())
-    let nextCalled = false;
-    const staticContext = {
-      request: new Request('http://localhost/dashboard'),
-      env,
-      next: async () => {
-        nextCalled = true;
-        return new Response('<html>index</html>', { status: 200 });
-      },
-    };
-    const staticRes = await onRequest(staticContext);
-    assert.equal(nextCalled, true);
+    const staticRes = await webWorker.fetch(new Request('http://localhost/dashboard'), {
+      ...env,
+      ASSETS: { fetch: async () => new Response('<html>index</html>', { status: 200 }) },
+    });
     assert.equal(await staticRes.text(), '<html>index</html>');
   });
 });

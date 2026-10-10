@@ -17,15 +17,18 @@ test('AC-A-M0-04-03: deployment defines a pinned non-root relay with a healthche
 });
 
 test('AC-A-M0-04-06: Cloudflare deployment defines serverless KV binding, safe CI/CD, and preview/production gates', async () => {
-  const [pagesWrangler, relayWrangler, workflow] = await Promise.all([
+  const [webWrangler, relayWrangler, workflow, webWorker] = await Promise.all([
     readFile('apps/web/wrangler.toml', 'utf8'),
     readFile('relay/wrangler.toml', 'utf8'),
     readFile('.github/workflows/cloudflare-deploy.yml', 'utf8'),
+    readFile('apps/web/worker.mjs', 'utf8'),
   ]);
 
   // KV Namespace binding verification
-  assert(pagesWrangler.includes('binding = "VERMA_RELAY_KV"'));
-  assert(pagesWrangler.includes('pages_build_output_dir = "dist"'));
+  assert(webWrangler.includes('main = "worker.mjs"'));
+  assert(webWrangler.includes('directory = "./dist"'));
+  assert(webWrangler.includes('not_found_handling = "single-page-application"'));
+  assert(webWrangler.includes('binding = "VERMA_RELAY_KV"'));
   assert(relayWrangler.includes('binding = "VERMA_RELAY_KV"'));
   assert(relayWrangler.includes('main = "worker.mjs"'));
 
@@ -36,4 +39,8 @@ test('AC-A-M0-04-06: Cloudflare deployment defines serverless KV binding, safe C
   assert.match(workflow, /CLOUDFLARE_PROJECT_NAME/);
   assert.match(workflow, /preview-deploy/);
   assert.match(workflow, /production-deploy/);
+  assert.match(workflow, /wrangler deploy --config apps\/web\/wrangler\.toml --env preview/);
+  assert.match(workflow, /wrangler deploy --config apps\/web\/wrangler\.toml --name=/);
+  assert.match(webWorker, /env\.ASSETS\.fetch/);
+  assert.match(webWorker, /handleRelayRequest/);
 });

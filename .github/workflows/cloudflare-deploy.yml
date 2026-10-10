@@ -37,6 +37,11 @@ jobs:
         with:
           version: 12.8.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -45,7 +50,7 @@ jobs:
           node --check relay/server.mjs
           node --check relay/cloudflare-relay.mjs
           node --check relay/worker.mjs
-          node --check apps/web/functions/[[route]].js
+          node --check apps/web/worker.mjs
           node --check tests/relay/deployment.test.mjs
           node --check tests/relay/relay.test.mjs
           node --check tests/relay/cloudflare-relay.test.mjs
@@ -76,7 +81,7 @@ jobs:
           retention-days: 1
 
   preview-deploy:
-    name: Deploy Preview (Cloudflare Pages)
+    name: Deploy Preview (Cloudflare Workers)
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -95,6 +100,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - name: Install deployment dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Download web build artifact
         uses: actions/download-artifact@v4
         with:
@@ -102,22 +115,20 @@ jobs:
           path: apps/web/dist
 
       # Safe secret isolation: PRs from forks / untrusted environments cannot access repository secrets
-      - name: Deploy preview to Cloudflare Pages
+      - name: Deploy preview to Cloudflare Workers
         if: env.CLOUDFLARE_API_TOKEN != ''
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
           PROJECT_NAME: ${{ vars.CLOUDFLARE_PROJECT_NAME || 'verma-web' }}
         run: |
-          npx wrangler pages project create "${PROJECT_NAME}" --production-branch=main || true
-
           # Idempotently provision the KV namespaces (ignore "already exists" errors)
           PROD_TITLE="VERMA_RELAY_KV"
           PREVIEW_TITLE="VERMA_RELAY_KV_preview"
-          npx wrangler kv namespace create "VERMA_RELAY_KV" || true
-          npx wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
+          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" || true
+          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
 
           # Resolve the real hex IDs from the account's namespace list
-          KV_LIST="$(npx wrangler kv namespace list)"
+          KV_LIST="$(pnpm exec wrangler kv namespace list)"
           PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.[] | select(.title == $t) | .id')"
           PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.[] | select(.title == $t) | .id')"
 
@@ -129,10 +140,7 @@ jobs:
           # Ephemeral CI-only substitution; committed toml keeps placeholders
           sed -i "s/verma_relay_kv_production_id/${PROD_ID}/g; s/verma_relay_kv_preview_id/${PREVIEW_ID}/g" apps/web/wrangler.toml
 
-          npx wrangler pages deploy dist \
-            --cwd apps/web \
-            --project-name="${PROJECT_NAME}" \
-            --branch="${BRANCH_NAME}"
+          pnpm exec wrangler deploy --config apps/web/wrangler.toml --env preview
 
       - name: Skip preview deploy when secrets unavailable
         if: env.CLOUDFLARE_API_TOKEN == ''
@@ -140,7 +148,7 @@ jobs:
           echo "Preview deployment skipped: Cloudflare credentials are isolated and omitted on untrusted forks."
 
   production-deploy:
-    name: Deploy Production (Cloudflare Pages)
+    name: Deploy Production (Cloudflare Workers)
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -160,24 +168,30 @@ jobs:
         with:
           node-version: 22
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+
+      - name: Install deployment dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Download web build artifact
         uses: actions/download-artifact@v4
         with:
           name: web-dist
           path: apps/web/dist
 
-      - name: Deploy production to Cloudflare Pages
+      - name: Deploy production to Cloudflare Workers
         run: |
-          npx wrangler pages project create "${PROJECT_NAME}" --production-branch=main || true
-
           # Idempotently provision the KV namespaces (ignore "already exists" errors)
           PROD_TITLE="VERMA_RELAY_KV"
           PREVIEW_TITLE="VERMA_RELAY_KV_preview"
-          npx wrangler kv namespace create "VERMA_RELAY_KV" || true
-          npx wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
+          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" || true
+          pnpm exec wrangler kv namespace create "VERMA_RELAY_KV" --preview || true
 
           # Resolve the real hex IDs from the account's namespace list
-          KV_LIST="$(npx wrangler kv namespace list)"
+          KV_LIST="$(pnpm exec wrangler kv namespace list)"
           PROD_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PROD_TITLE}" '.[] | select(.title == $t) | .id')"
           PREVIEW_ID="$(echo "${KV_LIST}" | jq -r --arg t "${PREVIEW_TITLE}" '.[] | select(.title == $t) | .id')"
 
@@ -189,8 +203,4 @@ jobs:
           # Ephemeral CI-only substitution; committed toml keeps placeholders
           sed -i "s/verma_relay_kv_production_id/${PROD_ID}/g; s/verma_relay_kv_preview_id/${PREVIEW_ID}/g" apps/web/wrangler.toml
 
-          npx wrangler pages deploy dist \
-            --cwd apps/web \
-            --project-name="${PROJECT_NAME}" \
-            --branch=main \
-            --commit-dirty=true
+          pnpm exec wrangler deploy --config apps/web/wrangler.toml --name="${PROJECT_NAME}" --keep-vars

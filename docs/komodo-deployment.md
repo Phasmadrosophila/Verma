@@ -6,12 +6,12 @@ This document defines the containerized deployment architecture, Komodo orchestr
 
 ## 1. Cloudflare vs Docker / Komodo Parity Matrix
 
-Verma supports dual deployment models: serverless edge hosting via Cloudflare (Pages, Functions, KV) and self-hosted container orchestration via Docker Compose on Komodo Core. Both implementations uphold Verma's zero-knowledge security boundary.
+Verma supports dual deployment models: serverless edge hosting via Cloudflare Workers and KV, and self-hosted container orchestration via Docker Compose on Komodo Core. Both implementations uphold Verma's zero-knowledge security boundary.
 
 | Capability / Layer | Cloudflare Edge Stack | Docker / Komodo Stack | Parity Notes |
 | :--- | :--- | :--- | :--- |
-| **Web Client Hosting** | Cloudflare Pages (CDN edge distribution) | `web` container (Node static server, port 5173) | Identical React SPA bundle; SPA client-side routing fallback supported. |
-| **API Runtime** | Cloudflare Pages Functions / Workers | `api` container (Hono Node server, port 3000) | Identical Hono routing, request logging redaction, and schema validation. |
+| **Web Client Hosting** | Cloudflare Workers Static Assets (CDN edge distribution) | `web` container (Node static server, port 5173) | Identical React SPA bundle; SPA client-side routing fallback supported. |
+| **API Runtime** | Cloudflare Worker relay endpoints | `api` container (Hono Node server, port 3000) | Identical relay routing, request logging redaction, and schema validation. |
 | **Relay Storage** | Cloudflare KV (`VERMA_RELAY_KV`) | `relay` container (`relay-data` named volume) | Both enforce opaque byte storage, `[A-Za-z0-9_-]{8,64}` ID schema, and size caps. |
 | **Primary Vault Store** | Client-side local encrypted SQLite | Container persistent volume (`api-data:/data/vault.db`) | Master key and secret data never touch server memory in unencrypted form. |
 | **Process Model** | Serverless ephemeral execution | Long-running containers with `tini` PID 1 | Docker uses explicit signal handlers and `restart: unless-stopped`. |

@@ -30,7 +30,7 @@ export function isAuthenticated(authHeader, expectedToken) {
 }
 
 /**
- * Handles relay requests for Cloudflare Workers and Cloudflare Pages Functions.
+ * Handles relay requests for Cloudflare Workers.
  * @param {Request} request
  * @param {Record<string, any>} env
  * @returns {Promise<Response>}

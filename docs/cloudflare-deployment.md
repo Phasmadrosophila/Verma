@@ -1,4 +1,4 @@
-# Cloudflare Pages & Serverless Relay Deployment Guide
+# Cloudflare Workers & Serverless Relay Deployment Guide
 
 This document defines the deployment architecture, configuration, and operational procedures for hosting **Verma** web assets and the serverless opaque envelope relay on Cloudflare.
 
@@ -18,7 +18,7 @@ Verma is an offline-first, local-first digital secrets manager. The Cloudflare d
                                      |                                    |
                                      v                                    v
                        +---------------------------+       +-------------------------------+
-                       |  Cloudflare Pages (SPA)   |       |   Pages Functions / Worker    |
+                        |  Cloudflare Worker (SPA)  |       |   Worker relay handler        |
                        |      (apps/web/dist)      |       |  (relay/cloudflare-relay.mjs) |
                        +---------------------------+       +-------------------------------+
                                                                           |
@@ -31,11 +31,11 @@ Verma is an offline-first, local-first digital secrets manager. The Cloudflare d
 
 ### 1.1 Frontend (`apps/web`)
 - **Framework:** React 19 SPA bundled with Vite and Tailwind CSS.
-- **Serving:** Static assets served from Cloudflare's global edge network via Cloudflare Pages.
+- **Serving:** Static assets served from Cloudflare Workers Static Assets at the edge.
 - **Routing:** Client-side routing with automatic SPA fallback to `index.html`.
 
 ### 1.2 Serverless Opaque Envelope Relay (`relay/cloudflare-relay.mjs`)
-- **Runtime:** Cloudflare Workers / Pages Functions (V8 isolates).
+- **Runtime:** Cloudflare Workers (V8 isolates).
 - **Storage:** Cloudflare Workers KV (`VERMA_RELAY_KV` namespace).
 - **Endpoints:**
   - `GET /health` — Public healthcheck returning `200` JSON `{"status":"ok"}`.
@@ -51,10 +51,10 @@ Verma is an offline-first, local-first digital secrets manager. The Cloudflare d
 
 ## 2. Environment & Secret Isolation
 
-| Environment | Pages URL Pattern | KV Namespace (`VERMA_RELAY_KV`) | Secret Access |
+| Environment | Workers URL Pattern | KV Namespace (`VERMA_RELAY_KV`) | Secret Access |
 |---|---|---|---|
-| **Production** | `https://verma-web.pages.dev` (or custom domain) | Production KV Namespace ID | Repository Secrets on `main` branch |
-| **Preview (Branch / PR)** | `https://<branch>.<project>.pages.dev` | Preview KV Namespace ID | Isolated / Mock or Staging Tokens |
+| **Production** | `https://verma-web.<account>.workers.dev` (or custom domain) | Production KV Namespace ID | Repository Secrets on `main` branch |
+| **Preview (Branch / PR)** | `https://verma-web-preview.<account>.workers.dev` | Preview KV Namespace ID | Isolated / Mock or Staging Tokens |
 
 ### Security Isolation Rules:
 1. **Pull Request Isolation:** GitHub Actions CI does NOT expose production credentials to untrusted fork PRs. Untrusted PRs run validation (typecheck, lint, test, build) without deployment.
@@ -70,7 +70,7 @@ Verma is an offline-first, local-first digital secrets manager. The Cloudflare d
 3. Click **Create Token** -> Select **Create Custom Token** -> **Get Started**.
 4. Configure Token Name: `Verma CI/CD Deploy Token`.
 5. Grant the following **Permissions**:
-   - `Account` | `Cloudflare Pages` | **Edit**
+    - `Account` | `Workers Scripts` | **Edit**
    - `Account` | `Workers KV Storage` | **Edit**
    - `Account` | `Workers Scripts` | **Edit**
 6. Set **Account Resources** to **Include** -> `All accounts` (or select your specific account).
@@ -99,19 +99,19 @@ npx wrangler kv namespace create VERMA_RELAY_KV --preview
 
 Update `apps/web/wrangler.toml` and `relay/wrangler.toml` with the returned `id` and `preview_id`.
 
-### 3.4 Create Cloudflare Pages Project
+### 3.4 Create Cloudflare Worker
 ```bash
-npx wrangler pages project create verma-web --production-branch main
+npx wrangler deploy --config apps/web/wrangler.toml
 ```
 
 Or via Dashboard:
-1. Navigate to **Workers & Pages** -> **Create application** -> **Pages** tab.
-2. Create project name: `verma-web`.
-3. Set Production branch: `main`.
+1. Navigate to **Workers & Pages** -> **Create application** -> **Workers** tab.
+2. Create or select the Worker named `verma-web`.
+3. Attach the production and preview KV namespaces to the `VERMA_RELAY_KV` binding.
 
 ### 3.5 Configure KV Binding in Cloudflare Dashboard
-1. Go to **Workers & Pages** -> Click project `verma-web`.
-2. Go to **Settings** -> **Functions** -> **KV namespace bindings**.
+1. Go to **Workers & Pages** -> click Worker `verma-web`.
+2. Go to **Settings** -> **Bindings** -> **KV namespace bindings**.
 3. Click **Add binding**:
    - **Variable name:** `VERMA_RELAY_KV`
    - **KV namespace (Production):** Select production `VERMA_RELAY_KV`
@@ -120,12 +120,12 @@ Or via Dashboard:
 
 ### 3.6 Configure Relay Secret Token
 ```bash
-# Set authentication token for Cloudflare Pages Functions
-npx wrangler pages secret put RELAY_AUTH_TOKEN --project-name verma-web
+# Set authentication token for the Cloudflare Worker
+npx wrangler secret put RELAY_AUTH_TOKEN --config apps/web/wrangler.toml
 ```
 
 Or in Dashboard:
-1. Go to `verma-web` -> **Settings** -> **Environment variables**.
+1. Go to Worker `verma-web` -> **Settings** -> **Variables and Secrets**.
 2. Add `RELAY_AUTH_TOKEN` (encrypt / hide value) for Production and Preview.
 
 ### 3.7 Configure GitHub Actions Repository Secrets
@@ -137,7 +137,7 @@ In your GitHub repository:
 |---|---|---|
 | `CLOUDFLARE_API_TOKEN` | API Token created in §3.1 | `v1.0-...` |
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID from §3.2 | `a1b2c3d4e5f6...` |
-| `CLOUDFLARE_PROJECT_NAME` | Pages project name | `verma-web` |
+| `CLOUDFLARE_PROJECT_NAME` | Production Worker name | `verma-web` |
 
 ---
 
@@ -151,17 +151,17 @@ The CI/CD pipeline is implemented in `.github/workflows/cloudflare-deploy.yml`:
    - Runs full workspace checks (`pnpm run check`, `pnpm run lint`, `pnpm run test`)
    - Compiles production bundle (`pnpm run build`)
 2. **Preview Deployment (Branch Pushes / Internal PRs):**
-   - Deploys static build and Pages Functions to unique branch preview URL (`<branch>.verma-web.pages.dev`).
+    - Deploys the SPA assets and relay Worker to the preview Worker `verma-web-preview`.
 3. **Production Deployment (Push to `main`):**
    - Triggered only after all validation steps pass.
-   - Deploys to `https://verma-web.pages.dev` with `--branch main`.
+    - Deploys to the production Worker `verma-web`.
 
 ---
 
 ## 5. Rollback & Disaster Recovery Procedures
 
 ### 5.1 Instant Deployment Rollback (Cloudflare Dashboard)
-1. Go to **Workers & Pages** -> Click `verma-web`.
+1. Go to **Workers & Pages** -> click `verma-web`.
 2. Select the **Deployments** tab.
 3. Locate the last known-good deployment.
 4. Click the three dots (`...`) on that deployment -> Click **Rollback to this deployment**.
@@ -170,19 +170,19 @@ The CI/CD pipeline is implemented in `.github/workflows/cloudflare-deploy.yml`:
 ### 5.2 Rollback via Wrangler CLI
 ```bash
 # List previous deployments
-npx wrangler pages deployment list --project-name verma-web
+npx wrangler deployments list --name verma-web
 
 # Re-deploy specific stable build directory
 git checkout <stable-commit-hash>
 pnpm run build
-npx wrangler pages deploy apps/web/dist --project-name verma-web --branch main
+npx wrangler deploy --config apps/web/wrangler.toml --name verma-web
 ```
 
 ### 5.3 Relay Emergency Lockdown
 If a relay authentication token is suspected to be compromised:
 ```bash
 # Rotate relay secret immediately
-npx wrangler pages secret put RELAY_AUTH_TOKEN --project-name verma-web
+npx wrangler secret put RELAY_AUTH_TOKEN --config apps/web/wrangler.toml
 ```
 All existing unauthorized connections will receive `401 Unauthorized` immediately.
 
