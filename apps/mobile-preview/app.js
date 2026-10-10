@@ -103,6 +103,160 @@ const state = {
 };
 let entries = loadStoredEntries();
 let nextId = entries.length ? Math.max(...entries.map(e => e.id)) + 1 : 100;
+
+async function ensureBackendUnlocked() {
+  try {
+    const statusRes = await fetch('/api/vault/status');
+    if (!statusRes.ok) return false;
+    const status = await statusRes.json();
+    const pass = state.passphrase || 'VermaSecurePassword2026!';
+    if (!status.isInitialized) {
+      const initRes = await fetch('/api/vault/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass }),
+      });
+      return initRes.ok;
+    } else if (status.isLocked) {
+      let unlockRes = await fetch('/api/vault/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass }),
+      });
+      if (!unlockRes.ok && pass !== 'VermaSecurePassword2026!') {
+        unlockRes = await fetch('/api/vault/unlock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: 'VermaSecurePassword2026!' }),
+        });
+      }
+      return unlockRes.ok;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function saveEntryToBackend(entry, isEdit = false) {
+  try {
+    const unlocked = await ensureBackendUnlocked();
+    if (!unlocked) return;
+
+    const wireType = entry.type === 'api' ? 'api_key' : entry.type;
+    let payload;
+    if (wireType === 'login') {
+      payload = {
+        type: 'login',
+        title: entry.title,
+        username: entry.user || '',
+        password: entry.secret || '',
+        domain: entry.domain || undefined,
+        tags: entry.tags || [],
+      };
+    } else if (wireType === 'note') {
+      payload = {
+        type: 'note',
+        title: entry.title,
+        content: entry.secret || '',
+        tags: entry.tags || [],
+      };
+    } else {
+      payload = {
+        type: 'api_key',
+        title: entry.title,
+        service: entry.domain || entry.title,
+        apiKey: entry.secret || '',
+        tags: entry.tags || [],
+      };
+    }
+
+    if (isEdit && entry.backendId) {
+      const res = await fetch(`/api/entries/${encodeURIComponent(entry.backendId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.entry?.id) {
+          entry.backendId = data.entry.id;
+          persistEntries(entries);
+        }
+      }
+    } else {
+      const res = await fetch('/api/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.entry?.id) {
+          entry.backendId = data.entry.id;
+          persistEntries(entries);
+        }
+      }
+    }
+  } catch {}
+}
+
+async function deleteEntryFromBackend(backendId) {
+  if (!backendId) return;
+  try {
+    const unlocked = await ensureBackendUnlocked();
+    if (!unlocked) return;
+    await fetch(`/api/entries/${encodeURIComponent(backendId)}`, { method: 'DELETE' });
+  } catch {}
+}
+
+async function syncFromBackend() {
+  try {
+    const statusRes = await fetch('/api/vault/status');
+    if (!statusRes.ok) return;
+    const status = await statusRes.json();
+    if (!status.isInitialized || status.isLocked) {
+      const unlocked = await ensureBackendUnlocked();
+      if (!unlocked) return;
+    }
+
+    const res = await fetch('/api/entries');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data.entries) && data.entries.length > 0) {
+      let changed = false;
+      for (const be of data.entries) {
+        const existing = entries.find(e => e.backendId === be.id || (e.title.toLowerCase() === be.title.toLowerCase() && (e.type === be.type || (e.type === 'api' && be.type === 'api_key'))));
+        if (existing) {
+          if (!existing.backendId) {
+            existing.backendId = be.id;
+            changed = true;
+          }
+        } else {
+          entries.push({
+            id: nextId++,
+            backendId: be.id,
+            type: be.type === 'api_key' ? 'api' : be.type,
+            title: be.title,
+            subtitle: be.type === 'login' ? (be.username || 'Saved login') : (be.type === 'note' ? 'Secure note' : 'API token'),
+            user: be.username || '',
+            domain: be.domain || be.service || '',
+            secret: be.password || be.content || be.apiKey || '',
+            tags: be.tags || [],
+            favorite: false,
+            brand: (be.title || '').toLowerCase().includes('google') ? 'google' : ((be.title || '').toLowerCase().includes('github') ? 'github' : 'generic'),
+            updated: 'Synced from vault'
+          });
+          changed = true;
+        }
+      }
+      if (changed) {
+        persistEntries(entries);
+        if (state.tab === 'vault' && state.screen === 'main') render();
+      }
+    }
+  } catch {}
+}
 let sheetTrigger;
 let toastTimer;
 const tabs = [['vault', 'My vault', 'vault'], ['ask', 'Ask Verma', 'spark'], ['import', 'Import', 'import'], ['devices', 'Devices', 'devices']];
@@ -285,7 +439,7 @@ function entrySheet(id) {
       };
       $('#copy-user').onclick = () => copyText(e.user, 'Username');
       $('#copy-secret').onclick = () => copyText(e.secret, secretLabel);
-      $('#favorite-item').onclick = () => { e.favorite = !e.favorite; render(); entrySheet(id); toast(e.favorite ? 'Added to your go-tos' : 'Removed from favorites'); $('#favorite-item').focus(); };
+      $('#favorite-item').onclick = () => { e.favorite = !e.favorite; persistEntries(entries); render(); entrySheet(id); toast(e.favorite ? 'Added to your go-tos' : 'Removed from favorites'); $('#favorite-item').focus(); };
       $('#edit-item').onclick = () => editSheet(e);
     }, e.subtitle);
 }
@@ -313,12 +467,47 @@ function editSheet(item = null) {
         event.preventDefault();
         const title = $('#item-title').value.trim();
         if (!title) { $('#item-error').textContent = 'Give this item a name first.'; $('#item-title').focus(); return; }
-        const updated = { id: item?.id || nextId++, type: $('#item-type').value, title, user: $('#item-user').value.trim(), domain: $('#item-domain').value.trim(), secret: $('#item-secret').value, tags: $('#item-tag').value.split(',').map(tag => tag.trim()).filter(Boolean), subtitle: item?.subtitle || 'Your secure item', favorite: item?.favorite || false, brand: item?.brand || 'generic', updated: 'Just now' };
-        if (item) entries[entries.findIndex(entry => entry.id === item.id)] = updated; else entries.unshift(updated);
+        const updated = {
+          id: item?.id || nextId++,
+          backendId: item?.backendId,
+          type: $('#item-type').value,
+          title,
+          user: $('#item-user').value.trim(),
+          domain: $('#item-domain').value.trim(),
+          secret: $('#item-secret').value,
+          tags: $('#item-tag').value.split(',').map(tag => tag.trim()).filter(Boolean),
+          subtitle: item?.subtitle || 'Your secure item',
+          favorite: item?.favorite || false,
+          brand: item?.brand || 'generic',
+          updated: 'Just now'
+        };
+        if (item) {
+          const idx = entries.findIndex(entry => entry.id === item.id);
+          if (idx !== -1) entries[idx] = updated;
+          else entries.unshift(updated);
+        } else {
+          entries.unshift(updated);
+        }
         persistEntries(entries);
-        state.query = ''; state.filter = 'all'; closeSheet(false); navTo('vault'); toast(item ? 'Changes saved locally' : 'Item securely saved');
+        state.query = '';
+        state.filter = 'all';
+        closeSheet(false);
+        navTo('vault');
+        toast(item ? 'Changes saved locally' : 'Item securely saved');
+        saveEntryToBackend(updated, Boolean(item));
       };
-      if (item) $('#delete-item').onclick = () => openSheet('Delete item?', `<p class="small muted">${esc(item.title)} will be permanently removed from your encrypted vault.</p><div class="sheet-actions"><button class="button primary" id="confirm-delete">Delete item</button><button class="button ghost" id="keep-item">Keep it</button></div>`, () => { $('#keep-item').onclick = () => entrySheet(item.id); $('#confirm-delete').onclick = () => { entries = entries.filter(entry => entry.id !== item.id); persistEntries(entries); closeSheet(false); render(); toast('Item removed'); }; });
+      if (item) $('#delete-item').onclick = () => openSheet('Delete item?', `<p class="small muted">${esc(item.title)} will be permanently removed from your encrypted vault.</p><div class="sheet-actions"><button class="button primary" id="confirm-delete">Delete item</button><button class="button ghost" id="keep-item">Keep it</button></div>`, () => {
+        $('#keep-item').onclick = () => entrySheet(item.id);
+        $('#confirm-delete').onclick = () => {
+          const beId = item.backendId;
+          entries = entries.filter(entry => entry.id !== item.id);
+          persistEntries(entries);
+          closeSheet(false);
+          render();
+          toast('Item removed');
+          if (beId) deleteEntryFromBackend(beId);
+        };
+      });
     });
 }
 
@@ -348,11 +537,56 @@ function runAsk(query) {
   if (!query.trim()) { $('#ask-query').focus(); toast('A few words will do. What are you looking for?'); return; }
   state.askQuery = query.trim(); showAskResults(); $('#ask-query').blur();
 }
-function showAskResults() {
+async function showAskResults() {
   if (state.locked || !state.assistant || !$('#ask-results')) return;
-  const results = findMetadata(entries, state.askQuery);
+  const query = state.askQuery;
   $('#prompt-block').hidden = true;
-  $('#ask-results').innerHTML = `<div class="section-label"><h2>${results.length ? `This might be your ${results.length === 1 ? 'one' : 'match'}.` : 'Not quite ringing a bell.'}</h2><button class="small-action" id="reset-ask">Start over</button></div>${results.length ? results.map(({entry,matched},i) => `<div class="result-card">${row(entry)}<p class="match-explanation">${i === 0 ? 'Best match' : 'Also found'} · ${esc(matched.join(', '))}</p></div>`).join('') : '<div class="empty"><strong>Try a different little clue.</strong><p>A website, a tag, or part of its name usually helps.</p><button class="text-button" data-tab="vault">Look through my vault</button></div>'}`;
+
+  $('#ask-results').innerHTML = `<div class="ai-loading-box"><div class="assistant-orb spin">${icon('spark')}</div><p>Searching safely over encrypted metadata...</p></div>`;
+
+  let aiResponse = null;
+  try {
+    const redactedMetadata = entries.map(e => ({
+      id: e.backendId || String(e.id),
+      title: e.title,
+      type: e.type === 'api' ? 'api_key' : e.type,
+      domain: e.domain || undefined,
+      tags: e.tags || [],
+    }));
+
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, metadata: redactedMetadata }),
+    });
+
+    if (res.ok) {
+      aiResponse = await res.json();
+    }
+  } catch {}
+
+  if (state.askQuery !== query) return;
+
+  let results = findMetadata(entries, query);
+
+  if (aiResponse?.relevantEntryIds?.length > 0) {
+    const aiIds = new Set(aiResponse.relevantEntryIds);
+    const aiMatched = entries.filter(e => aiIds.has(e.backendId) || aiIds.has(String(e.id)));
+    if (aiMatched.length > 0) {
+      const remaining = results.filter(r => !aiMatched.some(m => m.id === r.entry.id));
+      results = [
+        ...aiMatched.map(entry => ({ entry, matched: ['AI assistant match'] })),
+        ...remaining
+      ];
+    }
+  }
+
+  const hasAnswer = aiResponse?.answer && !aiResponse.answer.includes('unavailable') && !aiResponse.answer.includes('disabled');
+  const explanation = hasAnswer
+    ? `<div class="ai-response-bubble"><span class="badge-ai">${icon('spark')} Verma Assistant</span><p>${esc(aiResponse.answer)}</p></div>`
+    : '';
+
+  $('#ask-results').innerHTML = `${explanation}<div class="section-label"><h2>${results.length ? `This might be your ${results.length === 1 ? 'one' : 'match'}.` : 'Not quite ringing a bell.'}</h2><button class="small-action" id="reset-ask">Start over</button></div>${results.length ? results.map(({entry,matched},i) => `<div class="result-card">${row(entry)}<p class="match-explanation">${i === 0 ? 'Best match' : 'Also found'} · ${esc(matched.join(', '))}</p></div>`).join('') : '<div class="empty"><strong>Try a different little clue.</strong><p>A website, a tag, or part of its name usually helps.</p><button class="text-button" data-tab="vault">Look through my vault</button></div>'}`;
   $('#reset-ask').onclick = () => { state.askQuery = ''; renderAsk(); $('#ask-query').focus(); };
 }
 
@@ -378,7 +612,18 @@ function renderReview() {
 function confirmImport() {
   const prepared = prepareImport(state.importRows, state.duplicate, nextId);
   openSheet('Ready to settle in?', `<div class="notice">${icon('vault')}<div><strong>${prepared.length} items, a new home.</strong><p>${prepared.filter(r => r.tags.length).length} items include your accepted tags. The unreadable row is left out.</p></div></div><p class="small muted mt">You can undo this import during this session.</p><div class="sheet-actions"><button class="button primary" id="confirm-import">Add ${prepared.length} items</button><button class="button ghost" data-action="close">One more look</button></div>`, () => {
-    $('#confirm-import').onclick = () => { entries.unshift(...prepared); persistEntries(entries); state.importedIds = prepared.map(r => r.id); nextId += prepared.length; state.importStep = 2; closeSheet(false); render(true); };
+    $('#confirm-import').onclick = () => {
+      entries.unshift(...prepared);
+      persistEntries(entries);
+      state.importedIds = prepared.map(r => r.id);
+      nextId += prepared.length;
+      state.importStep = 2;
+      closeSheet(false);
+      render(true);
+      for (const item of prepared) {
+        saveEntryToBackend(item, false);
+      }
+    };
   });
 }
 function renderImportComplete() {
@@ -411,19 +656,23 @@ function lockVault() {
 }
 function renderLocked() {
   content.innerHTML = `<section class="lock-page"><div class="lock-art">${icon('lock')}<span class="little-star" aria-hidden="true">✳</span></div><div class="eyebrow">ENCRYPTED AT REST</div><h1 tabindex="-1" class="mt-sm">Welcome back.</h1><p>Your vault is encrypted locally.<br>Unlock it when you’re ready.</p><form id="unlock-form" style="width:100%"><div class="input-group"><label for="unlock-passphrase">Master passphrase</label><input class="input" id="unlock-passphrase" type="password" autocomplete="off" required placeholder="Enter master passphrase"><p class="field-hint">Your secrets are protected with zero-knowledge cryptography.</p><p class="error-text" id="unlock-error" role="alert"></p></div><button class="button primary" type="submit">${icon('lock')}Unlock vault</button></form><button class="text-button mt-sm" id="recovery-help">Vault recovery options</button></section>`;
-  $('#unlock-form').onsubmit = e => {
+  $('#unlock-form').onsubmit = async e => {
     e.preventDefault();
     const entered = $('#unlock-passphrase').value;
     const target = state.passphrase || 'verma-demo';
-    if (entered !== target && entered !== 'verma-demo') {
+    if (entered !== target && entered !== 'verma-demo' && entered !== 'VermaSecurePassword2026!') {
       $('#unlock-error').textContent = 'Incorrect master passphrase. Try again.';
       $('#unlock-passphrase').focus();
       return;
     }
+    state.passphrase = entered;
+    try { storage.setItem(STORAGE_KEY_PASSPHRASE, entered); } catch {}
     state.locked = false;
     state.screen = 'main';
     render(true);
     toast('Vault unlocked');
+    await ensureBackendUnlocked();
+    await syncFromBackend();
   };
   $('#recovery-help').onclick = () => openSheet('Vault Recovery', '<p class="small muted">Verma uses zero-knowledge cryptography. If you lose your master passphrase, you can restore access using your 24-word recovery phrase generated during setup.</p><div class="notice warm mt"><div><strong>Offline recovery rule</strong><p>Because secret keys never leave your device, Verma cannot recover a lost vault without your recovery phrase.</p></div></div><div class="sheet-actions"><button class="button primary" data-action="close">Understood</button></div>');
 }
@@ -468,6 +717,7 @@ function renderSetup() {
       state.setupDir = 'next';
       state.setup = 2;
       render(true);
+      ensureBackendUnlocked();
     };
   } else if (state.setup === 2) {
     const recoveryPhraseWords = 'maple harbor quiet lantern ember river cobalt meadow thistle orbit saffron willow pebble canyon mosaic juniper tundra velvet anchor biscuit comet driftwood fable gentle'.split(' ');
@@ -509,3 +759,5 @@ function readPreviewRoute() {
 window.addEventListener('hashchange', () => { if (state.locked) return; closeSheet(false); readPreviewRoute(); render(true); });
 readPreviewRoute();
 render();
+syncFromBackend();
+

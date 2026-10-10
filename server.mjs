@@ -38,7 +38,31 @@ const previewAssets = new Set([
 ]);
 
 const port = previewPort(5127);
-const backendUrl = process.env.BACKEND_URL || (process.env.API_PORT ? `http://127.0.0.1:${process.env.API_PORT}` : 'http://127.0.0.1:3001');
+let cachedBackendUrl = process.env.BACKEND_URL || null;
+
+async function getBackendUrl() {
+  if (cachedBackendUrl) return cachedBackendUrl;
+  const candidates = [
+    process.env.API_PORT ? `http://127.0.0.1:${process.env.API_PORT}` : null,
+    'http://127.0.0.1:3301',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+  ].filter(Boolean);
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(`${url}/health`, { signal: AbortSignal.timeout(300) });
+      if (res.ok) {
+        const json = await res.json().catch(() => null);
+        if (json?.service === 'verma-api') {
+          cachedBackendUrl = url;
+          return url;
+        }
+      }
+    } catch {}
+  }
+  return candidates[0] || 'http://127.0.0.1:3000';
+}
 
 async function handleBackendProxy(req, res, targetUrl) {
   try {
@@ -117,7 +141,8 @@ createServer(async (req, res) => {
       let backendState = 'offline';
       let backendMeta = null;
       try {
-        const pingRes = await fetch(`${backendUrl}/health`, { signal: AbortSignal.timeout(600) });
+        const target = await getBackendUrl();
+        const pingRes = await fetch(`${target}/health`, { signal: AbortSignal.timeout(600) });
         if (pingRes.ok) {
           backendState = 'online';
           backendMeta = await pingRes.json().catch(() => null);
@@ -146,7 +171,8 @@ createServer(async (req, res) => {
 
     // Proxy API requests to backend
     if (pathname.startsWith('/api/')) {
-      await handleBackendProxy(req, res, `${backendUrl}${pathname}${url.search}`);
+      const target = await getBackendUrl();
+      await handleBackendProxy(req, res, `${target}${pathname}${url.search}`);
       return;
     }
 
