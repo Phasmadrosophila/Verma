@@ -26,9 +26,11 @@ import {
 // (App.tsx, screens, tests) keep working unchanged.
 export {
   ApiError,
+  classifyError,
   toMetadataEntry,
   toWireType,
   fromWireType,
+  type ErrorKind,
   type MobileEntryType,
   type MobileEntryMetadata,
   type VaultStatus,

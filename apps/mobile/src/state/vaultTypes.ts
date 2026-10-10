@@ -26,6 +26,36 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Discriminated error taxonomy. Maps a raw `ApiError` (or any thrown value) to
+ * one actionable kind so callers route by meaning instead of by `.message`:
+ *   - Offline       transport failed / status 0 — show "you're offline", retry
+ *   - Locked         423 — the vault is locked; route to the lock screen
+ *   - Unauthorized   401 — wrong passphrase
+ *   - NotFound       404 — entry missing
+ *   - Server         >=500 — backend error
+ *   - Unknown        anything else
+ */
+export type ErrorKind =
+  | 'Offline'
+  | 'Locked'
+  | 'Unauthorized'
+  | 'NotFound'
+  | 'Server'
+  | 'Unknown';
+
+/** Classify a thrown value into an `ErrorKind`. Never throws. */
+export function classifyError(err: unknown): ErrorKind {
+  if (err instanceof ApiError) {
+    if (err.isNetworkError || err.status === 0) return 'Offline';
+    if (err.status === 423) return 'Locked';
+    if (err.status === 401) return 'Unauthorized';
+    if (err.status === 404) return 'NotFound';
+    if (err.status >= 500) return 'Server';
+  }
+  return 'Unknown';
+}
+
 /** Metadata-only entry for the list view. Contains NO secret fields. */
 export interface MobileEntryMetadata {
   id: string;
