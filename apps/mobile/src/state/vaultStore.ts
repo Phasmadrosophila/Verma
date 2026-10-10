@@ -20,18 +20,7 @@ export interface MobileVaultEntry {
   updated: string;
 }
 
-export interface ImportCandidate {
-  id: string | number;
-  title: string;
-  subtitle: string;
-  domain: string;
-  user: string;
-  tag: string;
-  accepted: boolean;
-  brand: string;
-  type: EntryType;
-  duplicate?: boolean;
-}
+
 
 export interface PairedDevice {
   id: string;
@@ -41,96 +30,7 @@ export interface PairedDevice {
   status: 'active' | 'offline';
 }
 
-export const seedEntries: MobileVaultEntry[] = [
-  {
-    id: 1,
-    type: 'login',
-    title: 'Google',
-    subtitle: 'Work account',
-    user: 'sam@companyx.example',
-    domain: 'accounts.google.com',
-    tags: ['Work', 'Company X'],
-    favorite: true,
-    brand: 'google',
-    secret: 'kR9#mP2$vX5@wL8*',
-    updated: 'Today',
-  },
-  {
-    id: 2,
-    type: 'login',
-    title: 'GitHub',
-    subtitle: 'A home for your ideas',
-    user: 'sam-dev',
-    domain: 'github.com',
-    tags: ['Development'],
-    favorite: true,
-    brand: 'github',
-    secret: 'ghp_K9mX2bL8vP5wQ1zR7yT4nS6uV3jH0aB',
-    updated: 'Yesterday',
-  },
-  {
-    id: 3,
-    type: 'login',
-    title: 'Netflix',
-    subtitle: 'Family account',
-    user: 'family@example.com',
-    domain: 'netflix.com',
-    tags: ['Personal', 'Streaming'],
-    favorite: true,
-    brand: 'netflix',
-    secret: 'tN4!mY8#qW2^zV5~',
-    updated: '3 days ago',
-  },
-  {
-    id: 4,
-    type: 'login',
-    title: 'Google',
-    subtitle: 'Personal account',
-    user: 'sam.personal@example.com',
-    domain: 'accounts.google.com',
-    tags: ['Personal'],
-    favorite: false,
-    brand: 'google',
-    secret: 'vR8#bM3$nQ6@wK9*',
-    updated: '3 days ago',
-  },
-  {
-    id: 5,
-    type: 'api',
-    title: 'DigitalOcean',
-    subtitle: 'Side project token',
-    user: 'Side project',
-    domain: 'cloud.digitalocean.com',
-    tags: ['Development', 'Cloud'],
-    favorite: false,
-    brand: 'ocean',
-    secret: 'dop_v1_8f1c4e9a3b7d2f0e5a6c1b8d7e4a9c2f',
-    updated: '2 weeks ago',
-  },
-  {
-    id: 6,
-    type: 'note',
-    title: 'Home Wi-Fi',
-    subtitle: 'The good connection',
-    user: 'Home network',
-    domain: '192.168.1.1',
-    tags: ['Home', 'Network'],
-    favorite: false,
-    brand: 'wifi',
-    secret: 'Network SSID: Verma-Private-5G\nWPA3 Key: little-universe-4821\nRouter Admin: https://192.168.1.1',
-    updated: '1 month ago',
-  },
-];
-
-export const sampleImportRows: ImportCandidate[] = [
-  { id: 101, title: 'Slack', subtitle: 'Company X workspace', domain: 'companyx.slack.com', user: 'sam@companyx.example', tag: 'Work', accepted: true, brand: 'slack', type: 'login' },
-  { id: 102, title: 'Spotify', subtitle: 'Family plan', domain: 'spotify.com', user: 'family@example.com', tag: 'Personal', accepted: false, brand: 'spotify', type: 'login' },
-  { id: 103, title: 'Notion', subtitle: 'Your second brain', domain: 'notion.so', user: 'sam.personal@example.com', tag: 'Productivity', accepted: false, brand: 'notion', type: 'login' },
-  { id: 104, title: 'Figma', subtitle: 'A little creative space', domain: 'figma.com', user: 'sam@companyx.example', tag: 'Design', accepted: false, brand: 'figma', type: 'login' },
-  { id: 105, title: 'Linear', subtitle: 'Work projects', domain: 'linear.app', user: 'sam@companyx.example', tag: 'Work', accepted: false, brand: 'linear', type: 'login' },
-  { id: 106, title: 'DigitalOcean', subtitle: 'New project token', domain: 'cloud.digitalocean.com', user: 'New project', tag: 'Development', accepted: false, brand: 'ocean', type: 'api' },
-  { id: 107, title: 'Google', subtitle: 'Work account (old)', domain: 'accounts.google.com', user: 'sam@companyx.example', tag: 'Work', accepted: false, brand: 'google', type: 'login', duplicate: true },
-];
+// Removed unused seed data
 
 export const recoveryWordList = [
   'orchard', 'beacon', 'harbor', 'summit', 'meadow', 'crystal',

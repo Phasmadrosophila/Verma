@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { recoveryWordList } from '../state/vaultStore';
 import { colors, radii, spacing, typography } from '../theme/tokens';
+import { apiClient } from '../state/apiClient';
 
 interface SetupScreenProps {
   onSetupComplete: (password?: string, action?: 'import' | 'open') => void;
@@ -35,12 +36,18 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
     setStep('recovery');
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (!confirmedBackup) {
       setError('Please confirm that you have stored your 24-word recovery phrase.');
       return;
     }
-    setStep('complete');
+    
+    try {
+      await apiClient.initVault(passphrase);
+      setStep('complete');
+    } catch (err: any) {
+      setError(err.message || 'Failed to initialize vault.');
+    }
   };
 
   return (

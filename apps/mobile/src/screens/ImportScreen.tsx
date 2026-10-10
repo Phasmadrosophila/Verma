@@ -3,15 +3,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  ImportCandidate,
-  MobileVaultEntry,
-  generatePassword,
-  sampleImportRows,
-} from '../state/vaultStore';
+import { MobileVaultEntry } from '../state/vaultStore';
+import { apiClient } from '../state/apiClient';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 interface ImportScreenProps {
@@ -19,40 +16,129 @@ interface ImportScreenProps {
 }
 
 export const ImportScreen: React.FC<ImportScreenProps> = ({ onCommitImport }) => {
-  const [candidates, setCandidates] = useState<ImportCandidate[]>(sampleImportRows);
+  const [csvContent, setCsvContent] = useState('');
+  const [stagingId, setStagingId] = useState<string | null>(null);
+  const [previewRows, setPreviewRows] = useState<any[]>([]);
+  const [acceptedIndices, setAcceptedIndices] = useState<Set<number>>(new Set());
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
   const [source, setSource] = useState('Google Chrome');
 
-  const toggleAccepted = (id: string | number) => {
-    setCandidates((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, accepted: !c.accepted } : c))
-    );
+  const handleAnalyze = async () => {
+    if (!csvContent.trim()) {
+      setError('Please paste CSV content first.');
+      return;
+    }
+    setError('');
+    setIsProcessing(true);
+    try {
+      const result = await apiClient.analyzeImport(csvContent);
+      setStagingId(result.stagingId);
+      setPreviewRows(result.proposal.previewRows);
+      
+      const newAccepted = new Set<number>();
+      result.proposal.previewRows.forEach((row: any) => {
+        if (!row.isDuplicate) {
+          newAccepted.add(row.rowIndex);
+        }
+      });
+      setAcceptedIndices(newAccepted);
+    } catch (err: any) {
+      setError(err.message || 'Failed to analyze CSV.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const toggleAccepted = (idx: number) => {
+    const next = new Set(acceptedIndices);
+    if (next.has(idx)) {
+      next.delete(idx);
+    } else {
+      next.add(idx);
+    }
+    setAcceptedIndices(next);
   };
 
   const handleSelectAll = () => {
-    const allAccepted = candidates.every((c) => c.accepted);
-    setCandidates((prev) => prev.map((c) => ({ ...c, accepted: !allAccepted })));
+    if (acceptedIndices.size === previewRows.length) {
+      setAcceptedIndices(new Set());
+    } else {
+      setAcceptedIndices(new Set(previewRows.map(r => r.rowIndex)));
+    }
   };
 
-  const handleCommit = () => {
-    const acceptedItems = candidates.filter((c) => c.accepted);
-    const converted: MobileVaultEntry[] = acceptedItems.map((c) => ({
-      id: typeof c.id === 'number' ? Date.now() + c.id : `import-${Date.now()}-${c.id}`,
-      type: c.type,
-      title: c.title,
-      subtitle: c.subtitle,
-      user: c.user,
-      domain: c.domain,
-      tags: [c.tag],
-      favorite: false,
-      brand: c.brand,
-      secret: c.type === 'api' ? `sk_live_${generatePassword(24)}` : generatePassword(20),
-      updated: 'Just imported',
-    }));
-
-    onCommitImport(converted);
+  const handleCancel = async () => {
+    if (stagingId) {
+      await apiClient.cancelImport(stagingId).catch(() => {});
+    }
+    setStagingId(null);
+    setPreviewRows([]);
+    setCsvContent('');
+    setAcceptedIndices(new Set());
   };
 
-  const acceptedCount = candidates.filter((c) => c.accepted).length;
+  const handleCommit = async () => {
+    if (!stagingId) return;
+    setIsProcessing(true);
+    try {
+      const result = await apiClient.confirmImport(stagingId, {
+        confirmedRowIndices: Array.from(acceptedIndices),
+      });
+      // The onCommitImport expects a list of MobileVaultEntry, but here we can just pass empty since it reloads anyways
+      onCommitImport([]);
+    } catch (err: any) {
+      setError(err.message || 'Failed to import.');
+      setIsProcessing(false);
+    }
+  };
+
+  if (!stagingId) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.header}>
+          <View style={styles.tagBadge}>
+            <Text style={styles.tagBadgeText}>IMPORT VAULT</Text>
+          </View>
+          <Text style={styles.title}>Paste CSV Data</Text>
+          <Text style={styles.subtitle}>
+            Paste your exported CSV here. We'll analyze it before importing.
+          </Text>
+        </View>
+
+        {error ? <Text style={{color: 'red', marginBottom: 10}}>{error}</Text> : null}
+
+        <TextInput
+          style={{
+            borderWidth: 1,
+            borderColor: '#ccc',
+            borderRadius: 8,
+            minHeight: 200,
+            padding: 12,
+            textAlignVertical: 'top',
+            marginBottom: 20,
+            backgroundColor: '#fff',
+          }}
+          multiline
+          placeholder="username,password,url..."
+          value={csvContent}
+          onChangeText={setCsvContent}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <TouchableOpacity
+          style={styles.commitBtn}
+          onPress={handleAnalyze}
+          disabled={isProcessing}
+        >
+          <Text style={styles.commitBtnText}>
+            {isProcessing ? 'Analyzing...' : 'Analyze CSV'}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView
@@ -60,121 +146,91 @@ export const ImportScreen: React.FC<ImportScreenProps> = ({ onCommitImport }) =>
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.tagBadge}>
           <Text style={styles.tagBadgeText}>SMART IMPORT</Text>
         </View>
-        <Text style={styles.title}>Messy CSV Cleanup</Text>
+        <Text style={styles.title}>Review Import</Text>
         <Text style={styles.subtitle}>
-          Preview browser exports. Verma groups duplicates and suggests tags before
-          anything is committed to encrypted storage.
+          Preview your entries. Verma groups duplicates and suggests tags.
         </Text>
       </View>
 
-      {/* Source selector */}
-      <View style={styles.sourceCard}>
-        <Text style={styles.sourceLabel}>IMPORT SOURCE</Text>
-        <View style={styles.sourcePills}>
-          {['Google Chrome', '1Password', 'Bitwarden', 'Apple'].map((s) => (
-            <TouchableOpacity
-              key={s}
-              onPress={() => setSource(s)}
-              style={[
-                styles.sourcePill,
-                source === s && styles.sourcePillActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.sourcePillText,
-                  source === s && styles.sourcePillTextActive,
-                ]}
-              >
-                {s}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      {error ? <Text style={{color: 'red', marginBottom: 10}}>{error}</Text> : null}
 
-      {/* Candidates List Header */}
       <View style={styles.listHeaderRow}>
         <Text style={styles.listHeaderTitle}>
-          CANDIDATES ({acceptedCount}/{candidates.length} SELECTED)
+          CANDIDATES ({acceptedIndices.size}/{previewRows.length} SELECTED)
         </Text>
         <TouchableOpacity onPress={handleSelectAll}>
           <Text style={styles.selectAllText}>
-            {acceptedCount === candidates.length ? 'Deselect All' : 'Select All'}
+            {acceptedIndices.size === previewRows.length ? 'Deselect All' : 'Select All'}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Candidate Items */}
       <View style={styles.candidatesList}>
-        {candidates.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={[
-              styles.candidateCard,
-              item.duplicate && styles.duplicateCard,
-              item.accepted && styles.candidateCardAccepted,
-            ]}
-            onPress={() => toggleAccepted(item.id)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.candidateTop}>
-              <View style={styles.leftCol}>
-                <View style={styles.checkboxWrapper}>
-                  <View
-                    style={[
-                      styles.checkbox,
-                      item.accepted && styles.checkboxActive,
-                    ]}
-                  >
-                    {item.accepted && <Text style={styles.checkmark}>✓</Text>}
+        {previewRows.map((item) => {
+          const isAccepted = acceptedIndices.has(item.rowIndex);
+          const entry = item.proposedEntry;
+          return (
+            <TouchableOpacity
+              key={item.rowIndex}
+              style={[
+                styles.candidateCard,
+                item.isDuplicate && styles.duplicateCard,
+                isAccepted && styles.candidateCardAccepted,
+              ]}
+              onPress={() => toggleAccepted(item.rowIndex)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.candidateTop}>
+                <View style={styles.leftCol}>
+                  <View style={styles.checkboxWrapper}>
+                    <View style={[styles.checkbox, isAccepted && styles.checkboxActive]}>
+                      {isAccepted && <Text style={styles.checkmark}>✓</Text>}
+                    </View>
+                  </View>
+                  <View style={styles.infoCol}>
+                    <View style={styles.nameRow}>
+                      <Text style={styles.itemTitle}>{entry.title || 'Untitled'}</Text>
+                      {item.isDuplicate && (
+                        <View style={styles.duplicateTag}>
+                          <Text style={styles.duplicateTagText}>DUPLICATE</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.itemUser}>{entry.username || 'No user'}</Text>
                   </View>
                 </View>
-
-                <View style={styles.infoCol}>
-                  <View style={styles.nameRow}>
-                    <Text style={styles.itemTitle}>{item.title}</Text>
-                    {item.duplicate && (
-                      <View style={styles.duplicateTag}>
-                        <Text style={styles.duplicateTagText}>DUPLICATE</Text>
-                      </View>
-                    )}
+                {entry.tags && entry.tags.length > 0 && (
+                  <View style={styles.tagPill}>
+                    <Text style={styles.tagPillText}>{entry.tags[0]}</Text>
                   </View>
-                  <Text style={styles.itemUser}>{item.user}</Text>
-                </View>
+                )}
               </View>
-
-              <View style={styles.tagPill}>
-                <Text style={styles.tagPillText}>{item.tag}</Text>
-              </View>
-            </View>
-
-            {item.duplicate && (
-              <View style={styles.duplicateWarning}>
-                <Text style={styles.duplicateWarningText}>
-                  Existing entry found for {item.domain}. Select to overwrite or keep existing.
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
-      {/* Commit Action */}
       <TouchableOpacity
-        style={[styles.commitBtn, acceptedCount === 0 && styles.commitBtnDisabled]}
+        style={[styles.commitBtn, acceptedIndices.size === 0 && styles.commitBtnDisabled]}
         onPress={handleCommit}
-        disabled={acceptedCount === 0}
+        disabled={acceptedIndices.size === 0 || isProcessing}
         activeOpacity={0.8}
       >
         <Text style={styles.commitBtnText}>
-          Import {acceptedCount} {acceptedCount === 1 ? 'Item' : 'Items'} to Vault
+          {isProcessing ? 'Importing...' : `Import ${acceptedIndices.size} Items`}
         </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={{ marginTop: 16, alignItems: 'center', padding: 12 }}
+        onPress={handleCancel}
+        disabled={isProcessing}
+      >
+        <Text style={{ color: colors.textMuted, fontWeight: '600' }}>Cancel</Text>
       </TouchableOpacity>
     </ScrollView>
   );
