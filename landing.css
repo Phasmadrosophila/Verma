@@ -440,13 +440,6 @@ h3{font-weight:600;letter-spacing:-.035em;line-height:1.25}
 .deployment-card.scroll-pop:nth-child(2){transition-delay:150ms}
 .deployment-card.scroll-pop:nth-child(3){transition-delay:250ms}
 
-/* Engine Live Status Badge */
-.engine-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;background:rgba(41,38,33,.05);border:1px solid rgba(41,38,33,.09);font-size:11px;font-weight:600;color:var(--ink);letter-spacing:.02em;white-space:nowrap;user-select:none;transition:all 200ms ease}
-.engine-badge:hover{background:rgba(41,38,33,.08);border-color:rgba(41,38,33,.15)}
-.engine-dot{width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 7px rgba(16,185,129,.7);flex:none;transition:background-color 200ms ease,box-shadow 200ms ease}
-.engine-badge.offline .engine-dot{background:#f59e0b;box-shadow:0 0 7px rgba(245,158,11,.7)}
-.engine-badge.error .engine-dot{background:#ef4444;box-shadow:0 0 7px rgba(239,68,68,.7)}
-
 /* Tech Stack & Architecture Section */
 .stack-section{padding-block:64px}
 .stack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:36px}
@@ -513,7 +506,6 @@ h3{font-weight:600;letter-spacing:-.035em;line-height:1.25}
   .stack-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:680px){
-  .engine-badge{padding:4px 9px;font-size:10px}
   .stack-grid{grid-template-columns:1fr}
   .output-redaction-grid{grid-template-columns:1fr}
   .stack-banner{flex-direction:column;align-items:flex-start}
