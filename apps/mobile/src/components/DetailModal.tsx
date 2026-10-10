@@ -199,7 +199,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             <View style={styles.noticeCard}>
               <Text style={styles.noticeTitle}>Local-first Security</Text>
               <Text style={styles.noticeBody}>
-                Encrypted with SQLite + libsodium. This secret never leaves your device and
+                Stored only on this device. This secret never leaves your device and
                 is never exposed to the Local AI assistant.
               </Text>
             </View>

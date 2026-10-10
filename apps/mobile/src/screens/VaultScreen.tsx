@@ -46,10 +46,10 @@ export const VaultScreen: React.FC<VaultScreenProps> = ({
       {/* Vault Hero */}
       <View style={styles.vaultHero}>
         <View style={styles.heroTextCol}>
-          <Text style={styles.heroEyebrow}>ENCRYPTED LOCAL STORAGE</Text>
+          <Text style={styles.heroEyebrow}>ON-DEVICE VAULT</Text>
           <Text style={styles.heroTitle}>Your vault is ready and on-device.</Text>
           <Text style={styles.heroMeta}>
-            {entries.length} items stored · SQLite + libsodium · Zero telemetry
+            {entries.length} items · on this device · no telemetry
           </Text>
         </View>
         <View style={styles.heroBadge}>
