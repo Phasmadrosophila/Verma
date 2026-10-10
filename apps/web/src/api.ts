@@ -7,11 +7,53 @@ import type {
   TargetField,
 } from '@app/shared';
 
+export interface VaultStatusResponse {
+  status: LockStatus;
+  isLocked: boolean;
+  isInitialized: boolean;
+}
+
+/**
+ * True only when the response declares a JSON content type.
+ *
+ * A static SPA fallback (or any misrouted request) can answer an API call with
+ * an HTML 200. Checking the content type lets us report that explicitly
+ * instead of letting `res.json()` crash on `<html>` and stall callers.
+ */
+export const isJsonResponse = (res: Response): boolean => {
+  const contentType = res.headers.get('content-type') ?? '';
+  return contentType.toLowerCase().includes('application/json');
+};
+
+const nonJsonError = (res: Response): Error =>
+  new Error(
+    `Vault API returned a non-JSON response (Content-Type: ${
+      res.headers.get('content-type') ?? 'none'
+    }). The vault backend is unavailable.`
+  );
+
+/**
+ * Reads a successful JSON response, or throws an explicit, non-parse error.
+ *
+ * - Non-JSON body (e.g. HTML from a static fallback): throws immediately.
+ * - Non-2xx JSON body: surfaces the server-supplied `error` message when present.
+ * - Non-2xx non-JSON body: throws a status-based error instead of crashing.
+ */
+async function requireJsonResponse(res: Response): Promise<any> {
+  if (!isJsonResponse(res)) {
+    throw nonJsonError(res);
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error || `Vault API request failed with status ${res.status}`);
+  }
+  return res.json();
+}
+
 export const api = {
-  getVaultStatus: async (): Promise<{ status: LockStatus; isLocked: boolean; isInitialized: boolean }> => {
+  getVaultStatus: async (): Promise<VaultStatusResponse> => {
     const res = await fetch('/api/vault/status');
-    if (!res.ok) throw new Error('Failed to get vault status');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   initVault: async (password: string) => {
@@ -20,8 +62,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Failed to initialize vault');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   unlockVault: async (password: string) => {
@@ -30,20 +71,17 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Failed to unlock vault');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   lockVault: async () => {
     const res = await fetch('/api/vault/lock', { method: 'POST' });
-    if (!res.ok) throw new Error('Failed to lock vault');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   searchMetadata: async (q: string = '') => {
     const res = await fetch(`/api/metadata/search?q=${encodeURIComponent(q)}`);
-    if (!res.ok) throw new Error('Failed to search metadata');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   askVault: async (query: string): Promise<{ answer: string; relevantEntryIds: string[] }> => {
@@ -52,15 +90,12 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Ask Your Vault is unavailable');
-    return data;
+    return requireJsonResponse(res);
   },
 
   getEntry: async (id: string) => {
     const res = await fetch(`/api/entries/${id}`);
-    if (!res.ok) throw new Error('Failed to get entry');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   createEntry: async (data: CreateEntryInput) => {
@@ -69,8 +104,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Failed to create entry');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   updateEntry: async (id: string, data: UpdateEntryInput) => {
@@ -79,14 +113,12 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Failed to update entry');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   deleteEntry: async (id: string) => {
     const res = await fetch(`/api/entries/${id}`, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to delete entry');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   analyzeImport: async (
@@ -98,8 +130,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ csvContent, customMappings }),
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Failed to analyze import');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   cancelImport: async (stagingId: string): Promise<{ cancelled: boolean }> => {
@@ -108,8 +139,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stagingId }),
     });
-    if (!res.ok) throw new Error('Failed to cancel import');
-    return res.json();
+    return requireJsonResponse(res);
   },
 
   confirmImport: async (
@@ -125,7 +155,6 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stagingId, ...options }),
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'Failed to confirm import');
-    return res.json();
+    return requireJsonResponse(res);
   },
 };

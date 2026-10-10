@@ -1,0 +1,33 @@
+{
+  // Verma Web — Cloudflare Worker with attached static assets (replaces the
+  // Cloudflare Pages `wrangler.toml` + `functions/[[route]].js` bundle).
+  //
+  // - Serves the built SPA from ./dist via the ASSETS binding.
+  // - Routes /health, /api/health and /v1/envelopes* (relay) to
+  //   handleRelayRequest in relay/cloudflare-relay.mjs.
+  // - Returns explicit JSON 503 for every other /api/* path instead of
+  //   letting the SPA fallback answer with HTML (see apps/web/worker/index.mjs).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "verma-web",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "preview_urls": true,
+  "workers_dev": true,
+  "kv_namespaces": [
+    {
+      "binding": "VERMA_RELAY_KV",
+      // Placeholder id: CI substitutes the real production namespace id at deploy time.
+      "id": "verma_relay_kv_production_id"
+    }
+  ],
+  "vars": {
+    "RELAY_MAX_ENVELOPE_BYTES": "1048576"
+  }
+}

@@ -9,10 +9,14 @@ import { AskVault } from './pages/AskVault';
 import { SmartImport } from './pages/SmartImport';
 import { Settings } from './pages/Settings';
 import { LoadingState } from './components/primitives/LoadingState';
+import { BackendUnavailable } from './components/BackendUnavailable';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isLocked, isInitialized, status } = useVault();
-  
+  const { isLocked, isInitialized, status, checkStatus } = useVault();
+
+  if (status === 'unavailable') {
+    return <BackendUnavailable onRetry={checkStatus} />;
+  }
   if (status === 'loading') {
     return (
       <LoadingState

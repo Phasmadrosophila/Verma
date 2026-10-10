@@ -7,6 +7,7 @@ import { Shield, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/primitives/Button';
 import { InputField } from '../components/primitives/InputField';
 import { LoadingState } from '../components/primitives/LoadingState';
+import { BackendUnavailable } from '../components/BackendUnavailable';
 
 export const LockScreen = () => {
   const { isInitialized, checkStatus, status } = useVault();
@@ -65,6 +66,10 @@ export const LockScreen = () => {
         description="Reading local encrypted store on this device."
       />
     );
+  }
+
+  if (status === 'unavailable') {
+    return <BackendUnavailable onRetry={checkStatus} />;
   }
 
   // RECOVERY PHRASE FLOW

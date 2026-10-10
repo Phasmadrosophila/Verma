@@ -1,192 +1,218 @@
-# Cloudflare Pages & Serverless Relay Deployment Guide
+# Cloudflare Workers Deployment Guide
 
-This document defines the deployment architecture, configuration, and operational procedures for hosting **Verma** web assets and the serverless opaque envelope relay on Cloudflare.
+This document defines the deployment architecture, configuration, and operational
+procedures for hosting **Verma** web assets and the serverless opaque envelope relay
+on Cloudflare **Workers with Static Assets**.
+
+> Migration note (issue #79): this replaces the previous Cloudflare Pages deployment
+> (`apps/web/wrangler.toml` + `apps/web/functions/[[route]].js`). The old
+> `cloudflare-deploy.yml` workflow is retired in favor of
+> `.github/workflows/cloudflare-workers-deploy.yml`.
 
 ---
 
-## 1. Architecture & Compatibility Analysis
+## 1. Architecture
 
-Verma is an offline-first, local-first digital secrets manager. The Cloudflare deployment architecture maintains strict adherence to the project security boundary (AGENTS.md §3):
+A single Worker (`verma-web`) serves the SPA and the relay from one origin. Static
+assets are attached to the Worker through the `ASSETS` binding:
 
 ```
-                       +--------------------------------------------------+
-                       |              Cloudflare Global Edge              |
-                       +--------------------------------------------------+
-                                        /                        \
-                                       /                          \
-                        [Static Web Routes]              [/health, /v1/envelopes/*]
-                                     |                                    |
-                                     v                                    v
-                       +---------------------------+       +-------------------------------+
-                       |  Cloudflare Pages (SPA)   |       |   Pages Functions / Worker    |
-                       |      (apps/web/dist)      |       |  (relay/cloudflare-relay.mjs) |
-                       +---------------------------+       +-------------------------------+
-                                                                          |
-                                                                          v
-                                                           +-------------------------------+
-                                                           |   Cloudflare KV Namespace     |
-                                                           |       (VERMA_RELAY_KV)        |
-                                                           +-------------------------------+
+                        +--------------------------------------------------+
+                        |              Cloudflare Global Edge              |
+                        |            Worker: verma-web (single origin)     |
+                        +--------------------------------------------------+
+                                |                               |
+                    /health, /api/health              everything else
+                    /v1/envelopes*,                   (SPA + assets)
+                    /api/v1/envelopes*                     |
+                                |                          v
+                                v                 +-------------------------------+
+                 +----------------------------+   |  Static Assets binding        |
+                 | relay/cloudflare-relay.mjs |   |  (apps/web/dist via ASSETS)   |
+                 +----------------------------+   +-------------------------------+
+                                |
+                                v
+                 +----------------------------+
+                 |  Cloudflare KV Namespace   |
+                 |      (VERMA_RELAY_KV)      |
+                 +----------------------------+
 ```
 
-### 1.1 Frontend (`apps/web`)
-- **Framework:** React 19 SPA bundled with Vite and Tailwind CSS.
-- **Serving:** Static assets served from Cloudflare's global edge network via Cloudflare Pages.
-- **Routing:** Client-side routing with automatic SPA fallback to `index.html`.
+### 1.1 Routing contract (`apps/web/worker/index.mjs`)
 
-### 1.2 Serverless Opaque Envelope Relay (`relay/cloudflare-relay.mjs`)
-- **Runtime:** Cloudflare Workers / Pages Functions (V8 isolates).
-- **Storage:** Cloudflare Workers KV (`VERMA_RELAY_KV` namespace).
-- **Endpoints:**
-  - `GET /health` — Public healthcheck returning `200` JSON `{"status":"ok"}`.
-  - `GET /v1/envelopes` — Returns list of envelope metadata (`id` and `bytes`), never payload contents.
-  - `POST /v1/envelopes/:id` — Stores opaque binary ciphertext envelope (`<= 1 MiB`, `Content-Type: application/octet-stream`, `X-Verma-Envelope-Version: 1`).
-  - `GET /v1/envelopes/:id` — Returns raw binary ciphertext payload with `Content-Type: application/octet-stream` and `Cache-Control: no-store`.
-- **Security Invariants:**
-  - **Zero Plaintext Secrets:** The relay only receives pre-encrypted ciphertext envelopes generated by client cryptography (`libsodium`/AES-256-GCM).
-  - **Constant-Time Authentication:** Token comparison uses `timingSafeEqual` XOR comparison to prevent timing attacks.
-  - **Zero Content Logging:** No payloads, decryption keys, or sensitive query data are logged.
+- `/health`, `/api/health`, `/v1/envelopes*`, `/api/v1/envelopes*` →
+  `handleRelayRequest` in `relay/cloudflare-relay.mjs`.
+- Any other `/api/*` → **explicit JSON `503`** `{ "code": "backend_unavailable" }`.
+  This is deliberate: the deployed SPA has no vault backend on its origin, and
+  previously the static SPA fallback answered `/api/vault/status` with an HTML
+  `200`, which made the app hang forever in the `'loading'` state (issue #79).
+- Everything else → `env.ASSETS.fetch(request)`, with
+  `not_found_handling = "single-page-application"` providing the deep-link fallback.
+
+### 1.2 Frontend fix
+
+`apps/web/src/api.ts` rejects any status response that is not
+`application/json`, and `VaultContext` resolves to an explicit `'unavailable'`
+state (the `BackendUnavailable` screen with a Retry button) instead of remaining
+in `'loading'`.
+
+### 1.3 Relay endpoints (`relay/cloudflare-relay.mjs`)
+
+- `GET /health` / `GET /api/health` — public `200` JSON `{"status":"ok"}`.
+- `GET /v1/envelopes` — envelope metadata (`id`, `bytes`) only, never payload contents.
+- `POST /v1/envelopes/:id` — stores an opaque binary ciphertext envelope
+  (`<= 1 MiB`, `Content-Type: application/octet-stream`, `X-Verma-Envelope-Version: 1`).
+- `GET /v1/envelopes/:id` — raw binary ciphertext, `Cache-Control: no-store`.
+- Auth: `Authorization: Bearer <RELAY_AUTH_TOKEN>` compared in constant time.
+- The relay only ever receives pre-encrypted ciphertext; no plaintext or keys are logged.
 
 ---
 
 ## 2. Environment & Secret Isolation
 
-| Environment | Pages URL Pattern | KV Namespace (`VERMA_RELAY_KV`) | Secret Access |
+| Environment | URL Pattern | KV Namespace (`VERMA_RELAY_KV`) | Secret Access |
 |---|---|---|---|
-| **Production** | `https://verma-web.pages.dev` (or custom domain) | Production KV Namespace ID | Repository Secrets on `main` branch |
-| **Preview (Branch / PR)** | `https://<branch>.<project>.pages.dev` | Preview KV Namespace ID | Isolated / Mock or Staging Tokens |
+| **Production** | `https://verma-web.<account-subdomain>.workers.dev/` (or custom domain) | Production namespace id | Repository secrets on `main` |
+| **Preview (Branch / PR)** | `https://<alias>-verma-web.<account-subdomain>.workers.dev/` | Dedicated preview namespace id | Repository secrets, non-`main` refs |
 
-### Security Isolation Rules:
-1. **Pull Request Isolation:** GitHub Actions CI does NOT expose production credentials to untrusted fork PRs. Untrusted PRs run validation (typecheck, lint, test, build) without deployment.
-2. **Namespace Segregation:** Preview deployments use a separate KV namespace ID specified in `wrangler.toml` (`preview_id`) to prevent preview tests from polluting or corrupting production sync envelopes.
+Preview aliases are created by `wrangler versions upload --preview-alias <alias>`:
+
+- Pull requests use `pr-<number>`.
+- Other branches sanitize `GITHUB_REF_NAME` to lowercase `[a-z0-9-]`, collapse
+  repeated dashes, prefix `b-` if it does not start with a lowercase letter, and
+  truncate so that `alias + "-verma-web" <= 63` characters.
+- Aliased version URLs serve only the uploaded version and never production traffic.
+  Cloudflare retains the 1000 most recent aliases, so no cleanup job is required.
+
+### Security isolation rules
+
+1. **Fork PR isolation:** repository secrets are not exposed to untrusted forks, so
+   `preview-deploy` skips provisioning and deploy when `CLOUDFLARE_API_TOKEN` is empty.
+   The workflow is triggered by `pull_request` and **never** `pull_request_target`.
+2. **Namespace segregation:** preview deploys rewrite the committed
+   `verma_relay_kv_production_id` placeholder to a dedicated **`VERMA_RELAY_KV_preview`**
+   namespace id, so preview sync never reads or writes production envelopes.
 
 ---
 
-## 3. Step-by-Step Setup Guide
+## 3. Step-by-Step Setup
 
-### 3.1 Create Cloudflare API Token
-1. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. Navigate to **My Profile** (top right icon) -> **API Tokens**.
-3. Click **Create Token** -> Select **Create Custom Token** -> **Get Started**.
-4. Configure Token Name: `Verma CI/CD Deploy Token`.
-5. Grant the following **Permissions**:
-   - `Account` | `Cloudflare Pages` | **Edit**
-   - `Account` | `Workers KV Storage` | **Edit**
+### 3.1 Create a Cloudflare API Token
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **My Profile** → **API Tokens**.
+2. **Create Token** → **Create Custom Token**.
+3. Name: `Verma CI/CD Deploy Token`.
+4. Permissions:
    - `Account` | `Workers Scripts` | **Edit**
-6. Set **Account Resources** to **Include** -> `All accounts` (or select your specific account).
-7. Click **Continue to summary** -> **Create Token**.
-8. Copy the generated token immediately (it will not be shown again).
+   - `Account` | `Workers KV Storage` | **Edit**
+   - (`Cloudflare Pages` access is no longer required.)
+5. Account Resources: include the target account.
+6. Create and copy the token immediately.
 
-### 3.2 Obtain Cloudflare Account ID
-1. Navigate to **Workers & Pages** in the Cloudflare Dashboard sidebar.
-2. Look at the right sidebar under **Account ID** and click **Copy**.
+### 3.2 Obtain the Account ID
 
-### 3.3 Create Cloudflare KV Namespaces
-Using Wrangler CLI:
+**Workers & Pages** sidebar → **Account ID** → copy.
+
+### 3.3 Enable the workers.dev subdomain
+
+**Workers & Pages** → **Your subdomain** → register a `workers.dev` subdomain if
+not already done. Preview and production URLs depend on it unless a custom domain
+or route is configured.
+
+### 3.4 Create the KV namespaces
+
+The pipeline is idempotent, but you can pre-create them:
+
 ```bash
-# 1. Authenticate or use API Token
 export CLOUDFLARE_API_TOKEN="<your-api-token>"
 export CLOUDFLARE_ACCOUNT_ID="<your-account-id>"
 
-# 2. Create production KV namespace
-npx wrangler kv namespace create VERMA_RELAY_KV
-# Output: { binding = "VERMA_RELAY_KV", id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
-
-# 3. Create preview KV namespace
-npx wrangler kv namespace create VERMA_RELAY_KV --preview
-# Output: { binding = "VERMA_RELAY_KV", preview_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy" }
+npx --yes wrangler@4.149.0 kv namespace create VERMA_RELAY_KV
+npx --yes wrangler@4.149.0 kv namespace create VERMA_RELAY_KV_preview
 ```
 
-Update `apps/web/wrangler.toml` and `relay/wrangler.toml` with the returned `id` and `preview_id`.
+The ids are resolved at deploy time; you do not need to commit them. The committed
+`apps/web/wrangler.jsonc` keeps the `verma_relay_kv_production_id` placeholder.
 
-### 3.4 Create Cloudflare Pages Project
+### 3.5 Configure the relay auth token (optional)
+
 ```bash
-npx wrangler pages project create verma-web --production-branch main
+npx --yes wrangler@4.149.0 secret put RELAY_AUTH_TOKEN --name verma-web
 ```
 
-Or via Dashboard:
-1. Navigate to **Workers & Pages** -> **Create application** -> **Pages** tab.
-2. Create project name: `verma-web`.
-3. Set Production branch: `main`.
+### 3.6 Configure GitHub Actions repository secrets
 
-### 3.5 Configure KV Binding in Cloudflare Dashboard
-1. Go to **Workers & Pages** -> Click project `verma-web`.
-2. Go to **Settings** -> **Functions** -> **KV namespace bindings**.
-3. Click **Add binding**:
-   - **Variable name:** `VERMA_RELAY_KV`
-   - **KV namespace (Production):** Select production `VERMA_RELAY_KV`
-   - **KV namespace (Preview):** Select preview `VERMA_RELAY_KV`
-4. Click **Save**.
+**Settings** → **Secrets and variables** → **Actions**:
 
-### 3.6 Configure Relay Secret Token
-```bash
-# Set authentication token for Cloudflare Pages Functions
-npx wrangler pages secret put RELAY_AUTH_TOKEN --project-name verma-web
-```
+| Secret Name | Description |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | API token from §3.1 |
+| `CLOUDFLARE_ACCOUNT_ID` | Account ID from §3.2 |
 
-Or in Dashboard:
-1. Go to `verma-web` -> **Settings** -> **Environment variables**.
-2. Add `RELAY_AUTH_TOKEN` (encrypt / hide value) for Production and Preview.
-
-### 3.7 Configure GitHub Actions Repository Secrets
-In your GitHub repository:
-1. Navigate to **Settings** -> **Secrets and variables** -> **Actions**.
-2. Add the following repository secrets:
-
-| Secret Name | Description | Example / Source |
-|---|---|---|
-| `CLOUDFLARE_API_TOKEN` | API Token created in §3.1 | `v1.0-...` |
-| `CLOUDFLARE_ACCOUNT_ID` | Account ID from §3.2 | `a1b2c3d4e5f6...` |
-| `CLOUDFLARE_PROJECT_NAME` | Pages project name | `verma-web` |
+(`CLOUDFLARE_PROJECT_NAME` is no longer used.)
 
 ---
 
-## 4. Deployment Workflows
+## 4. Deployment Workflow
 
-The CI/CD pipeline is implemented in `.github/workflows/cloudflare-deploy.yml`:
+`.github/workflows/cloudflare-workers-deploy.yml` runs on every push, every pull
+request, and manual dispatch:
 
-1. **Validation Gate (All PRs & Pushes):**
-   - Validates JavaScript/TypeScript syntax (`node --check`)
-   - Executes relay test suite (`tests/relay/*.test.mjs`)
-   - Runs full workspace checks (`pnpm run check`, `pnpm run lint`, `pnpm run test`)
-   - Compiles production bundle (`pnpm run build`)
-2. **Preview Deployment (Branch Pushes / Internal PRs):**
-   - Deploys static build and Pages Functions to unique branch preview URL (`<branch>.verma-web.pages.dev`).
-3. **Production Deployment (Push to `main`):**
-   - Triggered only after all validation steps pass.
-   - Deploys to `https://verma-web.pages.dev` with `--branch main`.
+1. **`validate`** — `node --check` on relay/worker/test sources, `node --test tests/relay/*.test.mjs`,
+   workspace `check`, `lint`, `test`, `build`, and uploads the `apps/web/dist` artifact.
+2. **`preview-deploy`** (non-`main` refs) — provisions the preview KV namespace,
+   rewrites the config placeholder, runs `wrangler versions upload --preview-alias <alias>`,
+   captures the alias URL from `Version Preview Alias URL:`, and posts/updates a single
+   PR comment (hidden `<!-- verma-preview-url -->` marker).
+3. **`production-deploy`** (push to `main` only) — provisions the production KV
+   namespace, rewrites the placeholder, and runs `wrangler deploy`.
+
+Concurrency is grouped per branch/PR with `cancel-in-progress: true`. Workflow-level
+permissions are `contents: read`; only `preview-deploy` adds `pull-requests: write`.
 
 ---
 
-## 5. Rollback & Disaster Recovery Procedures
+## 5. Rollback & Disaster Recovery
 
-### 5.1 Instant Deployment Rollback (Cloudflare Dashboard)
-1. Go to **Workers & Pages** -> Click `verma-web`.
-2. Select the **Deployments** tab.
-3. Locate the last known-good deployment.
-4. Click the three dots (`...`) on that deployment -> Click **Rollback to this deployment**.
-5. Traffic immediately routes to the previous build (< 1 second globally).
+### 5.1 Rollback (Cloudflare Dashboard)
 
-### 5.2 Rollback via Wrangler CLI
+**Workers & Pages** → `verma-web` → **Deployments** → pick last known-good → **Rollback**.
+
+### 5.2 Rollback (Wrangler)
+
 ```bash
-# List previous deployments
-npx wrangler pages deployment list --project-name verma-web
+npx --yes wrangler@4.149.0 deployments list --name verma-web
+npx --yes wrangler@4.149.0 rollback <deployment-id> --name verma-web
 
-# Re-deploy specific stable build directory
-git checkout <stable-commit-hash>
-pnpm run build
-npx wrangler pages deploy apps/web/dist --project-name verma-web --branch main
+# Or rebuild and redeploy a known-good commit:
+git checkout <stable-commit>
+pnpm install && pnpm run build
+npx --yes wrangler@4.149.0 deploy --config apps/web/wrangler.jsonc
 ```
 
-### 5.3 Relay Emergency Lockdown
-If a relay authentication token is suspected to be compromised:
-```bash
-# Rotate relay secret immediately
-npx wrangler pages secret put RELAY_AUTH_TOKEN --project-name verma-web
-```
-All existing unauthorized connections will receive `401 Unauthorized` immediately.
+### 5.3 Relay emergency lockdown
 
-### 5.4 KV Namespace Disaster Recovery
-- KV data consists exclusively of ephemeral or replicated encrypted sync envelopes.
-- If KV data is lost or flushed, paired desktop devices will re-synchronize directly over QUIC or re-publish their latest encrypted envelopes upon reconnect.
-- No plaintext data or master vault keys exist in the KV store at any time.
+```bash
+npx --yes wrangler@4.149.0 secret put RELAY_AUTH_TOKEN --name verma-web
+```
+
+Existing unauthorized connections receive `401 Unauthorized` immediately.
+
+### 5.4 KV disaster recovery
+
+KV holds only ephemeral/replicated encrypted sync envelopes. If lost, paired
+devices re-sync directly or re-publish their latest encrypted envelopes. No
+plaintext or master keys exist in KV at any time.
+
+---
+
+## 6. Retiring the legacy Pages project
+
+The Pages project is intentionally **not** deleted by this migration. To retire it:
+
+1. Confirm the production Worker URL serves the app (assets + deep links + `/health`).
+2. Disable Cloudflare's **Git integration** for the Pages project first — otherwise
+   Pages keeps auto-deploying on every push and you get double deploys alongside the
+   Workers pipeline.
+3. Update any DNS / custom domain that points at Pages to the Worker.
+4. Remove the Pages project only after traffic has moved and a rollback window has passed.
