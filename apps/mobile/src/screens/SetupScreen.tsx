@@ -21,7 +21,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [confirmedBackup, setConfirmedBackup] = useState(false);
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
 
   const handleContinueToRecovery = () => {
     if (passphrase.length < 8) {
@@ -42,18 +41,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
       return;
     }
     setStep('complete');
-  };
-
-  const handleSetupComplete = async (action: 'import' | 'open') => {
-    setBusy(true);
-    setError('');
-    try {
-      await onSetupComplete(passphrase, action);
-    } catch {
-      setBusy(false);
-      setStep('passphrase');
-      setError('Could not initialize the vault. Check the backend connection and try again.');
-    }
   };
 
   return (
@@ -186,8 +173,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
           <View style={styles.completionActions}>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={() => void handleSetupComplete('import')}
-              disabled={busy}
+              onPress={() => onSetupComplete(passphrase, 'import')}
               activeOpacity={0.8}
             >
               <Text style={styles.primaryButtonText}>Import credentials →</Text>
@@ -195,8 +181,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onSetupComplete }) => 
 
             <TouchableOpacity
               style={styles.secondaryButton}
-              onPress={() => void handleSetupComplete('open')}
-              disabled={busy}
+              onPress={() => onSetupComplete(passphrase, 'open')}
               activeOpacity={0.8}
             >
               <Text style={styles.secondaryButtonText}>Open my vault</Text>
