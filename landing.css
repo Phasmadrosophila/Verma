@@ -1,4 +1,3 @@
-@font-face{font-family:'Mochiy Pop One';font-style:normal;font-weight:400;font-display:swap;src:url('assets/mochiy-pop-one.woff2') format('woff2')}
 :root{--orange:#FE820E;--peri:#607FF3;--canvas:#F7EDE3;--paper:#FFFCF8;--ink:#292621;--muted:#716A61;--warm:#FFE0BF;--assist:#E8EAFE;--line:#DED4CA;--font:"Parkinsans",sans-serif;--brand:"Mochiy Pop One",sans-serif}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:32px;-webkit-tap-highlight-color:transparent}

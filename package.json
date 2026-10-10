@@ -21,12 +21,14 @@
     "test:integration": "node --test --experimental-strip-types tests/integration/runtime.test.ts",
     "test:e2e:offline": "node --test --experimental-strip-types tests/e2e/offline-visual-e2e.test.ts",
     "mobile:start": "pnpm --filter @app/mobile start",
-    "preview:web": "pnpm --filter @app/mobile-preview dev",
+    "preview:web": "node apps/mobile-preview/server.mjs",
     "test:mobile": "pnpm --filter @app/mobile test",
     "test:preview": "pnpm --filter @app/mobile-preview test",
     "start": "node server.mjs",
     "preview:landing": "node server.mjs",
-    "check:landing": "node --check landing.js && node --check server.mjs && node qa/download-page.test.mjs"
+    "check:landing": "node --check landing.js && node --check server.mjs && node qa/download-page.test.mjs",
+    "preview:mobile": "node apps/mobile-preview/server.mjs",
+    "check:previews": "node --test qa/preview-*.test.mjs"
   },
   "engines": {
     "node": ">=22.0.0"

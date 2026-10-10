@@ -1,3 +1,5 @@
+import { previewStorage } from './preview-storage.js';
+const storage = previewStorage(location.search);
 import { seedEntries, typeLabels, escapeHtml as esc, filterEntries, findMetadata, generatePassword, sampleImport, prepareImport } from './vault.js';
 
 const paths = {
@@ -63,14 +65,14 @@ const STORAGE_KEY_DEVICES = 'verma_vault_devices';
 
 function loadStoredEntries() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_ENTRIES);
+    const raw = storage.getItem(STORAGE_KEY_ENTRIES);
     if (raw) return JSON.parse(raw);
   } catch {}
   return structuredClone(seedEntries);
 }
 
 function persistEntries(items) {
-  try { localStorage.setItem(STORAGE_KEY_ENTRIES, JSON.stringify(items)); } catch {}
+  try { storage.setItem(STORAGE_KEY_ENTRIES, JSON.stringify(items)); } catch {}
 }
 
 const state = {
@@ -81,7 +83,7 @@ const state = {
   sorted: false,
   assistant: true,
   locked: false,
-  passphrase: (() => { try { return localStorage.getItem(STORAGE_KEY_PASSPHRASE) || ''; } catch { return ''; } })(),
+  passphrase: (() => { try { return storage.getItem(STORAGE_KEY_PASSPHRASE) || ''; } catch { return ''; } })(),
   askQuery: '',
   importStep: 0,
   importRows: [],
@@ -93,7 +95,7 @@ const state = {
   paused: false,
   devices: (() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY_DEVICES);
+      const raw = storage.getItem(STORAGE_KEY_DEVICES);
       if (raw) return JSON.parse(raw);
     } catch {}
     return ['MacBook Pro (Primary)', 'ThinkPad X1 (Work)'];
@@ -397,7 +399,7 @@ function pairSheet() {
       const name = $('#device-name').value.trim();
       if (!name) { $('#device-name').focus(); toast('Enter a device name'); return; }
       state.devices.push(name);
-      try { localStorage.setItem(STORAGE_KEY_DEVICES, JSON.stringify(state.devices)); } catch {}
+      try { storage.setItem(STORAGE_KEY_DEVICES, JSON.stringify(state.devices)); } catch {}
       closeSheet(false); render(true); toast(`${name} paired successfully`);
     };
   });
@@ -462,7 +464,7 @@ function renderSetup() {
         return;
       }
       state.passphrase = value;
-      try { localStorage.setItem(STORAGE_KEY_PASSPHRASE, value); } catch {}
+      try { storage.setItem(STORAGE_KEY_PASSPHRASE, value); } catch {}
       state.setupDir = 'next';
       state.setup = 2;
       render(true);
